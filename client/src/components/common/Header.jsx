@@ -43,7 +43,7 @@ function Header({ user }) {
     }}>
       <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
-        {/* Text Logo */}
+        {/* Brand Logo */}
         <div
           onClick={() => navigate('/')}
           style={{
@@ -53,25 +53,24 @@ function Header({ user }) {
             gap: '8px'
           }}
         >
-          <div style={{
-            width: '32px',
-            height: '32px',
-            background: '#1d1d1f',
-            borderRadius: '8px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: 'white'
-          }}>
-            <IoCalendar size={18} />
-          </div>
-          <span style={{ fontSize: '20px', fontWeight: '600', letterSpacing: '-0.5px', color: '#1d1d1f' }}>MyPlanning</span>
+          <img
+            src={new URL('../../assets/logo-new.png', import.meta.url).href}
+            alt="OpenGlow Logo"
+            style={{ width: '40px', height: '40px', objectFit: 'contain' }}
+          />
+          <span style={{ fontSize: '20px', fontWeight: '600', letterSpacing: '-0.5px', color: 'var(--primary)' }}>OpenGlow</span>
         </div>
 
         {/* Navigation */}
         <nav className="headerNav" style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <Link to="/" style={{ color: '#1d1d1f', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('home')}</Link>
-          <Link to="/recherche" style={{ color: '#1d1d1f', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('find_pro')}</Link>
+          <Link to="/" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('home')}</Link>
+          <Link to="/recherche" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('find_pro')}</Link>
+          <Link to="/map" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('map') || 'Carte'}</Link>
+          {user && (
+            <Link to="/bookings" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <IoCalendar size={14} /> {t('my_bookings') || 'Mes RDV'}
+            </Link>
+          )}
           {user?.isAdmin && (
             <Link to="/admin" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <IoShieldCheckmark size={16} /> {t('admin')}
@@ -93,7 +92,7 @@ function Header({ user }) {
                 background: 'transparent',
                 fontSize: '13px',
                 fontWeight: '500',
-                color: '#1d1d1f',
+                color: 'var(--primary)',
                 cursor: 'pointer',
                 outline: 'none'
               }}

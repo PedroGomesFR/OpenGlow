@@ -26,7 +26,11 @@ function LoginPage({ setUser }) {
       });
       if (!response.ok) {
         const data = await response.json();
-        alert(t('login_error') + " : " + data.message);
+        if (data.requiresVerification) {
+          alert('Votre compte n\'est pas vérifié. Veuillez vous réinscrire avec la même adresse e-mail pour recevoir un nouveau code.');
+        } else {
+          alert(t('login_error') + " : " + (data.error || "Erreur"));
+        }
       } else {
         const successData = await response.json();
         localStorage.setItem("user", JSON.stringify(successData.user));

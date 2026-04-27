@@ -2,9 +2,11 @@ server/node_modules
 client/node_modules
 .DS_Store
 server/.env
+server/.env 2
 client/.env
 client/.parcel-cache
 client/dist
 server/.env.local
 .vscode/
 .idea/
+server/uploads/

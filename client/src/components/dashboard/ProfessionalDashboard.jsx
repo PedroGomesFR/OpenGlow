@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     IoGrid,
     IoCalendar,
+    IoCalendarNumber,
     IoCut,
     IoStar,
     IoPerson,
@@ -18,6 +19,7 @@ import DashboardOverview from './DashboardOverview';
 import Planning from '../common/planning';
 import ServiceManagement from '../pages/ServiceManagement';
 import ReviewsPage from '../pages/ReviewsPage';
+import BookingsPage from '../pages/BookingsPage';
 
 function ProfessionalDashboard({ user, setUser }) {
     const navigate = useNavigate();
@@ -32,6 +34,7 @@ function ProfessionalDashboard({ user, setUser }) {
 
     const menuItems = [
         { id: 'overview', label: 'Vue d\'ensemble', icon: <IoGrid size={18} /> },
+        { id: 'bookings', label: 'Réservations', icon: <IoCalendarNumber size={18} /> },
         { id: 'planning', label: 'Planning', icon: <IoCalendar size={18} /> },
         { id: 'services', label: 'Prestations', icon: <IoCut size={18} /> },
         { id: 'reviews', label: 'Avis Clients', icon: <IoStar size={18} /> },
@@ -146,7 +149,9 @@ function ProfessionalDashboard({ user, setUser }) {
     const renderContent = () => {
         switch (activeTab) {
             case 'overview':
-                return <DashboardOverview user={user} />;
+                return <DashboardOverview user={user} setActiveTab={setActiveTab} />;
+            case 'bookings':
+                return <BookingsPage />;
             case 'planning':
                 return <Planning />;
             case 'services':
@@ -155,90 +160,209 @@ function ProfessionalDashboard({ user, setUser }) {
                 return <ReviewsPage user={user} professionalId={user._id || user.id} />;
             case 'settings':
                 return (
-                    <div className="card">
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <IoPerson color="#1d1d1f" /> Modifier mon profil
-                        </h2>
-                        <form onSubmit={handleProfileUpdate} style={{ marginTop: '20px' }}>
-                            <div className="form-group">
-                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <IoBusiness /> Nom de l'entreprise
-                                </label>
-                                <input
-                                    className="form-input"
-                                    type="text"
-                                    value={profileData.companyName}
-                                    onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
-                                />
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                        {/* Section Visuel - Photos */}
+                        <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
+                            <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '18px' }}>
+                                    <IoCamera color="var(--primary)" /> Photos & Visuels
+                                </h3>
                             </div>
-                            <div className="grid grid-2">
-                                <div className="form-group">
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <IoCall /> Téléphone
-                                    </label>
-                                    <input
-                                        className="form-input"
-                                        type="tel"
-                                        value={profileData.phone}
-                                        onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                                    />
+                            
+                            <div style={{ padding: '24px' }}>
+                                {/* Profile Photo Area */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '30px', marginBottom: '30px' }}>
+                                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                                        {user?.profilePhoto ? (
+                                            <img
+                                                src={`http://localhost:5001${user.profilePhoto}`}
+                                                alt="Profile"
+                                                style={{
+                                                    width: '120px',
+                                                    height: '120px',
+                                                    borderRadius: '50%',
+                                                    objectFit: 'cover',
+                                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                    border: '4px solid white'
+                                                }}
+                                            />
+                                        ) : (
+                                            <div style={{
+                                                width: '120px',
+                                                height: '120px',
+                                                borderRadius: '50%',
+                                                background: '#E5E5E7',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                color: '#86868b'
+                                            }}>
+                                                <IoPerson size={48} />
+                                            </div>
+                                        )}
+                                        <label
+                                            style={{
+                                                position: 'absolute',
+                                                bottom: '0',
+                                                right: '0',
+                                                background: 'var(--primary)',
+                                                color: 'white',
+                                                width: '36px',
+                                                height: '36px',
+                                                borderRadius: '50%',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'pointer',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                                                transition: 'all 0.2s'
+                                            }}
+                                            title="Modifier la photo"
+                                        >
+                                            <IoCamera size={18} />
+                                            <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'profile')} style={{ display: 'none' }} />
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <h4 style={{ margin: '0 0 5px 0' }}>Photo de profil</h4>
+                                        <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, maxWidth: '400px' }}>
+                                            Apparaît sur votre fiche publique pour que les clients vous reconnaissent facilement.
+                                        </p>
+                                    </div>
                                 </div>
-                                <div className="form-group">
+
+                                {/* Salon Photos Area */}
+                                <div>
+                                    <h4 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #E5E5E5', paddingTop: '30px', margin: '0 0 16px 0' }}>
+                                        Galerie d'images (Salon & Réalisations)
+                                        <label className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', cursor: 'pointer', display: 'flex', gap: '6px', margin: 0 }}>
+                                            <IoCamera size={16} /> Ajouter des photos
+                                            <input type="file" multiple accept="image/*" onChange={(e) => handlePhotoUpload(e, 'salon')} style={{ display: 'none' }} />
+                                        </label>
+                                    </h4>
+                                    
+                                    {user?.salonPhotos && user.salonPhotos.length > 0 ? (
+                                        <div style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+                                            gap: '16px'
+                                        }}>
+                                            {user.salonPhotos.map((photo, index) => (
+                                                <div key={index} style={{
+                                                    aspectRatio: '1',
+                                                    borderRadius: '12px',
+                                                    overflow: 'hidden',
+                                                    boxShadow: 'var(--shadow-sm)',
+                                                    position: 'relative'
+                                                }}>
+                                                    <img 
+                                                        src={`http://localhost:5001${photo}`} 
+                                                        alt={`Salon gallery ${index + 1}`} 
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div style={{
+                                            background: '#F5F5F7',
+                                            borderRadius: '12px',
+                                            padding: '40px',
+                                            textAlign: 'center',
+                                            color: '#86868b'
+                                        }}>
+                                            <IoBusiness size={40} style={{ opacity: 0.5, marginBottom: '10px' }} />
+                                            <p style={{ margin: '0 0 5px 0', fontWeight: '500' }}>Aucune photo pour l'instant.</p>
+                                            <p style={{ fontSize: '13px', margin: 0 }}>Ajoutez des photos de votre espace ou de vos réalisations pour attirer plus de clients.</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section Textes - Formulaire */}
+                        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                            <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
+                                <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '18px' }}>
+                                    <IoBusiness color="var(--primary)" /> Informations de l'établissement
+                                </h3>
+                            </div>
+                            
+                            <form onSubmit={handleProfileUpdate} style={{ padding: '24px' }}>
+                                <div className="form-group" style={{ marginBottom: '24px' }}>
                                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <IoLocation /> Adresse
+                                         Mon Entreprise (Nom public)
                                     </label>
                                     <input
                                         className="form-input"
                                         type="text"
-                                        value={profileData.address}
-                                        onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                                        value={profileData.companyName}
+                                        onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
+                                        placeholder="Ex: Institut Beauté Plus"
                                     />
                                 </div>
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <IoTime /> Horaires affichés
-                                </label>
-                                <input
-                                    className="form-input"
-                                    type="text"
-                                    value={profileData.openingHours}
-                                    onChange={(e) => setProfileData({ ...profileData, openingHours: e.target.value })}
-                                    placeholder="Ex: Lun-Ven 9h-18h"
-                                />
-                            </div>
-                            <div className="form-group">
-                                <label className="form-label">Description</label>
-                                <textarea
-                                    className="form-textarea"
-                                    rows="4"
-                                    value={profileData.description}
-                                    onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
-                                ></textarea>
-                            </div>
-
-                            <div className="grid grid-2" style={{ marginBottom: '20px' }}>
-                                <div>
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <IoCamera /> Photo de Profil
-                                    </label>
-                                    <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'profile')} />
+                                
+                                <div className="grid grid-2" style={{ gap: '24px', marginBottom: '24px' }}>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <IoCall /> Numéro de Téléphone
+                                        </label>
+                                        <input
+                                            className="form-input"
+                                            type="tel"
+                                            value={profileData.phone}
+                                            onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                                            placeholder="Ex: 01 23 45 67 89"
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <IoLocation /> Adresse Complète
+                                        </label>
+                                        <input
+                                            className="form-input"
+                                            type="text"
+                                            value={profileData.address}
+                                            onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                                            placeholder="Ex: 10 Rue de Paris, 75001 Paris"
+                                        />
+                                    </div>
                                 </div>
-                                <div>
+                                
+                                <div className="form-group" style={{ marginBottom: '24px' }}>
                                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <IoCamera /> Photos du Salon
+                                        <IoTime /> Horaires d'ouverture (Affichage libre)
                                     </label>
-                                    <input type="file" multiple accept="image/*" onChange={(e) => handlePhotoUpload(e, 'salon')} />
+                                    <input
+                                        className="form-input"
+                                        type="text"
+                                        value={profileData.openingHours}
+                                        onChange={(e) => setProfileData({ ...profileData, openingHours: e.target.value })}
+                                        placeholder="Ex: Lundi-Vendredi 9h-18h, Samedi 9h-12h"
+                                    />
                                 </div>
-                            </div>
+                                
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label className="form-label">Description / Notre Expertise</label>
+                                    <textarea
+                                        className="form-textarea"
+                                        rows="5"
+                                        value={profileData.description}
+                                        onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
+                                        placeholder="Présentez votre établissement, votre équipe et votre savoir-faire en quelques lignes..."
+                                    ></textarea>
+                                </div>
 
-                            <div style={{ display: 'flex', gap: '10px' }}>
-                                <button type="submit" className="btn btn-primary">Enregistrer les modifications</button>
-                                <button type="button" className="btn btn-secondary" onClick={() => navigate(`/professional/${user._id || user.id}`)}>
-                                    Voir ma page publique
-                                </button>
-                            </div>
-                        </form>
+                                <div style={{ display: 'flex', gap: '15px', marginTop: '30px', paddingTop: '24px', borderTop: '1px solid #E5E5E5' }}>
+                                    <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '15px' }}>
+                                        Enregistrer les modifications
+                                    </button>
+                                    <button type="button" className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '15px' }} onClick={() => navigate(`/professional/${user._id || user.id}`)}>
+                                        Aperçu public
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 );
             default:

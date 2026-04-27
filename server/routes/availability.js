@@ -10,9 +10,9 @@ router.get('/settings/:professionalId', async (req, res) => {
     try {
         const { professionalId } = req.params;
         const db = await connectDB();
-        
-        let settings = await db.collection('availability_settings').findOne({ 
-            professionalId: new ObjectId(professionalId) 
+
+        let settings = await db.collection('availability_settings').findOne({
+            professionalId: new ObjectId(professionalId)
         });
 
         if (!settings) {
@@ -41,7 +41,7 @@ router.post('/settings', verifyToken, async (req, res) => {
         const professionalId = req.userId;
 
         const db = await connectDB();
-        
+
         const updateData = {
             professionalId: new ObjectId(professionalId),
             workingDays,
@@ -74,10 +74,10 @@ router.get('/slots/:professionalId', async (req, res) => {
         if (!date) return res.status(400).json({ message: 'Date requise' });
 
         const db = await connectDB();
-        
+
         // 1. Get settings
-        const settings = await db.collection('availability_settings').findOne({ 
-            professionalId: new ObjectId(professionalId) 
+        const settings = await db.collection('availability_settings').findOne({
+            professionalId: new ObjectId(professionalId)
         }) || {
             workingDays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
             hours: { start: '09:00', end: '19:00' },
@@ -89,7 +89,7 @@ router.get('/slots/:professionalId', async (req, res) => {
         // 2. Check if working day
         const dayName = new Date(date).toLocaleDateString('fr-FR', { weekday: 'long' });
         const capitalizedDay = dayName.charAt(0).toUpperCase() + dayName.slice(1);
-        
+
         if (!settings.workingDays.includes(capitalizedDay)) {
             return res.json([]);
         }
@@ -107,9 +107,9 @@ router.get('/slots/:professionalId', async (req, res) => {
                 continue;
             }
 
-            // Check existing bookings
+            // Check existing bookings (professionalId is stored as string in bookings)
             const existingBooking = await db.collection('bookings').findOne({
-                professionalId: new ObjectId(professionalId),
+                professionalId: professionalId,
                 date: date,
                 time: currentTime,
                 status: { $ne: 'cancelled' }

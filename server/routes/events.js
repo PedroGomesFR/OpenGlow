@@ -82,7 +82,7 @@ eventRouter.delete('/deleteEvent', async (req, res) => {
 // eventRouter.get('/test', async (req, res) => {
 //   try {
 //     let userId = req.query.userId;
-    
+
 //     // const { name, price, description } = req.body;
 
 //     // if (!name || !price) {

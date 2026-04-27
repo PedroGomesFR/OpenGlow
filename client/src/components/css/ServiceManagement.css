@@ -243,6 +243,7 @@
     margin-bottom: 16px;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     min-height: 2.8em;
@@ -284,7 +285,8 @@
     padding-top: 16px;
     border-top: 1px solid var(--gray-100);
     margin-top: auto;
-    /* Push to bottom */
+    gap: 16px;
+    flex-wrap: wrap;
 }
 
 .price-tag {
@@ -292,6 +294,10 @@
     font-weight: 800;
     /* Extra bold */
     color: var(--text-primary);
+    line-height: 1;
+    margin: 0;
+    display: flex;
+    align-items: center;
 }
 
 .action-buttons {

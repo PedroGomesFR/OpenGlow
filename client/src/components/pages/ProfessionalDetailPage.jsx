@@ -158,8 +158,10 @@ function ProfessionalDetailPage() {
                         {professional.description || t('default_pro_desc')}
                     </p>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '14px', flexWrap: 'wrap' }}>
                         {professional.address && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoLocation /> {professional.address}</span>}
+                        {professional.phone && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>📞 {professional.phone}</span>}
+                        {professional.openingHours && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoTime /> {professional.openingHours}</span>}
                         {professional.averageRating > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoStar /> {professional.averageRating.toFixed(1)}/5 ({professional.totalReviews} {t('reviews_count')})</span>}
                     </div>
 

@@ -41,10 +41,7 @@ serviceRouter.get('/categories', async (req, res) => {
   }
 });
 
-// Require a valid JWT for all other service routes
-serviceRouter.use(verifyToken);
-
-// Get all services for a professional
+// Get all services for a professional (PUBLIC route - no auth required)
 serviceRouter.get('/professional/:professionalId', async (req, res) => {
   try {
     const { professionalId } = req.params;
@@ -59,6 +56,9 @@ serviceRouter.get('/professional/:professionalId', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+// Require a valid JWT for all other service routes
+serviceRouter.use(verifyToken);
 
 // Get all services for the authenticated professional
 serviceRouter.get('/my-services', async (req, res) => {

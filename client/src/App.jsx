@@ -23,6 +23,7 @@ import ServiceManagement from './components/pages/ServiceManagement.jsx';
 import ReviewsPage from './components/pages/ReviewsPage.jsx';
 import MapView from './components/pages/MapView.jsx';
 import CGP from './components/pages/cgp.jsx';
+import HelpPage from './components/pages/HelpPage.jsx';
 
 import AdminPage from './components/pages/AdminPage.jsx';
 import Footer from './components/common/Footer.jsx';
@@ -74,6 +75,7 @@ function App() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/cgp" element={<CGP />} />
+            <Route path="/help" element={<HelpPage />} />
 
             <Route path="*" element={<NotFoundPage />} />
 

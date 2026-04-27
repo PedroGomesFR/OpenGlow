@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoSearch, IoBusiness, IoLocation, IoCall, IoTime } from 'react-icons/io5';
+import { IoSearch, IoBusiness, IoLocation, IoCall, IoTime, IoStar } from 'react-icons/io5';
 import '../css/RecherchePage.css';
 
 function RecherchePage() {
@@ -131,6 +131,12 @@ function RecherchePage() {
                                     <h3>{pro.companyName || `${pro.prenom} ${pro.nom}`}</h3>
                                     <span className="profession-badge">{pro.profession || 'Professionnel'}</span>
 
+                                    {pro.averageRating > 0 && (
+                                        <div className="card-info-item" style={{ marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '14px', color: '#FFD700' }}>
+                                            <IoStar /> <span style={{ color: '#1d1d1f', fontWeight: '600' }}>{pro.averageRating.toFixed(1)}</span>
+                                            <span style={{ color: '#86868b', fontWeight: '400' }}>({pro.totalReviews} avis)</span>
+                                        </div>
+                                    )}
                                     {pro.description && (
                                         <p className="card-description">{pro.description}</p>
                                     )}

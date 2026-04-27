@@ -1,7 +1,7 @@
 import express from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import connectDB from '../db/connection.js';
-import verifyToken from '../middleware/auth.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 router.post('/add', verifyToken, async (req, res) => {
     try {
         const { professionalId, rating, comment, serviceId } = req.body;
-        
+
         if (!rating || rating < 1 || rating > 5) {
             return res.status(400).json({ message: 'Note invalide (1-5)' });
         }
@@ -39,9 +39,9 @@ router.post('/add', verifyToken, async (req, res) => {
         // Mettre à jour la moyenne du professionnel
         await updateProfessionalRating(professionalId);
 
-        res.status(201).json({ 
+        res.status(201).json({
             message: 'Avis ajouté avec succès',
-            reviewId: result.insertedId 
+            reviewId: result.insertedId
         });
     } catch (error) {
         console.error('Error adding review:', error);
@@ -153,7 +153,7 @@ router.put('/update/:id', verifyToken, async (req, res) => {
         const reviews = database.collection('reviews');
 
         // Vérifier que l'avis appartient au client
-        const review = await reviews.findOne({ 
+        const review = await reviews.findOne({
             _id: new ObjectId(req.params.id),
             clientId: new ObjectId(req.userId)
         });
@@ -187,7 +187,7 @@ router.delete('/delete/:id', verifyToken, async (req, res) => {
         const database = await connectDB();
         const reviews = database.collection('reviews');
 
-        const review = await reviews.findOne({ 
+        const review = await reviews.findOne({
             _id: new ObjectId(req.params.id),
             clientId: new ObjectId(req.userId)
         });
@@ -229,21 +229,21 @@ async function updateProfessionalRating(professionalId) {
         if (stats.length > 0) {
             await users.updateOne(
                 { _id: new ObjectId(professionalId) },
-                { 
-                    $set: { 
+                {
+                    $set: {
                         averageRating: Math.round(stats[0].averageRating * 10) / 10,
                         totalReviews: stats[0].totalReviews
-                    } 
+                    }
                 }
             );
         } else {
             await users.updateOne(
                 { _id: new ObjectId(professionalId) },
-                { 
-                    $set: { 
+                {
+                    $set: {
                         averageRating: 0,
                         totalReviews: 0
-                    } 
+                    }
                 }
             );
         }

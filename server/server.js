@@ -9,8 +9,10 @@ import serviceRouter from "./routes/services.js";
 import uploadRouter from "./routes/uploads.js";
 import bookingRouter from "./routes/bookings.js";
 import reviewRouter from "./routes/reviews.js";
-import availabilityRouter from "./routes/availability.js"; // Added availabilityRouter
-import adminRouter from "./routes/admin.js"; // Added adminRouter
+import availabilityRouter from "./routes/availability.js";
+import adminRouter from "./routes/admin.js";
+import professionalRouter from "./routes/professional.js";
+import productRouter from "./routes/products.js";
 dotenv.config({ path: ".env" });
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,14 +29,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve static files from uploads directory
-app.use("/api/records", router); // Register records routes
-app.use("/api/services", serviceRouter); // Register services routes
-app.use("/api/bookings", bookingRouter); // Register bookings routes
-app.use("/api/reviews", reviewRouter); // Register reviews routes
-app.use("/api/availability", availabilityRouter); // Register availability routes
-app.use("/api/uploads", uploadRouter); // Register uploads routes
-app.use("/api/admin", adminRouter); // Register admin routes
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/api/records", router);
+app.use("/api/events", eventRouter);
+app.use("/api/services", serviceRouter);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/reviews", reviewRouter);
+app.use("/api/availability", availabilityRouter);
+app.use("/api/uploads", uploadRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/professionals", professionalRouter);
+app.use("/api/products", productRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

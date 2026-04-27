@@ -14,17 +14,14 @@ function BookingsPage() {
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
-        if (!storedUser) {
+        const storedToken = localStorage.getItem('token');
+        if (!storedUser || !storedToken) {
             navigate('/login');
             return;
         }
 
         const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser); // Set user state
-        if (!parsedUser._id && !parsedUser.id) {
-            navigate('/login');
-            return;
-        }
+        setUser(parsedUser);
 
         loadBookings();
         if (!parsedUser.isClient) {
@@ -110,7 +107,7 @@ function BookingsPage() {
         ? bookings
         : bookings.filter(b => b.status === filterStatus);
 
-    if (loading) {
+    if (loading || !user) {
         return <div className="text-center p-5">{t('loading')}</div>;
     }
 
@@ -196,13 +193,19 @@ function BookingsPage() {
 
                                 <div className="booking-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                     {!user.isClient && booking.status === 'pending' && (
-                                        <button className="btn btn-primary btn-sm" onClick={() => handleStatusUpdate(booking._id, 'confirmed')}>{t('action_confirm')}</button>
+                                        <button className="btn btn-primary btn-sm" onClick={() => {
+                                            if (window.confirm(t('confirm_accept_booking') || 'Confirmer ce rendez-vous ?')) handleStatusUpdate(booking._id, 'confirmed');
+                                        }}>{t('action_confirm')}</button>
                                     )}
                                     {!user.isClient && booking.status === 'confirmed' && (
-                                        <button className="btn btn-primary btn-sm" onClick={() => handleStatusUpdate(booking._id, 'completed')}>{t('action_complete')}</button>
+                                        <button className="btn btn-primary btn-sm" onClick={() => {
+                                            if (window.confirm(t('confirm_complete_booking') || 'Marquer ce rendez-vous comme terminé ?')) handleStatusUpdate(booking._id, 'completed');
+                                        }}>{t('action_complete')}</button>
                                     )}
                                     {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                                        <button className="btn btn-danger btn-sm" onClick={() => handleStatusUpdate(booking._id, 'cancelled')}>{t('action_cancel')}</button>
+                                        <button className="btn btn-danger btn-sm" onClick={() => {
+                                            if (window.confirm(t('confirm_cancel_booking') || 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) handleStatusUpdate(booking._id, 'cancelled');
+                                        }}>{t('action_cancel')}</button>
                                     )}
                                     {!user.isClient && (
                                         <button className="btn btn-outline btn-sm" onClick={() => handleDelete(booking._id)}>{t('action_delete')}</button>

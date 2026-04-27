@@ -3,6 +3,7 @@ import connectDB from '../db/connection.js';
 import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { generateToken, verifyToken } from "../middleware/auth.js";
+import { sendEmail } from "../utils/sendEmail.js";
 
 const router = express.Router();
 
@@ -25,7 +26,10 @@ router.post('/register', async (req, res) => {
     const db = await connectDB();
     const users = db.collection('users');
 
-    // Check if email already exists
+    // Clean up any previous unverified registration attempts for this email
+    await users.deleteMany({ email: email, isVerified: false });
+
+    // Check if email already exists (and is a verified account)
     const existingUser = await users.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ emailUsed: true });
@@ -48,6 +52,8 @@ router.post('/register', async (req, res) => {
 
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+    const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
     const newUser = {
       prenom,
@@ -70,27 +76,33 @@ router.post('/register', async (req, res) => {
       longitude: null,
       averageRating: 0,
       totalReviews: 0,
+      isVerified: false,
+      verificationCode,
+      verificationCodeExpires,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
     const result = await users.insertOne(newUser);
 
-    // Generate JWT
-    const token = generateToken(result.insertedId);
+    // Send Verification Email (Async)
+    const emailSubject = isClient ? 'Code de vérification OpenGlow' : 'Code de vérification OpenGlow PRO';
+    const emailHtml = `<h1>Bonjour ${prenom},</h1>
+      <p>Merci de vous être inscrit sur OpenGlow.</p>
+      <p>Votre code de vérification est : <b><span style="font-size:24px; color:#1a5c6b;">${verificationCode}</span></b></p>
+      <br><p>Ce code expire dans 15 minutes.</p>
+      <br><p>L'équipe OpenGlow</p>`;
 
-    res.status(201).json({
-      user: {
-        id: result.insertedId,
-        prenom,
-        nom,
-        email,
-        isClient,
-        isAdmin: false, // Default to false
-        companyName,
-        profilePhoto: null
-      },
-      token
+    sendEmail({
+      email: email,
+      subject: emailSubject,
+      html: emailHtml
+    });
+
+    res.status(200).json({
+      message: "Verification code sent",
+      requiresVerification: true,
+      email: email
     });
   } catch (error) {
     console.log(error);
@@ -98,6 +110,53 @@ router.post('/register', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 
+});
+
+// Verify Email route
+router.post('/verify-email', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    if (!email || !code) return res.status(400).json({ error: 'Email and code are required' });
+
+    const db = await connectDB();
+    const users = db.collection('users');
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'User not found' });
+    
+    if (user.isVerified) return res.status(400).json({ error: 'Account already verified' });
+
+    if (user.verificationCode !== code) return res.status(400).json({ error: 'Invalid verification code' });
+    if (user.verificationCodeExpires < new Date()) return res.status(400).json({ error: 'Verification code expired' });
+
+    // Mark as verified
+    await users.updateOne(
+      { _id: user._id },
+      { 
+        $set: { isVerified: true },
+        $unset: { verificationCode: "", verificationCodeExpires: "" }
+      }
+    );
+
+    const token = generateToken(user._id);
+
+    res.json({
+      user: {
+        id: user._id,
+        prenom: user.prenom,
+        nom: user.nom,
+        email: user.email,
+        isClient: user.isClient,
+        isAdmin: user.isAdmin || false,
+        companyName: user.companyName,
+        profilePhoto: user.profilePhoto,
+        salonPhotos: user.salonPhotos
+      },
+      token
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Login route
@@ -120,6 +179,10 @@ router.post('/login', async (req, res) => {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    if (user.isVerified === false) {
+      return res.status(403).json({ requiresVerification: true, error: 'Veuillez vérifier votre email avant de vous connecter', email: user.email });
     }
 
     const token = generateToken(user._id);
