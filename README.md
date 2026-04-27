@@ -86,18 +86,6 @@ npm run dev
 
 Le serveur de développement démarrera généralement sur `http://localhost:5173`.
 
-## 🤝 Contribuer
-
-OpenGlow est un projet open-source. Nous accueillons les contributions de toute nature :
-- Signalement de bugs
-- Suggestions de nouvelles fonctionnalités
-- Améliorations de code
-- Traductions
-
-## 📄 Licence
-
-Ce projet est distribué sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
-
 ## 📧 Support
 
 Pour toute question ou problème, veuillez ouvrir une issue sur le dépôt GitHub.
