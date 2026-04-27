@@ -32,7 +32,7 @@ function BookingsPage() {
     const loadBookings = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/api/bookings/my-bookings', {
+            const response = await fetch(window.API_URL + '/bookings/my-bookings', {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
 
@@ -50,7 +50,7 @@ function BookingsPage() {
     const loadStats = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/api/bookings/stats', {
+            const response = await fetch(window.API_URL + '/bookings/stats', {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
 
@@ -66,7 +66,7 @@ function BookingsPage() {
     const handleStatusUpdate = async (bookingId, newStatus) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/bookings/update-status/${bookingId}`, {
+            const response = await fetch(`${window.API_URL}/bookings/update-status/${bookingId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -89,7 +89,7 @@ function BookingsPage() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/bookings/delete/${bookingId}`, {
+            const response = await fetch(`${window.API_URL}/bookings/delete/${bookingId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` },
             });

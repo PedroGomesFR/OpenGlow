@@ -25,7 +25,7 @@ function RecherchePage() {
 
     const loadProfessionals = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/records/professionals');
+            const response = await fetch(window.API_URL + '/records/professionals');
             if (response.ok) {
                 const data = await response.json();
                 setProfessionals(data);
@@ -117,7 +117,7 @@ function RecherchePage() {
                             <div key={pro._id} className="professional-card" onClick={() => viewProfile(pro._id)}>
                                 {pro.profilePhoto ? (
                                     <img
-                                        src={`http://localhost:5001${pro.profilePhoto}`}
+                                        src={`${window.BASE_URL}${pro.profilePhoto}`}
                                         alt={pro.companyName}
                                         className="card-image"
                                     />

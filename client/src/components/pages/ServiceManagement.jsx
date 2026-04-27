@@ -35,7 +35,7 @@ function ServiceManagement({ user }) {
             const token = localStorage.getItem('token');
             if (!token) return; // Stop if no token
 
-            const response = await fetch('http://localhost:5001/api/services/my-services', {
+            const response = await fetch(window.API_URL + '/services/my-services', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -49,7 +49,7 @@ function ServiceManagement({ user }) {
 
     const loadCategories = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/services/categories');
+            const response = await fetch(window.API_URL + '/services/categories');
             if (response.ok) {
                 const data = await response.json();
                 setCategories(data);
@@ -70,8 +70,8 @@ function ServiceManagement({ user }) {
             }
 
             const url = editingService
-                ? `http://localhost:5001/api/services/update/${editingService._id}`
-                : 'http://localhost:5001/api/services/add';
+                ? `${window.API_URL}/services/update/${editingService._id}`
+                : window.API_URL + '/services/add';
 
             const response = await fetch(url, {
                 method: editingService ? 'PUT' : 'POST',
@@ -110,7 +110,7 @@ function ServiceManagement({ user }) {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/services/delete/${serviceId}`, {
+            const response = await fetch(`${window.API_URL}/services/delete/${serviceId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -124,7 +124,7 @@ function ServiceManagement({ user }) {
     const handleToggle = async (serviceId, currentStatus) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/services/update/${serviceId}`, {
+            const response = await fetch(`${window.API_URL}/services/update/${serviceId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

@@ -32,7 +32,7 @@ function AdminPage() {
     const fetchUsers = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/api/admin/users', {
+            const response = await fetch(window.API_URL + '/admin/users', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -56,7 +56,7 @@ function AdminPage() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/admin/users/${userId}`, {
+            const response = await fetch(`${window.API_URL}/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

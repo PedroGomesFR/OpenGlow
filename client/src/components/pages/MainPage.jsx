@@ -18,7 +18,7 @@ function MainPage() {
 
   const loadFeaturedPros = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/professionals/feature');
+      const response = await fetch(window.API_URL + '/professionals/feature');
       if (response.ok) {
         const data = await response.json();
         setFeaturedPros(data);

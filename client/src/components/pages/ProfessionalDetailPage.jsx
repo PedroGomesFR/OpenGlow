@@ -32,13 +32,13 @@ function ProfessionalDetailPage() {
 
     const loadProfessionalData = async () => {
         try {
-            const proResponse = await fetch(`http://localhost:5001/api/records/professional/${id}`);
+            const proResponse = await fetch(`${window.API_URL}/records/professional/${id}`);
             if (proResponse.ok) {
                 const proData = await proResponse.json();
                 setProfessional(proData);
             }
 
-            const servicesResponse = await fetch(`http://localhost:5001/api/services/professional/${id}`);
+            const servicesResponse = await fetch(`${window.API_URL}/services/professional/${id}`);
             if (servicesResponse.ok) {
                 const servicesData = await servicesResponse.json();
                 setServices(servicesData.filter(s => s.isActive));
@@ -53,7 +53,7 @@ function ProfessionalDetailPage() {
     const loadSlots = async (date) => {
         setLoadingSlots(true);
         try {
-            const response = await fetch(`http://localhost:5001/api/availability/slots/${id}?date=${date}`);
+            const response = await fetch(`${window.API_URL}/availability/slots/${id}?date=${date}`);
             if (response.ok) {
                 const data = await response.json();
                 setSlots(data);
@@ -85,7 +85,7 @@ function ProfessionalDetailPage() {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/api/bookings/create', {
+            const response = await fetch(window.API_URL + '/bookings/create', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -221,7 +221,7 @@ function ProfessionalDetailPage() {
                                 <div className="grid grid-3">
                                     {professional.salonPhotos.map((photo, i) => (
                                         <div key={i} style={{ aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden' }}>
-                                            <img src={`http://localhost:5001${photo}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img src={`${window.BASE_URL}${photo}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                         </div>
                                     ))}
                                 </div>

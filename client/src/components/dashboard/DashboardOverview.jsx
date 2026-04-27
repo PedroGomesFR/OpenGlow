@@ -20,7 +20,7 @@ function DashboardOverview({ user, setActiveTab }) {
         const fetchStats = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:5001/api/bookings/stats', {
+                const response = await fetch(window.API_URL + '/bookings/stats', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (response.ok) {

@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 // Register route
 router.post('/register', async (req, res) => {
   try {
-    const { prenom, nom, dateDeNaissance, email, password, profession, companyName, siret, type } = req.body;
+    const { prenom, nom, dateDeNaissance, email, password, profession, companyName, siret, type, address, latitude, longitude } = req.body;
 
     const db = await connectDB();
     const users = db.collection('users');
@@ -42,8 +42,8 @@ router.post('/register', async (req, res) => {
       }
       isClient = true;
     } else if (type == 'professional') {
-      if (!prenom || !nom || !dateDeNaissance || !email || !password || !profession || !companyName || !siret) {
-        return res.status(400).json({ error: 'All fields are required for professionals' });
+      if (!prenom || !nom || !dateDeNaissance || !email || !password || !profession || !companyName || !siret || !address || latitude === undefined || longitude === undefined) {
+        return res.status(400).json({ error: 'All fields including valid address are required for professionals' });
       }
       isClient = false;
     } else {
@@ -68,12 +68,12 @@ router.post('/register', async (req, res) => {
       profilePhoto: null,
       salonPhotos: [],
       description: null,
-      address: null,
+      address: address || null,
       phone: null,
       openingHours: null,
-      location: null,
-      latitude: null,
-      longitude: null,
+      location: latitude && longitude ? { type: 'Point', coordinates: [parseFloat(longitude), parseFloat(latitude)] } : null,
+      latitude: latitude ? parseFloat(latitude) : null,
+      longitude: longitude ? parseFloat(longitude) : null,
       averageRating: 0,
       totalReviews: 0,
       isVerified: false,

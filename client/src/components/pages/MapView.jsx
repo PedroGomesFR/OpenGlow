@@ -96,7 +96,7 @@ function MapView() {
 
     const loadProfessionals = async () => {
         try {
-            const response = await fetch('http://localhost:5001/api/records/professionals');
+            const response = await fetch(window.API_URL + '/records/professionals');
             if (response.ok) {
                 const data = await response.json();
                 // Filter pros with location
@@ -198,7 +198,7 @@ function MapView() {
                             >
                                 <div className="pro-photo">
                                     {pro.profilePhoto ? (
-                                        <img src={`http://localhost:5001${pro.profilePhoto}`} alt={pro.companyName} />
+                                        <img src={`${window.BASE_URL}${pro.profilePhoto}`} alt={pro.companyName} />
                                     ) : (
                                         <div className="photo-placeholder" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', background: '#f5f5f7' }}>
                                             <IoBusiness size={24} color="#86868b" />
@@ -340,7 +340,7 @@ function MapView() {
                             width: '60px', height: '60px', borderRadius: '50%', background: '#eee', overflow: 'hidden', flexShrink: 0
                         }}>
                             {selectedPro.profilePhoto ? (
-                                <img src={`http://localhost:5001${selectedPro.profilePhoto}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={`${window.BASE_URL}${selectedPro.profilePhoto}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
                                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#e5e5ea' }}>
                                     <IoBusiness size={24} color="#86868b" />

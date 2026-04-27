@@ -24,7 +24,7 @@ function ProfilePage({ user, setUser }) {
         formData.append('profilePhoto', files[0]);
 
         try {
-            const response = await fetch('http://localhost:5001/api/uploads/profile-photo', {
+            const response = await fetch(window.API_URL + '/uploads/profile-photo', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData,
@@ -71,7 +71,7 @@ function ProfilePage({ user, setUser }) {
                     <div style={{ position: 'relative', display: 'inline-block', marginBottom: '20px' }}>
                         {user?.profilePhoto ? (
                             <img
-                                src={`http://localhost:5001${user.profilePhoto}`}
+                                src={`${window.BASE_URL}${user.profilePhoto}`}
                                 alt="Profile"
                                 style={{
                                     width: '120px',

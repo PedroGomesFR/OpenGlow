@@ -46,7 +46,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
 
     const loadProfessional = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/api/records/professional/${professionalId}`);
+            const response = await fetch(`${window.API_URL}/records/professional/${professionalId}`);
             if (response.ok) {
                 const data = await response.json();
                 setProfessional(data);
@@ -58,7 +58,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
 
     const loadReviews = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/api/reviews/professional/${professionalId}`);
+            const response = await fetch(`${window.API_URL}/reviews/professional/${professionalId}`);
             if (response.ok) {
                 const data = await response.json();
                 setReviews(data);
@@ -70,7 +70,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
 
     const loadStats = async () => {
         try {
-            const response = await fetch(`http://localhost:5001/api/reviews/stats/${professionalId}`);
+            const response = await fetch(`${window.API_URL}/reviews/stats/${professionalId}`);
             if (response.ok) {
                 const data = await response.json();
                 setStats(data);
@@ -83,7 +83,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
     const loadServices = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/services/professional/${professionalId}`, {
+            const response = await fetch(`${window.API_URL}/services/professional/${professionalId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (response.ok) {
@@ -107,8 +107,8 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         try {
             const token = localStorage.getItem('token');
             const url = editingReview
-                ? `http://localhost:5001/api/reviews/update/${editingReview._id}`
-                : 'http://localhost:5001/api/reviews/add';
+                ? `${window.API_URL}/reviews/update/${editingReview._id}`
+                : window.API_URL + '/reviews/add';
 
             const response = await fetch(url, {
                 method: editingReview ? 'PUT' : 'POST',
@@ -140,7 +140,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5001/api/reviews/delete/${reviewId}`, {
+            const response = await fetch(`${window.API_URL}/reviews/delete/${reviewId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -220,7 +220,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                 <div className="professional-header card">
                     <div className="professional-photo">
                         {professional.profilePhoto ? (
-                            <img src={`http://localhost:5001${professional.profilePhoto}`} alt={professional.companyName} />
+                            <img src={`${window.BASE_URL}${professional.profilePhoto}`} alt={professional.companyName} />
                         ) : (
                             <div className="photo-placeholder">
                                 <IoBusiness size={40} color="#86868b" />
@@ -284,7 +284,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                                         <div className="reviewer-info">
                                             <div className="reviewer-photo">
                                                 {review.client?.profilePhoto ? (
-                                                    <img src={`http://localhost:5001${review.client.profilePhoto}`} alt={review.client.prenom} />
+                                                    <img src={`${window.BASE_URL}${review.client.profilePhoto}`} alt={review.client.prenom} />
                                                 ) : (
                                                     <div className="photo-placeholder">
                                                         <IoPerson color="#86868b" />

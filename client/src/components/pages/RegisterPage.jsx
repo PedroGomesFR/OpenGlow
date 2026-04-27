@@ -1,6 +1,6 @@
 import '../css/AppleDesign.css';
 import Input from "../common/Input";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 
@@ -9,12 +9,51 @@ function RegisterPage({ setUser }) {
   const [typePerson, setTypePerson] = useState('Client');
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    prenom: '', nom: '', dateDeNaissance: '', email: '', password: '', profession: '', companyName: '', siret: '',
+    prenom: '', nom: '', dateDeNaissance: '', email: '', password: '', profession: '', companyName: '', siret: '', address: '', latitude: '', longitude: ''
   });
   const [errorMessages, setErrorMessages] = useState({});
   const [verificationMode, setVerificationMode] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
+
+  const [addressQuery, setAddressQuery] = useState('');
+  const [addressSuggestions, setAddressSuggestions] = useState([]);
+  const [isSearchingAddress, setIsSearchingAddress] = useState(false);
+  const [showAddressSuggestions, setShowAddressSuggestions] = useState(false);
+
+  useEffect(() => {
+    if (!addressQuery || addressQuery.length < 3) {
+      setAddressSuggestions([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearchingAddress(true);
+      try {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}&format=json&addressdetails=1&limit=5`);
+        const data = await response.json();
+        setAddressSuggestions(data);
+        setShowAddressSuggestions(true);
+      } catch (error) {
+        console.error("Error fetching addresses", error);
+      } finally {
+        setIsSearchingAddress(false);
+      }
+    }, 600); // 600ms debounce to respect nominatim rate limits
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [addressQuery]);
+
+  const handleAddressSelect = (suggestion) => {
+    setAddressQuery(suggestion.display_name);
+    setFormData({
+      ...formData,
+      address: suggestion.display_name,
+      latitude: suggestion.lat,
+      longitude: suggestion.lon
+    });
+    setShowAddressSuggestions(false);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -25,8 +64,15 @@ function RegisterPage({ setUser }) {
     e.preventDefault();
     const type = typePerson === 'Client' ? 'client' : 'professional';
 
+    if (type === 'professional') {
+      if (!formData.address || !formData.latitude || !formData.longitude) {
+        alert("Veuillez sélectionner une adresse valide dans la liste proposée.");
+        return;
+      }
+    }
+
     try {
-      const response = await fetch('http://localhost:5001/api/records/register', {
+      const response = await fetch(window.API_URL + '/records/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, type })
@@ -56,7 +102,7 @@ function RegisterPage({ setUser }) {
   const handleVerify = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5001/api/records/verify-email', {
+      const response = await fetch(window.API_URL + '/records/verify-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: registeredEmail, code: verificationCode })
@@ -160,6 +206,46 @@ function RegisterPage({ setUser }) {
                   <div className="form-group" style={{ marginBottom: '15px' }}>
                     <label className="form-label">{t('siret_label')}</label>
                     <input className="form-input" type="text" name="siret" required onChange={handleChange} value={formData.siret} />
+                  </div>
+
+                  <div className="form-group" style={{ marginBottom: '15px', position: 'relative' }}>
+                    <label className="form-label">Adresse de l'établissement</label>
+                    <input 
+                      className="form-input" 
+                      type="text" 
+                      placeholder="Saisissez une adresse complète..."
+                      value={addressQuery}
+                      onChange={(e) => {
+                         setAddressQuery(e.target.value);
+                         if (formData.address !== e.target.value) {
+                             setFormData({ ...formData, address: '', latitude: '', longitude: '' });
+                         }
+                      }}
+                      onFocus={() => { if(addressSuggestions.length > 0) setShowAddressSuggestions(true); }}
+                      required 
+                    />
+                    {isSearchingAddress && <div style={{position: 'absolute', right: '10px', top: '35px', fontSize: '12px', color: '#888'}}>Recherche...</div>}
+                    
+                    {showAddressSuggestions && addressSuggestions.length > 0 && (
+                      <ul style={{
+                        position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 1000,
+                        background: 'white', border: '1px solid #ddd', borderRadius: '8px',
+                        listStyle: 'none', padding: 0, margin: '5px 0 0 0',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)', maxHeight: '200px', overflowY: 'auto'
+                      }}>
+                        {addressSuggestions.map((sug, i) => (
+                           <li 
+                             key={i} 
+                             onClick={() => handleAddressSelect(sug)}
+                             style={{ padding: '10px 15px', borderBottom: '1px solid #eee', cursor: 'pointer', fontSize: '13px', textAlign: 'left' }}
+                             onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f5f5f7'}
+                             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
+                           >
+                             {sug.display_name}
+                           </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 </>
               )}

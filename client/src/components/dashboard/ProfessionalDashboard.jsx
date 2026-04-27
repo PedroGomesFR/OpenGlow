@@ -74,7 +74,7 @@ function ProfessionalDashboard({ user, setUser }) {
                 longitude: lon
             };
 
-            const response = await fetch('http://localhost:5001/api/records/update-profile', {
+            const response = await fetch(window.API_URL + '/records/update-profile', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ function ProfessionalDashboard({ user, setUser }) {
         if (type === 'profile') {
             formData.append('profilePhoto', files[0]);
             try {
-                const response = await fetch('http://localhost:5001/api/uploads/profile-photo', {
+                const response = await fetch(window.API_URL + '/uploads/profile-photo', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData,
@@ -130,7 +130,7 @@ function ProfessionalDashboard({ user, setUser }) {
         } else if (type === 'salon') {
             for (let file of files) { formData.append('salonPhotos', file); }
             try {
-                const response = await fetch('http://localhost:5001/api/uploads/salon-photos', {
+                const response = await fetch(window.API_URL + '/uploads/salon-photos', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${token}` },
                     body: formData,
@@ -175,7 +175,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                     <div style={{ position: 'relative', flexShrink: 0 }}>
                                         {user?.profilePhoto ? (
                                             <img
-                                                src={`http://localhost:5001${user.profilePhoto}`}
+                                                src={`${window.BASE_URL}${user.profilePhoto}`}
                                                 alt="Profile"
                                                 style={{
                                                     width: '120px',
@@ -256,7 +256,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                                     position: 'relative'
                                                 }}>
                                                     <img 
-                                                        src={`http://localhost:5001${photo}`} 
+                                                        src={`${window.BASE_URL}${photo}`} 
                                                         alt={`Salon gallery ${index + 1}`} 
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                     />

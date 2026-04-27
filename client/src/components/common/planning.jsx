@@ -38,7 +38,7 @@ function Planning() {
   const fetchData = async () => {
     try {
       // Fetch bookings instead of generic events for now
-      const response = await fetch(`http://localhost:5001/api/bookings/my-bookings`, {
+      const response = await fetch(`${window.API_URL}/bookings/my-bookings`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (response.ok) {
@@ -64,7 +64,7 @@ function Planning() {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch(`http://localhost:5001/api/availability/settings/${userId}`);
+      const response = await fetch(`${window.API_URL}/availability/settings/${userId}`);
       if (response.ok) {
         const data = await response.json();
         if (data && data.workingDays) {
@@ -81,7 +81,7 @@ function Planning() {
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5001/api/availability/settings', {
+      const response = await fetch(window.API_URL + '/availability/settings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
