@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { IoMegaphone, IoAdd, IoTrash, IoPencil, IoCalendar, IoCheckmarkCircle, IoCloseCircle } from 'react-icons/io5';
+import { IoMegaphone, IoAdd, IoTrash, IoPencil, IoCalendar, IoCheckmarkCircle, IoCloseCircle, IoCut } from 'react-icons/io5';
 
 function Announcements({ user }) {
     const [announcements, setAnnouncements] = useState([]);
