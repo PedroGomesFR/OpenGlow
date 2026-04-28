@@ -7,9 +7,12 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 const router = express.Router();
 
-// ─── Helper: verify reCAPTCHA token ─────────────────────────────────────────
-const verifyCaptcha = async (token) => {
-  // In development skip CAPTCHA if no secret is set
+// ─── Helper: verify reCAPTCHA token ──────────────────────────────────────────
+const verifyCaptcha = async (token, req) => {
+  // Skip in local development (localhost)
+  const host = req?.headers?.host || '';
+  if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) return true;
+
   const secret = process.env.RECAPTCHA_SECRET_KEY;
   if (!secret) return true;
 
@@ -42,7 +45,7 @@ router.post('/register', async (req, res) => {
     const { prenom, nom, dateDeNaissance, email, password, profession, companyName, siret, type, address, latitude, longitude, captchaToken } = req.body;
 
     // Verify CAPTCHA
-    const captchaOk = await verifyCaptcha(captchaToken);
+    const captchaOk = await verifyCaptcha(captchaToken, req);
     if (!captchaOk) {
       return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
     }
@@ -196,7 +199,7 @@ router.post('/login', async (req, res) => {
     const { email, password, captchaToken } = req.body;
 
     // Verify CAPTCHA
-    const captchaOk = await verifyCaptcha(captchaToken);
+    const captchaOk = await verifyCaptcha(captchaToken, req);
     if (!captchaOk) {
       return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
     }
