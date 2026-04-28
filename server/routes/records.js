@@ -150,7 +150,14 @@ router.post('/verify-email', async (req, res) => {
         isAdmin: user.isAdmin || false,
         companyName: user.companyName,
         profilePhoto: user.profilePhoto,
-        salonPhotos: user.salonPhotos
+        salonPhotos: user.salonPhotos,
+        address: user.address,
+        description: user.description,
+        phone: user.phone,
+        openingHours: user.openingHours,
+        profession: user.profession,
+        latitude: user.latitude,
+        longitude: user.longitude
       },
       token
     });
@@ -197,7 +204,14 @@ router.post('/login', async (req, res) => {
         isAdmin: user.isAdmin || false, // Return isAdmin status
         companyName: user.companyName,
         profilePhoto: user.profilePhoto,
-        salonPhotos: user.salonPhotos
+        salonPhotos: user.salonPhotos,
+        address: user.address,
+        description: user.description,
+        phone: user.phone,
+        openingHours: user.openingHours,
+        profession: user.profession,
+        latitude: user.latitude,
+        longitude: user.longitude
       },
       token
     });

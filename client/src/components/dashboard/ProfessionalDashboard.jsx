@@ -23,7 +23,7 @@ import BookingsPage from '../pages/BookingsPage';
 
 function ProfessionalDashboard({ user, setUser }) {
     const navigate = useNavigate();
-    const [activeTab, setActiveTab] = useState('overview');
+    const [activeTab, setActiveTab] = useState('planning');
     const [profileData, setProfileData] = useState({
         description: user?.description || '',
         address: user?.address || '',
@@ -31,6 +31,19 @@ function ProfessionalDashboard({ user, setUser }) {
         openingHours: user?.openingHours || '',
         companyName: user?.companyName || '',
     });
+    
+    // Sync form data with user prop when it changes
+    useEffect(() => {
+        if (user) {
+            setProfileData({
+                description: user.description || '',
+                address: user.address || '',
+                phone: user.phone || '',
+                openingHours: user.openingHours || '',
+                companyName: user.companyName || '',
+            });
+        }
+    }, [user]);
 
     const menuItems = [
         { id: 'overview', label: 'Vue d\'ensemble', icon: <IoGrid size={18} /> },

@@ -100,7 +100,7 @@ function DashboardOverview({ user, setActiveTab }) {
                     <h3 style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'white' }}>
                         <IoHelpCircle size={24} /> Besoin d'aide ?
                     </h3>
-                    <p style={{ opacity: 0.9, fontSize: '14px', margin: '15px 0' }}>Consultez notre guide dédié pour améliorer l'attractivité de votre page et mieux gérer.</p>
+                    <p style={{ opacity: 0.9, fontSize: '14px', margin: '15px 0', color: 'white' }}>Consultez notre guide dédié pour améliorer l'attractivité de votre page et mieux gérer.</p>
                     <button onClick={() => navigate('/help')} className="btn" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         Voir le guide <IoArrowForward />
                     </button>

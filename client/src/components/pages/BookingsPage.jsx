@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { IoCalendar, IoMail, IoCall } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 
 function BookingsPage() {
@@ -116,7 +117,7 @@ function BookingsPage() {
             <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <div className="bookings-header card" style={{ marginBottom: '20px' }}>
                     <div>
-                        <h1>📅 {user.isClient ? t('bookings_title_client') : t('bookings_title_pro')}</h1>
+                        <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}><IoCalendar color="var(--primary)" /> {user.isClient ? t('bookings_title_client') : t('bookings_title_pro')}</h1>
                         <p className="text-secondary">{user.isClient ? t('bookings_subtitle_client') : t('bookings_subtitle_pro')}</p>
                     </div>
                 </div>
@@ -162,9 +163,9 @@ function BookingsPage() {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '15px' }}>
                                     <div>
                                         <h3 style={{ margin: 0 }}>{user.isClient ? booking.professionalName : booking.clientName}</h3>
-                                        <div className="text-secondary" style={{ fontSize: '14px' }}>
-                                            {booking.clientEmail && <span>📧 {booking.clientEmail} </span>}
-                                            {booking.clientPhone && <span>📞 {booking.clientPhone}</span>}
+                                        <div className="text-secondary" style={{ fontSize: '14px', display: 'flex', gap: '15px', alignItems: 'center', flexWrap: 'wrap', marginTop: '5px' }}>
+                                            {booking.clientEmail && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoMail /> {booking.clientEmail} </span>}
+                                            {booking.clientPhone && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoCall /> {booking.clientPhone}</span>}
                                         </div>
                                     </div>
                                     <span className={`badge ${booking.status === 'confirmed' || booking.status === 'completed' ? 'badge-success' :
@@ -215,7 +216,7 @@ function BookingsPage() {
                         ))
                     ) : (
                         <div className="card text-center" style={{ padding: '50px 20px' }}>
-                            <div style={{ fontSize: '48px', marginBottom: '20px' }}>📅</div>
+                            <div style={{ fontSize: '48px', marginBottom: '20px', color: 'var(--text-tertiary)' }}><IoCalendar /></div>
                             <h3>{t('no_bookings_title')}</h3>
                             <p className="text-secondary">{t('no_bookings_desc')}</p>
                         </div>

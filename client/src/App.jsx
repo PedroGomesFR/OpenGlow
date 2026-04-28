@@ -52,9 +52,9 @@ function App() {
         <div className="container" style={{ paddingTop: '80px' }}>
           <Routes>
 
-            <Route path="/" element={<MainPage />} />
+            <Route path="/" element={user && user.isClient === false ? <Navigate to="/profile" /> : <MainPage />} />
 
-            <Route path="/home" element={<MainPage />} />
+            <Route path="/home" element={user && user.isClient === false ? <Navigate to="/profile" /> : <MainPage />} />
 
             <Route path="/login" element={<LoginPage user={user} setUser={setUser} />} />
 

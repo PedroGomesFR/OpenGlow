@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { useNavigate } from "react-router-dom";
+import { IoCalendar, IoSettings, IoSave, IoClipboardOutline } from 'react-icons/io5';
 import '../css/AppleDesign.css'; // Ensure this path is correct based on file structure
 
 function Planning() {
@@ -133,7 +134,7 @@ function Planning() {
         {/* Header with Tabs */}
         <div className="header-card card" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1>📋 Mon Planning</h1>
+            <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}><IoClipboardOutline color="var(--primary)" /> Mon Planning</h1>
             <p className="text-secondary">Gérez votre emploi du temps et vos disponibilités</p>
           </div>
           <div className="tabs" style={{ display: 'flex', gap: '10px' }}>
@@ -141,13 +142,13 @@ function Planning() {
               className={`btn ${activeTab === 'agenda' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('agenda')}
             >
-              📅 Agenda
+              <IoCalendar /> Agenda
             </button>
             <button
               className={`btn ${activeTab === 'settings' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('settings')}
             >
-              ⚙️ Disponibilités
+              <IoSettings /> Disponibilités
             </button>
           </div>
         </div>
@@ -212,7 +213,7 @@ function Planning() {
         {/* Settings Tab */}
         {activeTab === 'settings' && (
           <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h2>⚙️ Configuration des Disponibilités</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoSettings color="var(--primary)" /> Configuration des Disponibilités</h2>
             <p className="text-secondary" style={{ marginBottom: '30px' }}>Définissez vos jours et horaires de travail habituels.</p>
 
             <form onSubmit={handleSaveSettings}>
@@ -292,7 +293,7 @@ function Planning() {
               </div>
 
               <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }}>
-                💾 Enregistrer les préférences
+                <IoSave size={20} /> Enregistrer les préférences
               </button>
             </form>
           </div>

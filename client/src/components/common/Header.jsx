@@ -64,8 +64,12 @@ function Header({ user }) {
         {/* Navigation */}
         <nav className="headerNav" style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
           <Link to="/" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('home')}</Link>
-          <Link to="/recherche" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('find_pro')}</Link>
-          <Link to="/map" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('map') || 'Carte'}</Link>
+          {user?.isClient !== false && (
+            <>
+              <Link to="/recherche" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('find_pro')}</Link>
+              <Link to="/map" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('map') || 'Carte'}</Link>
+            </>
+          )}
           {user && (
             <Link to="/bookings" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '4px' }}>
               <IoCalendar size={14} /> {t('my_bookings') || 'Mes RDV'}
