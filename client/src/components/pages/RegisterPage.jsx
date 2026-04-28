@@ -197,7 +197,42 @@ function RegisterPage({ setUser }) {
                 <>
                   <div className="form-group" style={{ marginBottom: '15px' }}>
                     <label className="form-label">{t('profession_label')}</label>
-                    <input className="form-input" type="text" name="profession" required onChange={handleChange} value={formData.profession} />
+                    <select
+                      className="form-input"
+                      name="profession"
+                      required
+                      value={formData.profession}
+                      onChange={handleChange}
+                      style={{ cursor: 'pointer', appearance: 'auto' }}
+                    >
+                      <option value="">-- Sélectionnez votre métier --</option>
+                      <optgroup label="Coiffure & Barbier">
+                        <option value="Coiffeur(se)">Coiffeur(se)</option>
+                        <option value="Barbier">Barbier</option>
+                        <option value="Coloriste">Coloriste</option>
+                        <option value="Coiffeur(se) Afro">Coiffeur(se) Afro</option>
+                      </optgroup>
+                      <optgroup label="Esthétique & Beauté">
+                        <option value="Esthéticien(ne)">Esthéticien(ne)</option>
+                        <option value="Ongleur(se) / Prothésiste ongulaire">Ongleur(se) / Prothésiste ongulaire</option>
+                        <option value="Maquilleur(se)">Maquilleur(se)</option>
+                        <option value="Sourcilier(ère) / Lashiste">Sourcilier(ère) / Lashiste</option>
+                        <option value="Épilateur(trice)">Épilateur(trice)</option>
+                        <option value="Spécialiste Soins du Visage">Spécialiste Soins du Visage</option>
+                      </optgroup>
+                      <optgroup label="Bien-être & Massage">
+                        <option value="Masseur(se) / Massothérapeute">Masseur(se) / Massothérapeute</option>
+                        <option value="Spa Praticien(ne)">Spa Praticien(ne)</option>
+                        <option value="Réflexologue">Réflexologue</option>
+                      </optgroup>
+                      <optgroup label="Corps Art">
+                        <option value="Tatoueur(se)">Tatoueur(se)</option>
+                        <option value="Perceur(se) / Pierceur">Perceur(se) / Pierceur</option>
+                      </optgroup>
+                      <optgroup label="Autre">
+                        <option value="Autre">Autre</option>
+                      </optgroup>
+                    </select>
                   </div>
                   <div className="form-group" style={{ marginBottom: '15px' }}>
                     <label className="form-label">{t('company_label')}</label>

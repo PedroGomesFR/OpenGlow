@@ -4,7 +4,7 @@ import {
     IoCut, IoColorPalette, IoSparkles, IoBody, IoHandLeft, IoBrush,
     IoStar, IoSearch, IoStatsChart, IoCheckmarkCircle, IoCash, IoPricetag,
     IoAdd, IoCreate, IoTrash, IoEye, IoEyeOff, IoTime, IoFolder,
-    IoClose, IoWater, IoLeaf
+    IoClose, IoWater, IoLeaf, IoOptions, IoRefresh
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import '../css/ServiceManagement.css';
@@ -17,6 +17,7 @@ function ServiceManagement({ user }) {
     const [editingService, setEditingService] = useState(null);
     const [filterCategory, setFilterCategory] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
     const [serviceData, setServiceData] = useState({
         name: '',
         description: '',
@@ -235,9 +236,10 @@ function ServiceManagement({ user }) {
                     </div>
                 )}
 
-                {/* Filters */}
-                <div className="filters-section">
-                    <div className="search-bar">
+                {/* Filters toggle bar */}
+                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                    {/* Search always visible */}
+                    <div className="search-bar" style={{ flex: 1, minWidth: '200px' }}>
                         <span className="search-icon"><IoSearch /></span>
                         <input
                             type="text"
@@ -248,24 +250,68 @@ function ServiceManagement({ user }) {
                         />
                     </div>
 
-                    <div className="category-filters">
+                    {/* Filter toggle button */}
+                    <button
+                        onClick={() => setShowFilters(f => !f)}
+                        style={{
+                            display: 'flex', alignItems: 'center', gap: '8px',
+                            padding: '10px 18px', borderRadius: '12px', border: 'none',
+                            background: showFilters ? 'var(--primary)' : '#F0F0F5',
+                            color: showFilters ? 'white' : 'var(--text-primary)',
+                            fontWeight: '600', fontSize: '14px', cursor: 'pointer',
+                            transition: 'all 0.2s', whiteSpace: 'nowrap'
+                        }}
+                    >
+                        <IoOptions size={18} />
+                        Filtrer
+                        {filterCategory !== 'all' && (
+                            <span style={{
+                                background: showFilters ? 'rgba(255,255,255,0.3)' : 'var(--primary)',
+                                color: 'white', borderRadius: '50%',
+                                width: '20px', height: '20px', fontSize: '11px',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700'
+                            }}>1</span>
+                        )}
+                    </button>
+
+                    {/* Reset filter button - only when active */}
+                    {(filterCategory !== 'all' || searchQuery) && (
                         <button
-                            className={`filter-chip ${filterCategory === 'all' ? 'active' : ''}`}
-                            onClick={() => setFilterCategory('all')}
+                            onClick={() => { setFilterCategory('all'); setSearchQuery(''); }}
+                            style={{
+                                display: 'flex', alignItems: 'center', gap: '6px',
+                                padding: '10px 14px', borderRadius: '12px',
+                                border: '1px solid #ddd', background: 'white',
+                                color: '#888', fontSize: '13px', cursor: 'pointer'
+                            }}
                         >
-                            Toutes
+                            <IoRefresh size={16} /> Réinitialiser
                         </button>
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
-                                onClick={() => setFilterCategory(cat)}
-                            >
-                                {getCategoryIcon(cat)} {cat}
-                            </button>
-                        ))}
-                    </div>
+                    )}
                 </div>
+
+                {/* Filters panel - collapsible */}
+                {showFilters && (
+                    <div className="filters-section" style={{ marginBottom: '20px', animation: 'fadeIn 0.2s ease' }}>
+                        <div className="category-filters">
+                            <button
+                                className={`filter-chip ${filterCategory === 'all' ? 'active' : ''}`}
+                                onClick={() => setFilterCategory('all')}
+                            >
+                                Toutes
+                            </button>
+                            {categories.map(cat => (
+                                <button
+                                    key={cat}
+                                    className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
+                                    onClick={() => { setFilterCategory(cat); }}
+                                >
+                                    {getCategoryIcon(cat)} {cat}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Services List */}
                 {filteredServices.length > 0 ? (
