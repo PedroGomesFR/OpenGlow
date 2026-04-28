@@ -245,23 +245,25 @@ function MainPage() {
                     position: 'relative'
                   }}>
                     {!pro.profilePhoto && <IoBusiness size={64} color="#86868b" />}
-                    <div style={{
-                      position: 'absolute',
-                      top: '16px',
-                      right: '16px',
-                      background: 'rgba(255, 255, 255, 0.9)',
-                      backdropFilter: 'blur(4px)',
-                      padding: '8px 12px',
-                      borderRadius: '20px',
-                      fontSize: '0.875rem',
-                      fontWeight: '600',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                    }}>
-                      <IoStar color="#FFD700" /> {pro.averageRating ? pro.averageRating.toFixed(1) : '5.0'}
-                    </div>
+                    {pro.totalReviews > 0 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '16px',
+                        right: '16px',
+                        background: 'rgba(255, 255, 255, 0.9)',
+                        backdropFilter: 'blur(4px)',
+                        padding: '8px 12px',
+                        borderRadius: '20px',
+                        fontSize: '0.875rem',
+                        fontWeight: '600',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}>
+                        <IoStar color="#FFD700" /> {pro.averageRating.toFixed(1)}
+                      </div>
+                    )}
                   </div>
                   <div style={{ padding: '24px' }}>
                     <div className="badge badge-primary" style={{ marginBottom: '12px' }}>
