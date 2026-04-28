@@ -28,8 +28,6 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use("/api/records", router);
 app.use("/api/events", eventRouter);
 app.use("/api/services", serviceRouter);
