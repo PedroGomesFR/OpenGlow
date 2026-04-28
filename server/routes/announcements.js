@@ -47,7 +47,7 @@ router.get('/my', verifyToken, async (req, res) => {
 router.post('/', verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
-    const { title, description, discountPercent, startDate, endDate, type } = req.body;
+    const { title, description, discountPercent, startDate, endDate, type, serviceId } = req.body;
 
     if (!title || !description) {
       return res.status(400).json({ error: 'Le titre et la description sont requis.' });
@@ -70,6 +70,7 @@ router.post('/', verifyToken, async (req, res) => {
       startDate: startDate ? new Date(startDate) : new Date(),
       endDate: endDate ? new Date(endDate) : null,
       isActive: true,
+      serviceId: serviceId ? new ObjectId(serviceId) : null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -86,7 +87,7 @@ router.put('/:id', verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
     const { id } = req.params;
-    const { title, description, discountPercent, startDate, endDate, type, isActive } = req.body;
+    const { title, description, discountPercent, startDate, endDate, type, isActive, serviceId } = req.body;
 
     const db = await connectDB();
 
@@ -107,6 +108,7 @@ router.put('/:id', verifyToken, async (req, res) => {
     if (startDate !== undefined) updateData.startDate = startDate ? new Date(startDate) : null;
     if (endDate !== undefined) updateData.endDate = endDate ? new Date(endDate) : null;
     if (isActive !== undefined) updateData.isActive = isActive;
+    if (serviceId !== undefined) updateData.serviceId = serviceId ? new ObjectId(serviceId) : null;
 
     await db.collection('announcements').updateOne(
       { _id: new ObjectId(id) },

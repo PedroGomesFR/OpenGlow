@@ -197,6 +197,11 @@ function ProfessionalDetailPage() {
                                                 {ann.discountPercent && <span className="badge badge-primary">-{ann.discountPercent}%</span>}
                                             </div>
                                             <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-secondary)' }}>{ann.description}</p>
+                                            {ann.serviceId && (
+                                                <div style={{ marginTop: '5px', fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '500' }}>
+                                                    Valable sur : {services.find(s => s._id === ann.serviceId)?.name || 'Cette prestation'}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

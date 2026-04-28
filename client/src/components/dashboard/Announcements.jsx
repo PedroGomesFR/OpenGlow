@@ -6,13 +6,15 @@ function Announcements({ user }) {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAnnouncement, setEditingAnnouncement] = useState(null);
+    const [services, setServices] = useState([]);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         discountPercent: '',
         startDate: '',
         endDate: '',
-        type: 'promotion'
+        type: 'promotion',
+        serviceId: ''
     });
 
     const fetchAnnouncements = async () => {
@@ -32,8 +34,22 @@ function Announcements({ user }) {
         }
     };
 
+    const fetchServices = async () => {
+        try {
+            const proId = user._id || user.id;
+            const response = await fetch(`${window.API_URL}/services/professional/${proId}`);
+            if (response.ok) {
+                const data = await response.json();
+                setServices(data.filter(s => s.isActive));
+            }
+        } catch (error) {
+            console.error('Error fetching services:', error);
+        }
+    };
+
     useEffect(() => {
         fetchAnnouncements();
+        fetchServices();
     }, []);
 
     const handleOpenModal = (announcement = null) => {
@@ -45,7 +61,8 @@ function Announcements({ user }) {
                 discountPercent: announcement.discountPercent || '',
                 startDate: announcement.startDate ? announcement.startDate.split('T')[0] : '',
                 endDate: announcement.endDate ? announcement.endDate.split('T')[0] : '',
-                type: announcement.type || 'promotion'
+                type: announcement.type || 'promotion',
+                serviceId: announcement.serviceId || ''
             });
         } else {
             setEditingAnnouncement(null);
@@ -55,7 +72,8 @@ function Announcements({ user }) {
                 discountPercent: '',
                 startDate: new Date().toISOString().split('T')[0],
                 endDate: '',
-                type: 'promotion'
+                type: 'promotion',
+                serviceId: ''
             });
         }
         setIsModalOpen(true);
@@ -201,6 +219,12 @@ function Announcements({ user }) {
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <span className="badge badge-gray" style={{ textTransform: 'capitalize' }}>{announcement.type}</span>
                                 </div>
+                                {announcement.serviceId && (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                        <IoCut size={14} />
+                                        <span>{services.find(s => s._id === announcement.serviceId)?.name || 'Service lié'}</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -236,6 +260,19 @@ function Announcements({ user }) {
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                                     required
                                 ></textarea>
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Prestation concernée (Optionnel)</label>
+                                <select 
+                                    className="form-select"
+                                    value={formData.serviceId}
+                                    onChange={(e) => setFormData({...formData, serviceId: e.target.value})}
+                                >
+                                    <option value="">-- Toutes les prestations --</option>
+                                    {services.map(s => (
+                                        <option key={s._id} value={s._id}>{s.name} ({s.price}€)</option>
+                                    ))}
+                                </select>
                             </div>
                             <div className="grid grid-2">
                                 <div className="form-group">
