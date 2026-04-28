@@ -7,6 +7,24 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 const router = express.Router();
 
+// ─── Helper: verify reCAPTCHA token ─────────────────────────────────────────
+const verifyCaptcha = async (token) => {
+  // In development skip CAPTCHA if no secret is set
+  const secret = process.env.RECAPTCHA_SECRET_KEY;
+  if (!secret) return true;
+
+  try {
+    const response = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify?secret=${secret}&response=${token}`,
+      { method: 'POST' }
+    );
+    const data = await response.json();
+    return data.success === true;
+  } catch (e) {
+    return false;
+  }
+};
+
 // Example route
 router.get('/', async (req, res) => {
   try {
@@ -21,7 +39,13 @@ router.get('/', async (req, res) => {
 // Register route
 router.post('/register', async (req, res) => {
   try {
-    const { prenom, nom, dateDeNaissance, email, password, profession, companyName, siret, type, address, latitude, longitude } = req.body;
+    const { prenom, nom, dateDeNaissance, email, password, profession, companyName, siret, type, address, latitude, longitude, captchaToken } = req.body;
+
+    // Verify CAPTCHA
+    const captchaOk = await verifyCaptcha(captchaToken);
+    if (!captchaOk) {
+      return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
+    }
 
     const db = await connectDB();
     const users = db.collection('users');
@@ -169,7 +193,13 @@ router.post('/verify-email', async (req, res) => {
 // Login route
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, captchaToken } = req.body;
+
+    // Verify CAPTCHA
+    const captchaOk = await verifyCaptcha(captchaToken);
+    if (!captchaOk) {
+      return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
+    }
 
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });

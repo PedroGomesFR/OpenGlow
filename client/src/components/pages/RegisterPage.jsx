@@ -1,13 +1,16 @@
 import '../css/AppleDesign.css';
 import Input from "../common/Input";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
+import ReCAPTCHA from "react-google-recaptcha";
 
 function RegisterPage({ setUser }) {
   const { t } = useTranslation();
   const [typePerson, setTypePerson] = useState('Client');
   const navigate = useNavigate();
+  const recaptchaRef = useRef(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
   const [formData, setFormData] = useState({
     prenom: '', nom: '', dateDeNaissance: '', email: '', password: '', profession: '', companyName: '', siret: '', address: '', latitude: '', longitude: ''
   });
@@ -62,6 +65,10 @@ function RegisterPage({ setUser }) {
 
   const handleRegister = async (e) => {
     e.preventDefault();
+    if (!captchaToken) {
+      alert('Veuillez valider le CAPTCHA avant de continuer.');
+      return;
+    }
     const type = typePerson === 'Client' ? 'client' : 'professional';
 
     if (type === 'professional') {
@@ -75,11 +82,13 @@ function RegisterPage({ setUser }) {
       const response = await fetch(window.API_URL + '/records/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, type })
+        body: JSON.stringify({ ...formData, type, captchaToken })
       });
 
       if (!response.ok) {
         const data = await response.json();
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
         if (data.emailUsed) alert(t('email_used'));
         else alert(t('register_error'));
       } else {
@@ -294,7 +303,23 @@ function RegisterPage({ setUser }) {
                 <input className="form-input" type="password" name="password" required onChange={handleChange} value={formData.password} />
               </div>
 
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }}>{t('register_btn')}</button>
+              {/* reCAPTCHA */}
+              <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg"
+                style={{ width: '100%', opacity: captchaToken ? 1 : 0.6 }}
+              >
+                {t('register_btn')}
+              </button>
             </form>
 
             <div style={{ marginTop: '20px', textAlign: 'center' }}>

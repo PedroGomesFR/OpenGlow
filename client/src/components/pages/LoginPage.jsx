@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useRef } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import '../css/AppleDesign.css';
 import Input from "../common/Input";
 import { Link, useNavigate } from "react-router-dom";
@@ -10,6 +11,8 @@ function LoginPage({ setUser }) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errorMessages, setErrorMessages] = useState({ email: '', password: '' });
+  const recaptchaRef = useRef(null);
+  const [captchaToken, setCaptchaToken] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -18,14 +21,20 @@ function LoginPage({ setUser }) {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (!captchaToken) {
+      alert('Veuillez valider le CAPTCHA avant de continuer.');
+      return;
+    }
     try {
       const response = await fetch(window.API_URL + '/records/login', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, captchaToken }),
       });
       if (!response.ok) {
         const data = await response.json();
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
         if (data.requiresVerification) {
           alert('Votre compte n\'est pas vérifié. Veuillez vous réinscrire avec la même adresse e-mail pour recevoir un nouveau code.');
         } else {
@@ -40,6 +49,8 @@ function LoginPage({ setUser }) {
       }
     } catch (error) {
       console.error("Error during login:", error);
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
       alert(t('generic_error'));
     }
   };
@@ -73,7 +84,24 @@ function LoginPage({ setUser }) {
               style={{ width: '100%' }}
             />
           </div>
-          <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }}>{t('login_btn')}</button>
+
+          {/* reCAPTCHA */}
+          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+              onChange={(token) => setCaptchaToken(token)}
+              onExpired={() => setCaptchaToken(null)}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary btn-lg"
+            style={{ width: '100%', opacity: captchaToken ? 1 : 0.6 }}
+          >
+            {t('login_btn')}
+          </button>
         </form>
         <div style={{ marginTop: '20px', textAlign: 'center' }}>
           <p className="text-secondary"> {t('no_account')} <Link to="/register" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>{t('register_link')}</Link></p>
