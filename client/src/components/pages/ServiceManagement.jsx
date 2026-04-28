@@ -12,7 +12,6 @@ import '../css/ServiceManagement.css';
 function ServiceManagement({ user }) {
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
-    const [categories, setCategories] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingService, setEditingService] = useState(null);
     const [filterCategory, setFilterCategory] = useState('all');
@@ -26,9 +25,11 @@ function ServiceManagement({ user }) {
         category: 'Coiffure',
     });
 
+    // Catégories dérivées uniquement des prestations ajoutées par le pro
+    const usedCategories = [...new Set(services.map(s => s.category))].sort();
+
     useEffect(() => {
         loadServices();
-        loadCategories();
     }, []);
 
     const loadServices = async () => {
@@ -48,17 +49,6 @@ function ServiceManagement({ user }) {
         }
     };
 
-    const loadCategories = async () => {
-        try {
-            const response = await fetch(window.API_URL + '/services/categories');
-            if (response.ok) {
-                const data = await response.json();
-                setCategories(data);
-            }
-        } catch (error) {
-            console.error('Error loading categories:', error);
-        }
-    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -293,23 +283,41 @@ function ServiceManagement({ user }) {
                 {/* Filters panel - collapsible */}
                 {showFilters && (
                     <div className="filters-section" style={{ marginBottom: '20px', animation: 'fadeIn 0.2s ease' }}>
-                        <div className="category-filters">
-                            <button
-                                className={`filter-chip ${filterCategory === 'all' ? 'active' : ''}`}
-                                onClick={() => setFilterCategory('all')}
-                            >
-                                Toutes
-                            </button>
-                            {categories.map(cat => (
+                        {usedCategories.length === 0 ? (
+                            <div style={{
+                                padding: '16px 20px', borderRadius: '12px',
+                                background: '#FFF8E7', border: '1px solid #FFE0A0',
+                                color: '#8A6D00', fontSize: '14px',
+                                display: 'flex', alignItems: 'center', gap: '10px'
+                            }}>
+                                <IoStar size={18} />
+                                Aucune prestation ajoutée — les filtres apparaîtront ici une fois vos prestations créées.
+                            </div>
+                        ) : (
+                            <div className="category-filters">
                                 <button
-                                    key={cat}
-                                    className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
-                                    onClick={() => { setFilterCategory(cat); }}
+                                    className={`filter-chip ${filterCategory === 'all' ? 'active' : ''}`}
+                                    onClick={() => setFilterCategory('all')}
                                 >
-                                    {getCategoryIcon(cat)} {cat}
+                                    Toutes ({services.length})
                                 </button>
-                            ))}
-                        </div>
+                                {usedCategories.map(cat => (
+                                    <button
+                                        key={cat}
+                                        className={`filter-chip ${filterCategory === cat ? 'active' : ''}`}
+                                        onClick={() => setFilterCategory(cat)}
+                                    >
+                                        {getCategoryIcon(cat)} {cat}
+                                        <span style={{
+                                            marginLeft: '4px', background: 'rgba(0,0,0,0.08)',
+                                            borderRadius: '10px', padding: '1px 6px', fontSize: '11px'
+                                        }}>
+                                            {services.filter(s => s.category === cat).length}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 )}
 
