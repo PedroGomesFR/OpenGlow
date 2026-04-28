@@ -14,7 +14,10 @@ const verifyCaptcha = async (token, req) => {
   if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) return true;
 
   const secret = process.env.RECAPTCHA_SECRET_KEY;
-  if (!secret) return true;
+  if (!secret) return true; // No key configured → bypass
+
+  // No token sent from client
+  if (!token) return false;
 
   try {
     const response = await fetch(
@@ -22,9 +25,24 @@ const verifyCaptcha = async (token, req) => {
       { method: 'POST' }
     );
     const data = await response.json();
-    return data.success === true;
+
+    if (!data.success) {
+      // Log to understand what Google says, but fail-open on config errors
+      const configErrors = ['invalid-input-secret', 'missing-input-secret'];
+      const hasConfigError = (data['error-codes'] || []).some(e => configErrors.includes(e));
+      if (hasConfigError) {
+        console.warn('[reCAPTCHA] Config error (check secret key on Render):', data['error-codes']);
+        return true; // Fail-open on misconfiguration — don't block users
+      }
+      console.warn('[reCAPTCHA] Verification failed:', data['error-codes']);
+      return false; // Real invalid token (bot)
+    }
+
+    return true;
   } catch (e) {
-    return false;
+    // Network error reaching Google → fail-open
+    console.error('[reCAPTCHA] Network error during verification:', e.message);
+    return true;
   }
 };
 
