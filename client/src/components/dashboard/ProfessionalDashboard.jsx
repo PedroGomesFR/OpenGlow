@@ -12,7 +12,8 @@ import {
     IoCall,
     IoLocation,
     IoTime,
-    IoCamera
+    IoCamera,
+    IoMegaphone
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import DashboardOverview from './DashboardOverview';
