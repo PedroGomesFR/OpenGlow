@@ -54,7 +54,7 @@ function App() {
 
             <Route path="/" element={<MainPage />} />
 
-            <Route path="/home" element={<Navigate to="/" />} />
+            <Route path="/home" element={<MainPage />} />
 
             <Route path="/login" element={<LoginPage user={user} setUser={setUser} />} />
 
@@ -65,6 +65,7 @@ function App() {
             <Route path="/planning" element={<PlanningPage />} />
 
             <Route path="/recherche" element={<RecherchePage />} />
+
             <Route path="/professional/:id" element={<ProfessionalDetailPage />} />
 
             <Route path="/bookings" element={<BookingsPage />} />
