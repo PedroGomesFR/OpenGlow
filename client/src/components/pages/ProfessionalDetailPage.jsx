@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag } from 'react-icons/io5';
+import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 
 function ProfessionalDetailPage() {
@@ -13,6 +13,7 @@ function ProfessionalDetailPage() {
     const [loading, setLoading] = useState(true);
     const [slots, setSlots] = useState([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
+    const [announcements, setAnnouncements] = useState([]);
 
     const [bookingData, setBookingData] = useState({
         serviceId: '',
@@ -42,6 +43,12 @@ function ProfessionalDetailPage() {
             if (servicesResponse.ok) {
                 const servicesData = await servicesResponse.json();
                 setServices(servicesData.filter(s => s.isActive));
+            }
+
+            const annResponse = await fetch(`${window.API_URL}/announcements/professional/${id}`);
+            if (annResponse.ok) {
+                const annData = await annResponse.json();
+                setAnnouncements(annData);
             }
         } catch (error) {
             console.error('Error loading data:', error);
@@ -179,6 +186,22 @@ function ProfessionalDetailPage() {
                 <div className="grid grid-2" style={{ alignItems: 'start' }}>
                     {/* Services and Gallery */}
                     <div className="left-column">
+                        {announcements.length > 0 && (
+                            <div className="card" style={{ marginBottom: '30px', borderLeft: '5px solid var(--primary)', background: 'linear-gradient(to right, #ffffff, #f9fbfc)' }}>
+                                <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}><IoMegaphone color="var(--primary)" /> {t('announcements_title') || 'Annonces & Promotions'}</h2>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                    {announcements.map(ann => (
+                                        <div key={ann._id} style={{ padding: '10px 0', borderBottom: announcements.length > 1 ? '1px solid #f5f5f7' : 'none' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+                                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>{ann.title}</h3>
+                                                {ann.discountPercent && <span className="badge badge-primary">-{ann.discountPercent}%</span>}
+                                            </div>
+                                            <p style={{ margin: 0, fontSize: '0.95rem', color: 'var(--text-secondary)' }}>{ann.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                         <div className="card" style={{ marginBottom: '30px' }}>
                             <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}><IoCut /> {t('services_title')}</h2>
                             {services.length > 0 ? (

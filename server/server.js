@@ -13,6 +13,7 @@ import availabilityRouter from "./routes/availability.js";
 import adminRouter from "./routes/admin.js";
 import professionalRouter from "./routes/professional.js";
 import productRouter from "./routes/products.js";
+import announcementRouter from "./routes/announcements.js";
 dotenv.config({ path: ".env" });
 
 const __filename = fileURLToPath(import.meta.url);
@@ -38,6 +39,7 @@ app.use("/api/uploads", uploadRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/professionals", professionalRouter);
 app.use("/api/products", productRouter);
+app.use("/api/announcements", announcementRouter);
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

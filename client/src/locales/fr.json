@@ -121,6 +121,8 @@
         "alert_login_required": "Veuillez vous connecter pour réserver",
         "alert_select_service": "Veuillez sélectionner un service",
         "alert_booking_success": "Réservation confirmée ! 🎉",
-        "alert_booking_error": "Erreur lors de la réservation"
+        "alert_booking_error": "Erreur lors de la réservation",
+        "announcements_title": "Annonces & Promotions",
+        "nav_announcements": "Annonces"
     }
 }

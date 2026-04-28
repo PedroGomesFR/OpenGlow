@@ -48,25 +48,11 @@ function MainPage() {
         marginBottom: '60px',
       }}>
 
-        {/* Abstract Background Shapes */}
+        {/* Dark overlay for text readability */}
         <div style={{
           position: 'absolute',
-          top: '-20%',
-          right: '-10%',
-          width: '600px',
-          height: '600px',
-          background: 'radial-gradient(circle, rgba(0,113,227,0.05) 0%, rgba(0,0,0,0) 70%)',
-          borderRadius: '50%',
-          zIndex: 0
-        }} />
-        <div style={{
-          position: 'absolute',
-          bottom: '-10%',
-          left: '-5%',
-          width: '500px',
-          height: '500px',
-          background: 'radial-gradient(circle, rgba(0,0,0,0.03) 0%, rgba(0,0,0,0) 70%)',
-          borderRadius: '50%',
+          inset: 0,
+          background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.35) 60%, rgba(0,0,0,0.55) 100%)',
           zIndex: 0
         }} />
 
@@ -77,9 +63,8 @@ function MainPage() {
             fontWeight: '600',
             textTransform: 'uppercase',
             letterSpacing: '2px',
-            color: '#0071e3', // Apple Blue
+            color: 'rgba(255,255,255,0.85)',
             marginBottom: '20px',
-            opacity: 0.9
           }}>
             {t('hero_welcome')}
           </h2>
@@ -89,11 +74,9 @@ function MainPage() {
             fontWeight: '700',
             letterSpacing: '-1.5px',
             lineHeight: '1.05',
-            color: '#1d1d1f',
+            color: '#ffffff',
             marginBottom: '30px',
-            background: 'linear-gradient(180deg, #1d1d1f 0%, #434344 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent'
+            textShadow: '0 2px 16px rgba(0,0,0,0.5)'
           }}>
             {t('hero_slogan')}
           </h1>

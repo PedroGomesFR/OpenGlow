@@ -20,6 +20,7 @@ import Planning from '../common/planning';
 import ServiceManagement from '../pages/ServiceManagement';
 import ReviewsPage from '../pages/ReviewsPage';
 import BookingsPage from '../pages/BookingsPage';
+import Announcements from './Announcements';
 
 function ProfessionalDashboard({ user, setUser }) {
     const navigate = useNavigate();
@@ -51,6 +52,7 @@ function ProfessionalDashboard({ user, setUser }) {
         { id: 'planning', label: 'Planning', icon: <IoCalendar size={18} /> },
         { id: 'services', label: 'Prestations', icon: <IoCut size={18} /> },
         { id: 'reviews', label: 'Avis Clients', icon: <IoStar size={18} /> },
+        { id: 'announcements', label: 'Annonces', icon: <IoMegaphone size={18} /> },
         { id: 'settings', label: 'Mon Profil', icon: <IoPerson size={18} /> },
     ];
 
@@ -171,6 +173,8 @@ function ProfessionalDashboard({ user, setUser }) {
                 return <ServiceManagement user={user} />;
             case 'reviews':
                 return <ReviewsPage user={user} professionalId={user._id || user.id} />;
+            case 'announcements':
+                return <Announcements user={user} />;
             case 'settings':
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
