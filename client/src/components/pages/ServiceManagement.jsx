@@ -440,11 +440,41 @@ function ServiceManagement({ user }) {
                                     value={serviceData.category}
                                     onChange={(e) => setServiceData({ ...serviceData, category: e.target.value })}
                                 >
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat}>
-                                            {cat}
-                                        </option>
-                                    ))}
+                                    <optgroup label="Coiffure">
+                                        <option value="Coiffure">Coiffure</option>
+                                        <option value="Coupe Femme">Coupe Femme</option>
+                                        <option value="Coupe Homme">Coupe Homme</option>
+                                        <option value="Coupe Enfant">Coupe Enfant</option>
+                                        <option value="Barbier">Barbier</option>
+                                        <option value="Coloration">Coloration</option>
+                                        <option value="Mèches &amp; Balayage">Mèches &amp; Balayage</option>
+                                        <option value="Lissage &amp; Défrisage">Lissage &amp; Défrisage</option>
+                                        <option value="Soins Capillaires">Soins Capillaires</option>
+                                        <option value="Extensions Capillaires">Extensions Capillaires</option>
+                                    </optgroup>
+                                    <optgroup label="Esthétique &amp; Ongles">
+                                        <option value="Manucure">Manucure</option>
+                                        <option value="Pédicure">Pédicure</option>
+                                        <option value="Onglerie">Onglerie</option>
+                                        <option value="Épilation">Épilation</option>
+                                        <option value="Épilation Définitive">Épilation Définitive</option>
+                                        <option value="Beauté du Regard">Beauté du Regard</option>
+                                        <option value="Maquillage">Maquillage</option>
+                                        <option value="Soins du Visage">Soins du Visage</option>
+                                    </optgroup>
+                                    <optgroup label="Corps &amp; Bien-être">
+                                        <option value="Soins du Corps">Soins du Corps</option>
+                                        <option value="Massage">Massage</option>
+                                        <option value="Spa &amp; Balnéo">Spa &amp; Balnéo</option>
+                                        <option value="Bien-être">Bien-être</option>
+                                    </optgroup>
+                                    <optgroup label="Corps Art">
+                                        <option value="Tatouage">Tatouage</option>
+                                        <option value="Piercing">Piercing</option>
+                                    </optgroup>
+                                    <optgroup label="Autre">
+                                        <option value="Autre">Autre</option>
+                                    </optgroup>
                                 </select>
                             </div>
 
