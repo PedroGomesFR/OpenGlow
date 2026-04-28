@@ -237,7 +237,7 @@ function MainPage() {
                   <div style={{
                     height: '240px',
                     background: pro.profilePhoto
-                      ? `url(http://localhost:5001${pro.profilePhoto}) center/cover`
+                      ? `url(${window.BASE_URL}${pro.profilePhoto}) center/cover`
                       : '#f5f5f7',
                     display: 'flex',
                     alignItems: 'center',

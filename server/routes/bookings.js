@@ -89,6 +89,61 @@ bookingRouter.post('/create', async (req, res) => {
   }
 });
 
+// Create a booking as a professional (for walk-ins)
+bookingRouter.post('/professional/create', async (req, res) => {
+  try {
+    const professionalId = req.userId;
+    const { clientName, clientEmail, clientPhone, serviceId, date, time, notes } = req.body;
+
+    if (!clientName || !serviceId || !date || !time) {
+      return res.status(400).json({ error: 'Missing required fields (Name, service, date, time)' });
+    }
+
+    const db = await connectDB();
+    
+    // Verify professional
+    const professional = await db.collection('users').findOne({ _id: new ObjectId(professionalId) });
+    if (!professional || professional.isClient) {
+      return res.status(403).json({ error: 'Only professionals can use this endpoint' });
+    }
+
+    // Get service details
+    const service = await db.collection('services').findOne({ _id: new ObjectId(serviceId) });
+    if (!service) {
+      return res.status(404).json({ error: 'Service not found' });
+    }
+
+    const newBooking = {
+      clientId: null, // No client ID for walk-ins
+      clientName,
+      clientEmail: clientEmail || '',
+      clientPhone: clientPhone || '',
+      professionalId,
+      professionalName: professional.companyName || `${professional.prenom} ${professional.nom}`,
+      serviceId,
+      serviceName: service.name,
+      servicePrice: service.price,
+      serviceDuration: service.duration,
+      date,
+      time,
+      notes: notes || '',
+      status: 'confirmed', // Automatically confirmed
+      isWalkIn: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const result = await db.collection('bookings').insertOne(newBooking);
+    
+    res.status(201).json({ 
+      message: 'Booking created successfully',
+      booking: { id: result.insertedId, ...newBooking } 
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Update booking status
 bookingRouter.put('/update-status/:id', async (req, res) => {
   try {

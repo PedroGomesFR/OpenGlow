@@ -123,7 +123,7 @@ function ProfessionalDetailPage() {
             <div style={{
                 height: '300px',
                 background: professional.salonPhotos?.[0]
-                    ? `url(http://localhost:5001${professional.salonPhotos[0]}) center/cover`
+                    ? `url(${window.BASE_URL}${professional.salonPhotos[0]}) center/cover`
                     : 'linear-gradient(135deg, #1d1d1f 0%, #434344 100%)',
                 position: 'relative'
             }}>
@@ -144,7 +144,7 @@ function ProfessionalDetailPage() {
                             width: '120px',
                             height: '120px',
                             borderRadius: '50%',
-                            background: `url(http://localhost:5001${professional.profilePhoto || ''}) center/cover, #eee`,
+                            background: `url(${window.BASE_URL}${professional.profilePhoto || ''}) center/cover, #eee`,
                             border: '4px solid white',
                             margin: '0 auto',
                             boxShadow: '0 4px 12px rgba(0,0,0,0.1)'

@@ -6,6 +6,7 @@ import connectDB from '../db/connection.js';
 import { ObjectId } from 'mongodb';
 import { verifyToken } from '../middleware/auth.js';
 import fs from 'fs';
+import sharp from 'sharp';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,16 +19,8 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for file uploads - use memory storage for processing
+const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
   // Accept images only
@@ -55,7 +48,16 @@ uploadRouter.post('/profile-photo', upload.single('profilePhoto'), async (req, r
     }
 
     const userId = req.userId;
-    const photoUrl = `/uploads/${req.file.filename}`;
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = `profile-${uniqueSuffix}.webp`;
+    const photoPath = path.join(uploadsDir, filename);
+    const photoUrl = `/uploads/${filename}`;
+
+    // Process image: resize and compress to WebP
+    await sharp(req.file.buffer)
+      .resize(800, 800, { fit: 'inside', withoutEnlargement: true })
+      .webp({ quality: 80 })
+      .toFile(photoPath);
 
     const db = await connectDB();
     
@@ -80,7 +82,7 @@ uploadRouter.post('/profile-photo', upload.single('profilePhoto'), async (req, r
     );
 
     res.status(200).json({ 
-      message: 'Profile photo uploaded successfully',
+      message: 'Profile photo uploaded and compressed successfully',
       photoUrl: photoUrl
     });
   } catch (error) {
@@ -105,7 +107,21 @@ uploadRouter.post('/salon-photos', upload.array('salonPhotos', 10), async (req, 
       return res.status(403).json({ error: 'Only professionals can upload salon photos' });
     }
 
-    const photoUrls = req.files.map(file => `/uploads/${file.filename}`);
+    const photoUrls = [];
+    const uploadPromises = req.files.map(async (file) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const filename = `salon-${uniqueSuffix}.webp`;
+      const photoPath = path.join(uploadsDir, filename);
+      
+      await sharp(file.buffer)
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toFile(photoPath);
+      
+      photoUrls.push(`/uploads/${filename}`);
+    });
+
+    await Promise.all(uploadPromises);
 
     // Add photos to user's salon gallery
     await db.collection('users').updateOne(
@@ -119,7 +135,7 @@ uploadRouter.post('/salon-photos', upload.array('salonPhotos', 10), async (req, 
     );
 
     res.status(200).json({ 
-      message: 'Salon photos uploaded successfully',
+      message: 'Salon photos uploaded and compressed successfully',
       photoUrls: photoUrls
     });
   } catch (error) {

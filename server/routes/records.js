@@ -86,7 +86,7 @@ router.post('/register', async (req, res) => {
     const result = await users.insertOne(newUser);
 
     // Send Verification Email (Async)
-    const emailSubject = isClient ? 'Code de vérification OpenGlow' : 'Code de vérification OpenGlow PRO';
+    const emailSubject = isClient ? 'Code de vérification OpenGlow' : 'Code de vérification OpenGlow';
     const emailHtml = `<h1>Bonjour ${prenom},</h1>
       <p>Merci de vous être inscrit sur OpenGlow.</p>
       <p>Votre code de vérification est : <b><span style="font-size:24px; color:#1a5c6b;">${verificationCode}</span></b></p>
@@ -123,7 +123,7 @@ router.post('/verify-email', async (req, res) => {
 
     const user = await users.findOne({ email });
     if (!user) return res.status(400).json({ error: 'User not found' });
-    
+
     if (user.isVerified) return res.status(400).json({ error: 'Account already verified' });
 
     if (user.verificationCode !== code) return res.status(400).json({ error: 'Invalid verification code' });
@@ -132,7 +132,7 @@ router.post('/verify-email', async (req, res) => {
     // Mark as verified
     await users.updateOne(
       { _id: user._id },
-      { 
+      {
         $set: { isVerified: true },
         $unset: { verificationCode: "", verificationCodeExpires: "" }
       }

@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
+import 'dayjs/locale/fr';
 import { useNavigate } from "react-router-dom";
-import { IoCalendar, IoSettings, IoSave, IoClipboardOutline } from 'react-icons/io5';
+import { IoCalendar, IoSettings, IoSave, IoClipboardOutline, IoAdd, IoClose, IoPerson, IoMail, IoCall, IoTime, IoCut } from 'react-icons/io5';
 import '../css/AppleDesign.css'; // Ensure this path is correct based on file structure
+
+dayjs.locale('fr');
 
 function Planning() {
   const navigate = useNavigate();
@@ -14,6 +17,7 @@ function Planning() {
   const [activeTab, setActiveTab] = useState('agenda');
   const [currentWeek, setCurrentWeek] = useState(dayjs().startOf('week'));
   const [bookings, setBookings] = useState({});
+  const [services, setServices] = useState([]);
   const [settings, setSettings] = useState({
     workingDays: ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'],
     hours: { start: '09:00', end: '19:00' },
@@ -22,6 +26,20 @@ function Planning() {
     breakEnd: '14:00'
   });
   const [loading, setLoading] = useState(true);
+
+  // Modal State
+  const [showModal, setShowModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
+  const [formError, setFormError] = useState('');
+  const [newBooking, setNewBooking] = useState({
+    clientName: '',
+    clientEmail: '',
+    clientPhone: '',
+    serviceId: '',
+    date: '',
+    time: '',
+    notes: ''
+  });
 
   useEffect(() => {
     if (!token || !userId) {
@@ -34,6 +52,7 @@ function Planning() {
     }
     fetchData();
     fetchSettings();
+    fetchServices();
   }, [token, userId, currentWeek]);
 
   const fetchData = async () => {
@@ -53,7 +72,8 @@ function Planning() {
             id: booking._id,
             name: booking.clientName || 'Réservation',
             service: booking.serviceName,
-            status: booking.status
+            status: booking.status,
+            time: booking.time
           });
         });
         setBookings(bookingMap);
@@ -79,6 +99,20 @@ function Planning() {
     }
   };
 
+  const fetchServices = async () => {
+    try {
+      const response = await fetch(`${window.API_URL}/services/my-services`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setServices(data);
+      }
+    } catch (error) {
+      console.error('Error fetching services:', error);
+    }
+  };
+
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
@@ -99,6 +133,53 @@ function Planning() {
     }
   };
 
+  const handleCreateBooking = async (e) => {
+    e.preventDefault();
+    setModalLoading(true);
+    setFormError('');
+
+    try {
+      const response = await fetch(`${window.API_URL}/bookings/professional/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newBooking)
+      });
+
+      if (response.ok) {
+        setShowModal(false);
+        setNewBooking({
+          clientName: '',
+          clientEmail: '',
+          clientPhone: '',
+          serviceId: '',
+          date: '',
+          time: '',
+          notes: ''
+        });
+        fetchData();
+      } else {
+        const errorData = await response.json();
+        setFormError(errorData.error || 'Erreur lors de la création du rendez-vous');
+      }
+    } catch (error) {
+      setFormError('Erreur de connexion au serveur');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  const openAddBookingModal = (date, time) => {
+    setNewBooking({
+      ...newBooking,
+      date: date,
+      time: time
+    });
+    setShowModal(true);
+  };
+
   const toggleDay = (day) => {
     const days = settings.workingDays.includes(day)
       ? settings.workingDays.filter(d => d !== day)
@@ -107,7 +188,7 @@ function Planning() {
   };
 
   const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
-  const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weekDays = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
 
   // Generate time slots based on settings
   const generateTimeSlots = () => {
@@ -155,29 +236,89 @@ function Planning() {
 
         {/* Agenda Tab */}
         {activeTab === 'agenda' && (
-          <div className="card">
-            <div className="calendar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <button className="btn btn-outline" onClick={() => setCurrentWeek(currentWeek.subtract(1, 'week'))}>‹ Précédent</button>
-              <h2 style={{ textTransform: 'capitalize' }}>{currentWeek.format('MMMM YYYY')}</h2>
-              <button className="btn btn-outline" onClick={() => setCurrentWeek(currentWeek.add(1, 'week'))}>Suivant ›</button>
+          <div className="card" style={{ padding: '0', overflow: 'hidden' }}>
+            {/* Improved Header */}
+            <div className="calendar-header-new" style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap',
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              padding: '20px 24px',
+              borderBottom: '1px solid #E5E5E7',
+              gap: '20px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <h2 style={{ textTransform: 'capitalize', margin: 0, fontSize: '20px', fontWeight: '700', color: '#1d1d1f' }}>
+                  {currentWeek.format('MMMM YYYY')}
+                </h2>
+                <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: '10px', padding: '4px' }}>
+                  <button className="icon-btn" style={{ background: 'transparent', width: '32px', height: '32px', color: '#1d1d1f' }} onClick={() => setCurrentWeek(currentWeek.subtract(1, 'week'))}>‹</button>
+                  <button className="btn" style={{ background: 'white', padding: '4px 12px', fontSize: '13px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', color: '#1d1d1f', border: 'none' }} onClick={() => setCurrentWeek(dayjs().startOf('week'))}>Aujourd'hui</button>
+                  <button className="icon-btn" style={{ background: 'transparent', width: '32px', height: '32px', color: '#1d1d1f' }} onClick={() => setCurrentWeek(currentWeek.add(1, 'week'))}>›</button>
+                </div>
+              </div>
+
+              <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '14px' }} onClick={() => setShowModal(true)}>
+                <IoAdd size={18} /> Nouveau RDV
+              </button>
             </div>
 
-            <div className="calendar-grid" style={{ display: 'grid', gridTemplateColumns: '80px repeat(7, 1fr)', gap: '1px', background: '#E5E5E7', border: '1px solid #E5E5E7', borderRadius: '12px', overflow: 'hidden' }}>
+            <div className="calendar-grid" style={{ 
+              display: 'grid', 
+              gridTemplateColumns: '70px repeat(7, 1fr)', 
+              gap: '0', 
+              background: 'white',
+              overflow: 'hidden'
+            }}>
               {/* Header Row */}
-              <div style={{ background: 'white', padding: '10px' }}></div>
-              {weekDays.map((day, index) => (
-                <div key={day} style={{ background: 'white', padding: '10px', textAlign: 'center', fontWeight: 'bold' }}>
-                  {day}<br />
-                  <span style={{ fontSize: '0.8em', color: '#86868b' }}>
-                    {currentWeek.add(index, 'day').format('DD')}
-                  </span>
-                </div>
-              ))}
+              <div style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E7' }}></div>
+              {weekDays.map((day, index) => {
+                const dayDate = currentWeek.add(index, 'day');
+                const isToday = dayDate.isSame(dayjs(), 'day');
+                return (
+                  <div key={day} style={{ 
+                    background: isToday ? '#F2F9FF' : 'white', 
+                    padding: '12px 5px', 
+                    textAlign: 'center',
+                    borderBottom: '1px solid #E5E5E7',
+                    borderLeft: '1px solid #F5F5F7'
+                  }}>
+                    <div style={{ 
+                      fontWeight: '600', 
+                      fontSize: '11px', 
+                      textTransform: 'uppercase', 
+                      letterSpacing: '0.5px',
+                      color: isToday ? 'var(--primary)' : '#86868b' 
+                    }}>
+                      {day}
+                    </div>
+                    <div style={{ 
+                      fontSize: '18px', 
+                      fontWeight: '700',
+                      marginTop: '2px',
+                      color: isToday ? 'var(--primary)' : '#1d1d1f'
+                    }}>
+                      {dayDate.format('DD')}
+                    </div>
+                  </div>
+                );
+              })}
 
               {/* Time Slots */}
               {timeSlots.map(time => (
                 <React.Fragment key={time}>
-                  <div style={{ background: 'white', padding: '10px', textAlign: 'right', fontSize: '12px', color: '#86868b' }}>
+                  <div style={{ 
+                    background: '#FAFAFA', 
+                    padding: '10px', 
+                    textAlign: 'right', 
+                    fontSize: '11px', 
+                    color: '#86868b',
+                    fontWeight: '600',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'flex-end',
+                    borderBottom: '1px solid #F5F5F7'
+                  }}>
                     {time}
                   </div>
                   {weekDays.map((day, dayIndex) => {
@@ -186,19 +327,37 @@ function Planning() {
                     const dayBookings = bookings[key] || [];
 
                     return (
-                      <div key={key} style={{ background: 'white', padding: '5px', minHeight: '50px', borderTop: '1px solid #f5f5f7' }}>
+                      <div 
+                        key={key} 
+                        onClick={() => openAddBookingModal(date, time)}
+                        style={{ 
+                          background: 'white', 
+                          padding: '6px', 
+                          minHeight: '80px', 
+                          borderBottom: '1px solid #F5F5F7',
+                          borderLeft: '1px solid #F5F5F7',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = '#F9F9FB'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
+                      >
                         {dayBookings.map((booking, idx) => (
                           <div key={idx} style={{
-                            background: 'var(--primary)',
+                            background: booking.status === 'confirmed' ? 'var(--primary)' : '#8E8E93',
                             color: 'white',
-                            padding: '4px 8px',
-                            borderRadius: '6px',
+                            padding: '6px 8px',
+                            borderRadius: '8px',
                             fontSize: '11px',
                             marginBottom: '4px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                          }}>
-                            <strong>{booking.time}</strong> {booking.name}
-                            <div style={{ opacity: 0.8 }}>{booking.service}</div>
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
+                            borderLeft: '4px solid rgba(255,255,255,0.3)',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }} title={`${booking.name} - ${booking.service}`}>
+                            <div style={{ fontWeight: '700' }}>{booking.name}</div>
+                            <div style={{ opacity: 0.9, fontSize: '10px' }}>{booking.service}</div>
                           </div>
                         ))}
                       </div>
@@ -299,6 +458,122 @@ function Planning() {
           </div>
         )}
       </div>
+
+      {/* Add Booking Modal */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+            <div className="modal-header">
+              <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <IoAdd /> Nouveau Rendez-vous
+              </h2>
+              <button className="modal-close" onClick={() => setShowModal(false)}>
+                <IoClose />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateBooking}>
+              {formError && (
+                <div style={{ background: '#FFF2F2', color: '#D70000', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px' }}>
+                  {formError}
+                </div>
+              )}
+
+              <div className="form-group">
+                <label className="form-label"><IoPerson /> Nom du Client</label>
+                <input
+                  type="text"
+                  className="form-input"
+                  required
+                  placeholder="Ex: Jean Dupont"
+                  value={newBooking.clientName}
+                  onChange={e => setNewBooking({ ...newBooking, clientName: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-2" style={{ gap: '15px' }}>
+                <div className="form-group">
+                  <label className="form-label"><IoMail /> Email (Optionnel)</label>
+                  <input
+                    type="email"
+                    className="form-input"
+                    placeholder="jean@example.com"
+                    value={newBooking.clientEmail}
+                    onChange={e => setNewBooking({ ...newBooking, clientEmail: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label"><IoCall /> Téléphone (Optionnel)</label>
+                  <input
+                    type="tel"
+                    className="form-input"
+                    placeholder="06 12 34 56 78"
+                    value={newBooking.clientPhone}
+                    onChange={e => setNewBooking({ ...newBooking, clientPhone: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label"><IoCut /> Prestation</label>
+                <select
+                  className="form-input"
+                  required
+                  value={newBooking.serviceId}
+                  onChange={e => setNewBooking({ ...newBooking, serviceId: e.target.value })}
+                >
+                  <option value="">Sélectionnez un service</option>
+                  {services.map(s => (
+                    <option key={s._id} value={s._id}>{s.name} ({s.duration} min - {s.price}€)</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-2" style={{ gap: '15px' }}>
+                <div className="form-group">
+                  <label className="form-label"><IoCalendar /> Date</label>
+                  <input
+                    type="date"
+                    className="form-input"
+                    required
+                    value={newBooking.date}
+                    onChange={e => setNewBooking({ ...newBooking, date: e.target.value })}
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label"><IoTime /> Heure</label>
+                  <input
+                    type="time"
+                    className="form-input"
+                    required
+                    value={newBooking.time}
+                    onChange={e => setNewBooking({ ...newBooking, time: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Notes / Détails</label>
+                <textarea
+                  className="form-textarea"
+                  placeholder="Notes particulières..."
+                  value={newBooking.notes}
+                  onChange={e => setNewBooking({ ...newBooking, notes: e.target.value })}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn btn-primary btn-lg" 
+                style={{ width: '100%', marginTop: '10px' }}
+                disabled={modalLoading}
+              >
+                {modalLoading ? 'Création...' : 'Créer le rendez-vous'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
