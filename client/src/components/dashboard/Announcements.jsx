@@ -248,6 +248,7 @@ function Announcements({ user }) {
                                         <option value="promotion">Promotion</option>
                                         <option value="news">Nouveauté</option>
                                         <option value="event">Événement</option>
+                                        <option value="other">Autre</option>
                                     </select>
                                 </div>
                                 <div className="form-group">

@@ -66,7 +66,7 @@ router.post('/', verifyToken, async (req, res) => {
       title: title.trim(),
       description: description.trim(),
       discountPercent: discountPercent ? Number(discountPercent) : null,
-      type: type || 'promotion', // 'promotion', 'news', 'event'
+      type: type || 'promotion', // 'promotion', 'news', 'event', 'other'
       startDate: startDate ? new Date(startDate) : new Date(),
       endDate: endDate ? new Date(endDate) : null,
       isActive: true,
