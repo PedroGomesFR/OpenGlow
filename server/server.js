@@ -62,8 +62,9 @@ app.use("/api/keepAlive/Health", async (req, res) => {
   }
 })
 
-const server = app.listen(port, "0.0.0.0", () => {
+const server = app.listen(port, () => {
   console.log(`Server is running on port: ${port}`);
+  console.log(`Bind host env: ${process.env.HOST || "(not set)"}`);
 });
 
 // Handlers pour les erreurs non-capturées
