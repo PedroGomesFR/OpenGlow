@@ -5,12 +5,15 @@ export const sendEmail = async (options) => {
         // Create a transporter using SMTP settings from environment variables
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
-            port: process.env.SMTP_PORT,
-            secure: process.env.SMTP_PORT == 465, // true for 465, false for other ports
+            port: parseInt(process.env.SMTP_PORT),
+            secure: process.env.SMTP_PORT == 465,
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
+            // Force IPv4 — Render does not support outbound IPv6
+            family: 4,
+            connectionTimeout: 10000,
         });
 
         const mailOptions = {
