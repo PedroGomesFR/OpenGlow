@@ -24,7 +24,11 @@ const port = process.env.PORT || 5001;
 const app = express();
 
 app.use(
-  cors({ origin: "*", })
+  cors({ 
+    origin: ["https://openglow.netlify.app", "http://localhost:5173", "http://localhost:5001"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  })
 );
 
 app.use(express.json());
