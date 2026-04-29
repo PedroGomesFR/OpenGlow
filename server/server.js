@@ -23,20 +23,19 @@ const __dirname = path.dirname(__filename);
 const port = process.env.PORT || 5001;
 const app = express();
 
-// Configuration CORS
-const corsOptions = {
-  origin: [
-    "https://openglow.netlify.app",
-    "http://localhost:5173",
-    "http://localhost:3000"
-  ],
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
-  optionsSuccessStatus: 200
-};
-
-app.use(cors(corsOptions));
+// Configuration CORS manuelle (plus fiable sur Alwaysdata)
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  res.header("Access-Control-Allow-Origin", origin || "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  res.header("Access-Control-Allow-Credentials", "true");
+  
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+  next();
+});
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
