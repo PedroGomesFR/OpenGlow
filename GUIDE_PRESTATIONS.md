@@ -1,4 +1,4 @@
-# 💅 OpenGloweauty - Guide Complet
+# 💅 OpenGlow Beauty - Guide Complet
 
 ## 🎯 Pour les Professionnels de la Beauté
 
@@ -210,4 +210,4 @@ Pour toute question ou suggestion, contactez-nous !
 
 ---
 
-**OpenGloweauty** - La solution complète pour gérer votre activité beauté 💅✨
+**OpenGlow Beauty** - La solution complète pour gérer votre activité beauté 💅✨

@@ -1,4 +1,4 @@
-# 🎨 Système Complet - OpenGloweauty
+# 🎨 Système Complet - OpenGlow Beauty
 
 ## 🌟 Nouvelles Fonctionnalités Ajoutées
 
