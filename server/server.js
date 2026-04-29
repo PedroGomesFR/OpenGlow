@@ -21,6 +21,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const port = process.env.PORT || 5001;
+const bindHost = process.env.HOST || process.env.IP || "::";
 const app = express();
 
 // Configuration CORS manuelle (plus fiable sur Alwaysdata)
@@ -62,9 +63,11 @@ app.use("/api/keepAlive/Health", async (req, res) => {
   }
 })
 
-const server = app.listen(port, () => {
+const server = app.listen(port, bindHost, () => {
+  const addr = server.address();
   console.log(`Server is running on port: ${port}`);
   console.log(`Bind host env: ${process.env.HOST || "(not set)"}`);
+  console.log(`Listening on: ${typeof addr === "string" ? addr : `${addr?.address}:${addr?.port}`}`);
 });
 
 // Handlers pour les erreurs non-capturées
