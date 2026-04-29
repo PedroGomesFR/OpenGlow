@@ -13,6 +13,7 @@ const client = new MongoClient(uriLink, {
 });
 
 let dbInstance = null;
+const dbName = process.env.MONGODB_DB_NAME || 'myPlanning';
 
 async function connectDB() {
   if (dbInstance) {
@@ -23,7 +24,7 @@ async function connectDB() {
     await client.connect();
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    dbInstance = client.db('OpenGlow;  // Nom de la DB cohérent
+    dbInstance = client.db(dbName);
     return dbInstance;
   } catch (error) {
     console.error("Erreur de connexion à MongoDB:", error);

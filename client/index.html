@@ -7,7 +7,8 @@
   <title>OpenGlow</title>
   <link rel="icon" href="assets/logo.png" type="image/png">
   <script>
-    window.BASE_URL = 'https://openglow.alwaysdata.net';
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    window.BASE_URL = isLocal ? 'http://127.0.0.1:5001' : 'https://openglow.alwaysdata.net';
     window.API_URL = window.BASE_URL + '/api';
     // Remplace cette valeur par ta vraie Site Key reCAPTCHA une fois obtenue
     window.RECAPTCHA_SITE_KEY = '6LcgJM8sAAAAAKz6AXH6vLXwKKrmPkPfjkZYcDM6'; // clé de test Google (à remplacer)
