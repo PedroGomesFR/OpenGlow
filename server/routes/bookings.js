@@ -84,7 +84,7 @@ bookingRouter.post('/create', async (req, res) => {
     // Send email to client
     sendEmail({
       email: client.email,
-      subject: 'Confirmation de demande de rendez-vous - OpenGlow
+      subject: 'Confirmation de demande de rendez-vous - OpenGlow',
       html: `
         <h1>Bonjour ${client.prenom},</h1>
         <p>Votre demande de rendez-vous avec <strong>${newBooking.professionalName}</strong> a bien été enregistrée.</p>
@@ -93,14 +93,14 @@ bookingRouter.post('/create', async (req, res) => {
         <p><strong>Heure :</strong> ${time}</p>
         <br>
         <p>Le professionnel doit maintenant valider votre demande. Vous recevrez un email dès que celle-ci sera confirmée.</p>
-        <p>L'équipe OpenGlowp>
+        <p>L'équipe OpenGlow</p>
       `
     });
 
     // Send email to professional
     sendEmail({
       email: professional.email,
-      subject: 'Nouvelle demande de rendez-vous - OpenGlow
+      subject: 'Nouvelle demande de rendez-vous - OpenGlow',
       html: `
         <h1>Bonjour ${professional.prenom || professional.companyName},</h1>
         <p>Vous avez reçu une nouvelle demande de rendez-vous de la part de <strong>${newBooking.clientName}</strong>.</p>
@@ -109,7 +109,7 @@ bookingRouter.post('/create', async (req, res) => {
         <p><strong>Heure :</strong> ${time}</p>
         <br>
         <p>Vous pouvez valider ou refuser ce rendez-vous depuis votre tableau de bord.</p>
-        <p>L'équipe OpenGlowp>
+        <p>L'équipe OpenGlow</p>
       `
     });
     
@@ -172,7 +172,7 @@ bookingRouter.post('/professional/create', async (req, res) => {
     if (clientEmail) {
       sendEmail({
         email: clientEmail,
-        subject: 'Nouveau rendez-vous - OpenGlow
+        subject: 'Nouveau rendez-vous - OpenGlow',
         html: `
           <h1>Bonjour ${clientName},</h1>
           <p>Un rendez-vous a été ajouté pour vous chez <strong>${newBooking.professionalName}</strong>.</p>
@@ -181,7 +181,7 @@ bookingRouter.post('/professional/create', async (req, res) => {
           <p><strong>Heure :</strong> ${time}</p>
           <br>
           <p>À bientôt,</p>
-          <p>L'équipe OpenGlowp>
+          <p>L'équipe OpenGlow</p>
         `
       });
     }
@@ -232,7 +232,7 @@ bookingRouter.put('/update-status/:id', async (req, res) => {
     if (status === 'confirmed' && booking.clientEmail) {
       sendEmail({
         email: booking.clientEmail,
-        subject: 'Rendez-vous confirmé ! - OpenGlow
+        subject: 'Rendez-vous confirmé ! - OpenGlow',
         html: `
           <h1>Bonne nouvelle ${booking.clientName.split(' ')[0]} !</h1>
           <p>Votre rendez-vous avec <strong>${booking.professionalName}</strong> a été <strong>confirmé</strong>.</p>
@@ -241,18 +241,18 @@ bookingRouter.put('/update-status/:id', async (req, res) => {
           <p><strong>Heure :</strong> ${booking.time}</p>
           <br>
           <p>À très bientôt,</p>
-          <p>L'équipe OpenGlowp>
+          <p>L'équipe OpenGlow</p>
         `
       });
     } else if (status === 'cancelled' && booking.clientEmail) {
       sendEmail({
         email: booking.clientEmail,
-        subject: 'Rendez-vous annulé - OpenGlow
+        subject: 'Rendez-vous annulé - OpenGlow',
         html: `
           <h1>Bonjour,</h1>
           <p>Nous vous informons que votre rendez-vous avec <strong>${booking.professionalName}</strong> prévu le ${new Date(booking.date).toLocaleDateString()} a été annulé.</p>
           <br>
-          <p>L'équipe OpenGlowp>
+          <p>L'équipe OpenGlow</p>
         `
       });
     }
