@@ -1,25 +1,48 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
+
+const OAuth2 = google.auth.OAuth2;
 
 export const sendEmail = async (options) => {
     try {
-        const resend = new Resend(process.env.RESEND_API_KEY);
+        // Create OAuth2 client
+        const oauth2Client = new OAuth2(
+            process.env.GMAIL_CLIENT_ID,
+            process.env.GMAIL_CLIENT_SECRET,
+            'https://developers.google.com/oauthplayground'
+        );
 
-        const { data, error } = await resend.emails.send({
-            from: process.env.SMTP_FROM || 'OpenGlow <onboarding@resend.dev>',
+        oauth2Client.setCredentials({
+            refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+        });
+
+        // Get a fresh access token
+        const accessToken = await oauth2Client.getAccessToken();
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                type: 'OAuth2',
+                user: process.env.GMAIL_USER,
+                clientId: process.env.GMAIL_CLIENT_ID,
+                clientSecret: process.env.GMAIL_CLIENT_SECRET,
+                refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+                accessToken: accessToken.token,
+            },
+        });
+
+        const mailOptions = {
+            from: `OpenGlow <${process.env.GMAIL_USER}>`,
             to: options.email,
             subject: options.subject,
             html: options.html,
-        });
+        };
 
-        if (error) {
-            console.error("Error sending email:", error);
-            return null;
-        }
-
-        console.log("Email sent successfully:", data.id);
-        return data;
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully:', info.messageId);
+        return info;
     } catch (error) {
-        console.error("Error sending email:", error);
+        console.error('Error sending email:', error);
         return null;
     }
 };
