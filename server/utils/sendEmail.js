@@ -1,34 +1,26 @@
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 export const sendEmail = async (options) => {
     try {
-        // Create a transporter using SMTP settings from environment variables
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT),
-            secure: process.env.SMTP_PORT == 465,
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-            // Force IPv4 — Render does not support outbound IPv6
-            family: 4,
-            connectionTimeout: 10000,
-        });
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
-        const mailOptions = {
-            from: process.env.SMTP_FROM || '"MyPlanning" <noreply@myplanning.com>',
+        const { data, error } = await resend.emails.send({
+            from: process.env.SMTP_FROM || 'OpenGlow <onboarding@resend.dev>',
             to: options.email,
             subject: options.subject,
-            html: options.html, // HTML body content
-        };
+            html: options.html,
+        });
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully: %s", info.messageId);
-        return info;
+        if (error) {
+            console.error("Error sending email:", error);
+            return null;
+        }
+
+        console.log("Email sent successfully:", data.id);
+        return data;
     } catch (error) {
         console.error("Error sending email:", error);
-        // We log the error but don't crash, so the user registration can still succeed if email fails
         return null;
     }
 };
+
