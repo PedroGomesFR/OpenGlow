@@ -62,6 +62,20 @@ app.use("/api/keepAlive/Health", async (req, res) => {
   }
 })
 
-app.listen(port, "0.0.0.0", () => {
+const server = app.listen(port, "0.0.0.0", () => {
   console.log(`Server is running on port: ${port}`);
+});
+
+// Handlers pour les erreurs non-capturées
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+server.on('error', (error) => {
+  console.error('Server error:', error);
 });
