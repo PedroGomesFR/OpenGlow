@@ -1,4 +1,4 @@
-# 🎨 Système Complet - MyPlanning Beauty
+# 🎨 Système Complet - OpenGloweauty
 
 ## 🌟 Nouvelles Fonctionnalités Ajoutées
 

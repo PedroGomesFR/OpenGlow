@@ -11,7 +11,7 @@ const CGP = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>1. Objet</h2>
                         <p className="text-secondary">
-                            Les présentes Conditions Générales de Prestation (CGP) régissent l'utilisation de la plateforme MyPlanning Beauty, qui permet aux professionnels de la beauté de proposer leurs services et aux clients de réserver des prestations.
+                            Les présentes Conditions Générales de Prestation (CGP) régissent l'utilisation de la plateforme OpenGloweauty, qui permet aux professionnels de la beauté de proposer leurs services et aux clients de réserver des prestations.
                         </p>
                     </section>
 
@@ -32,7 +32,7 @@ const CGP = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>4. Tarifs et Paiements</h2>
                         <p className="text-secondary">
-                            Les tarifs sont fixés par les professionnels. Les paiements s'effectuent directement entre le client et le professionnel, hors plateforme. MyPlanning Beauty ne perçoit aucune commission.
+                            Les tarifs sont fixés par les professionnels. Les paiements s'effectuent directement entre le client et le professionnel, hors plateforme. OpenGloweauty ne perçoit aucune commission.
                         </p>
                     </section>
 
@@ -46,7 +46,7 @@ const CGP = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>6. Responsabilités</h2>
                         <p className="text-secondary">
-                            MyPlanning Beauty agit en tant qu'intermédiaire technique. Les professionnels sont responsables de la qualité de leurs services. Les clients sont responsables de leurs réservations.
+                            OpenGloweauty agit en tant qu'intermédiaire technique. Les professionnels sont responsables de la qualité de leurs services. Les clients sont responsables de leurs réservations.
                         </p>
                     </section>
 
@@ -67,7 +67,7 @@ const CGP = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>9. Résiliation</h2>
                         <p className="text-secondary">
-                            Les utilisateurs peuvent supprimer leur compte à tout moment. MyPlanning Beauty se réserve le droit de suspendre un compte en cas de violation des CGP.
+                            Les utilisateurs peuvent supprimer leur compte à tout moment. OpenGloweauty se réserve le droit de suspendre un compte en cas de violation des CGP.
                         </p>
                     </section>
 
@@ -81,7 +81,7 @@ const CGP = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>11. Modifications</h2>
                         <p className="text-secondary">
-                            MyPlanning Beauty se réserve le droit de modifier les CGP. Les utilisateurs seront informés des changements.
+                            OpenGloweauty se réserve le droit de modifier les CGP. Les utilisateurs seront informés des changements.
                         </p>
                     </section>
 

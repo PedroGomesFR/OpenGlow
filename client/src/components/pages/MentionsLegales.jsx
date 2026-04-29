@@ -11,7 +11,7 @@ const MentionsLegales = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>1. Édition du site</h2>
                         <p className="text-secondary">
-                            Le site <strong>MyPlanning Beauty</strong> est un projet personnel à but non lucratif développé à des fins de démonstration et d'apprentissage.
+                            Le site <strong>OpenGloweauty</strong> est un projet personnel à but non lucratif développé à des fins de démonstration et d'apprentissage.
                         </p>
                         <p className="text-secondary">
                             <strong>Propriétaire :</strong> Pedro Gomes<br />

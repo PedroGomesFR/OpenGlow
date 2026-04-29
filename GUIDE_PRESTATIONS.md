@@ -1,4 +1,4 @@
-# 💅 MyPlanning Beauty - Guide Complet
+# 💅 OpenGloweauty - Guide Complet
 
 ## 🎯 Pour les Professionnels de la Beauté
 
@@ -210,4 +210,4 @@ Pour toute question ou suggestion, contactez-nous !
 
 ---
 
-**MyPlanning Beauty** - La solution complète pour gérer votre activité beauté 💅✨
+**OpenGloweauty** - La solution complète pour gérer votre activité beauté 💅✨

@@ -20,7 +20,7 @@ const Footer = () => {
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '40px', marginBottom: '40px' }}>
                     {/* Brand */}
                     <div>
-                        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px' }}>MyPlanning Beauty</h3>
+                        <h3 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px' }}>OpenGloweauty</h3>
                         <p className="text-secondary" style={{ fontSize: '13px' }}>
                             {t('hero_subtitle')}
                         </p>
@@ -64,7 +64,7 @@ const Footer = () => {
                     color: '#86868b'
                 }}>
                     <div>
-                        Copyright © {currentYear} MyPlanning Beauty Inc. {t('footer_rights')}
+                        Copyright © {currentYear} OpenGloweauty Inc. {t('footer_rights')}
                     </div>
                     <div>
                         France

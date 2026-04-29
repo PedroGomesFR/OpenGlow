@@ -39,7 +39,7 @@
 ## 📂 Structure du Projet
 
 ```
-myPlanning/
+OpenGlow
 ├── client/          # Application Frontend (React)
 ├── server/          # API Backend (Node.js/Express)
 └── README.md        # Documentation du projet

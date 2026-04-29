@@ -39,7 +39,7 @@ function HelpPage() {
         },
         {
             q: "Comment supprimer une photo de mon salon ?",
-            a: "Dans la version actuelle, vous pouvez téléverser de nouvelles photos. Pour archiver des anciennes, rendez-vous dans la console d'administration MyPlanning."
+            a: "Dans la version actuelle, vous pouvez téléverser de nouvelles photos. Pour archiver des anciennes, rendez-vous dans la console d'administration OpenGlow
         }
     ];
 

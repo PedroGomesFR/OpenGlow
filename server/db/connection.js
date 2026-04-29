@@ -23,7 +23,7 @@ async function connectDB() {
     await client.connect();
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    dbInstance = client.db('myPlanning');  // Nom de la DB cohérent
+    dbInstance = client.db('OpenGlow;  // Nom de la DB cohérent
     return dbInstance;
   } catch (error) {
     console.error("Erreur de connexion à MongoDB:", error);

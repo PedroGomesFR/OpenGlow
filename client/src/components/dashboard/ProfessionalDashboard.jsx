@@ -407,13 +407,13 @@ function ProfessionalDashboard({ user, setUser }) {
                     }}>
                         <IoBusiness size={12} /> ESPACE PRO
                     </div>
-                    <h2 style={{ fontSize: '22px', fontWeight: '700', margin: 0, letterSpacing: '-0.5px' }}>MyPlanning</h2>
+                    <h2 style={{ fontSize: '22px', fontWeight: '700', margin: 0, letterSpacing: '-0.5px' }}>OpenGlowh2>
                     <div style={{ fontSize: '13px', color: '#86868b', marginTop: '6px' }}>{user.companyName || 'Mon Salon'}</div>
                 </div>
 
                 {/* Mobile Header (simplified) */}
                 <div className="mobile-only" style={{ marginBottom: '10px', textAlign: 'center' }}>
-                    <strong>MyPlanning Pro</strong>
+                    <strong>OpenGlowro</strong>
                 </div>
 
                 <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
