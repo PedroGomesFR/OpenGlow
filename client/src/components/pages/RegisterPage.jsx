@@ -15,6 +15,7 @@ function RegisterPage({ setUser }) {
     prenom: '', nom: '', dateDeNaissance: '', email: '', password: '', profession: '', companyName: '', siret: '', address: '', latitude: '', longitude: ''
   });
   const [errorMessages, setErrorMessages] = useState({});
+  const [consentChecked, setConsentChecked] = useState(false);
 
   const passwordRules = [
     { label: '12 caractères minimum', test: (p) => p.length >= 12 },
@@ -82,6 +83,23 @@ function RegisterPage({ setUser }) {
 
     if (!isPasswordValid(formData.password)) {
       alert('Le mot de passe ne respecte pas les critères de sécurité requis.');
+      return;
+    }
+
+    // Age 18+ check
+    if (formData.dateDeNaissance) {
+      const birthDate = new Date(formData.dateDeNaissance);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear() -
+        (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0);
+      if (age < 18) {
+        alert('Vous devez avoir au moins 18 ans pour vous inscrire.');
+        return;
+      }
+    }
+
+    if (!consentChecked) {
+      alert('Veuillez accepter les conditions générales et la politique de confidentialité.');
       return;
     }
     const type = typePerson === 'Client' ? 'client' : 'professional';
@@ -330,6 +348,25 @@ function RegisterPage({ setUser }) {
                 )}
               </div>
 
+              {/* Consent checkbox */}
+              <div style={{ marginBottom: '20px', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                <input
+                  type="checkbox"
+                  id="consent"
+                  checked={consentChecked}
+                  onChange={(e) => setConsentChecked(e.target.checked)}
+                  style={{ marginTop: '3px', flexShrink: 0, width: '16px', height: '16px', cursor: 'pointer' }}
+                  required
+                />
+                <label htmlFor="consent" style={{ fontSize: '13px', color: '#424245', cursor: 'pointer', lineHeight: '1.5' }}>
+                  J'ai lu et j'accepte les{' '}
+                  <a href="/cgp" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>Conditions Générales</a>
+                  {' '}et la{' '}
+                  <a href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>Politique de Confidentialité</a>.
+                  J'atteste avoir au moins 18 ans.
+                </label>
+              </div>
+
               {/* reCAPTCHA */}
               <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
                 <ReCAPTCHA
@@ -343,7 +380,7 @@ function RegisterPage({ setUser }) {
               <button
                 type="submit"
                 className="btn btn-primary btn-lg"
-                style={{ width: '100%', opacity: captchaToken ? 1 : 0.6 }}
+                style={{ width: '100%', opacity: (captchaToken && consentChecked) ? 1 : 0.6 }}
               >
                 {t('register_btn')}
               </button>

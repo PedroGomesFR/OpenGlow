@@ -49,6 +49,31 @@ function ProfilePage({ user, setUser }) {
         window.location.href = '/home';
     };
 
+    const handleDeleteAccount = async () => {
+        const confirmed = window.confirm(
+            'Êtes-vous sûr de vouloir supprimer votre compte ?\n\nCette action est irréversible. Toutes vos données (réservations, avis, photos) seront définitivement supprimées conformément à votre droit à l\'effacement (RGPD art. 17).'
+        );
+        if (!confirmed) return;
+
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch(window.API_URL + '/records/delete-account', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+                window.location.href = '/home';
+            } else {
+                const data = await res.json();
+                alert(data.error || 'Erreur lors de la suppression du compte.');
+            }
+        } catch {
+            alert('Erreur réseau. Veuillez réessayer.');
+        }
+    };
+
     return (
         <div style={{ background: '#F5F5F7', minHeight: '100vh', padding: '40px 20px' }}>
             <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
@@ -187,6 +212,33 @@ function ProfilePage({ user, setUser }) {
                         >
                             <IoLogOut size={18} /> {t('logout')}
                         </button>
+                        <button
+                            onClick={handleDeleteAccount}
+                            style={{
+                                marginTop: '12px',
+                                background: 'transparent',
+                                color: '#FF3B30',
+                                border: '1px solid #FF3B30',
+                                borderRadius: '10px',
+                                width: '100%',
+                                padding: '12px',
+                                fontWeight: '600',
+                                fontSize: '15px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '8px',
+                                transition: 'background 0.2s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = '#fff0ef'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                        >
+                            🗑 Supprimer mon compte
+                        </button>
+                        <p style={{ fontSize: '11px', color: '#86868b', textAlign: 'center', marginTop: '6px' }}>
+                            Droit à l'effacement — RGPD art. 17
+                        </p>
                     </div>
                 </div>
             </div>

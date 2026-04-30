@@ -24,10 +24,11 @@ import ReviewsPage from './components/pages/ReviewsPage.jsx';
 import MapView from './components/pages/MapView.jsx';
 import CGP from './components/pages/cgp.jsx';
 import HelpPage from './components/pages/HelpPage.jsx';
-
+import PolitiqueConfidentialite from './components/pages/PolitiqueConfidentialite.jsx';
 import AdminPage from './components/pages/AdminPage.jsx';
 import Footer from './components/common/Footer.jsx';
 import MentionsLegales from './components/pages/MentionsLegales.jsx';
+import CookieBanner from './components/common/CookieBanner.jsx';
 
 function App() {
   const { i18n } = useTranslation();
@@ -77,12 +78,14 @@ function App() {
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/cgp" element={<CGP />} />
             <Route path="/help" element={<HelpPage />} />
+            <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
 
             <Route path="*" element={<NotFoundPage />} />
 
           </Routes>
         </div>
         <Footer />
+        <CookieBanner />
       </Router>
     </>
   )

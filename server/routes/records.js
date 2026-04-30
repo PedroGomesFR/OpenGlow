@@ -4,8 +4,18 @@ import bcrypt from 'bcrypt';
 import { ObjectId } from 'mongodb';
 import { generateToken, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
+
+// Rate limiter — 30 tentatives / 15 min par IP sur le login
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.' }
+});
 
 // ─── Helper: verify reCAPTCHA token ──────────────────────────────────────────
 const verifyCaptcha = async (token, req) => {
@@ -81,6 +91,17 @@ router.post('/register', async (req, res) => {
     // Validate password strength (CNIL requirements)
     if (!isPasswordStrong(password)) {
       return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' });
+    }
+
+    // Age 18+ verification (RGPD art. 8)
+    if (dateDeNaissance) {
+      const birth = new Date(dateDeNaissance);
+      const today = new Date();
+      const age = today.getFullYear() - birth.getFullYear() -
+        (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate()) ? 1 : 0);
+      if (isNaN(age) || age < 18) {
+        return res.status(400).json({ error: 'Vous devez avoir au moins 18 ans pour vous inscrire.' });
+      }
     }
 
     const db = await connectDB();
@@ -227,7 +248,7 @@ router.post('/verify-email', async (req, res) => {
 });
 
 // Login route
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { email, password, captchaToken } = req.body;
 
@@ -333,6 +354,52 @@ router.get('/professional/:id', async (req, res) => {
     }
 
     res.status(200).json(professional);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Delete account (RGPD - Right to erasure art. 17)
+router.delete('/delete-account', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const db = await connectDB();
+
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    if (!user) return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+
+    // 1. Delete bookings (as client or professional)
+    await db.collection('bookings').deleteMany({
+      $or: [
+        { clientId: userId },
+        { clientId: new ObjectId(userId) },
+        { professionalId: userId },
+        { professionalId: new ObjectId(userId) }
+      ]
+    });
+
+    // 2. Delete reviews left by or about this user
+    await db.collection('reviews').deleteMany({
+      $or: [
+        { clientId: userId },
+        { clientId: new ObjectId(userId) },
+        { professionalId: userId },
+        { professionalId: new ObjectId(userId) }
+      ]
+    });
+
+    // 3. Delete services of this professional
+    await db.collection('services').deleteMany({
+      $or: [
+        { professionalId: userId },
+        { professionalId: new ObjectId(userId) }
+      ]
+    });
+
+    // 4. Delete the user account
+    await db.collection('users').deleteOne({ _id: new ObjectId(userId) });
+
+    res.status(200).json({ message: 'Votre compte et toutes vos données ont été supprimés.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

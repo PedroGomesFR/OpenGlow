@@ -46,7 +46,7 @@ const Footer = () => {
                             <li style={{ marginBottom: '8px' }}>
                                 <span onClick={() => navigate('/cgp')} style={{ color: '#424245', cursor: 'pointer' }}>{t('cgp')}</span>
                             </li>
-                            <li style={{ marginBottom: '8px' }}><span style={{ color: '#424245', cursor: 'pointer' }}>Confidentialité</span></li>
+                            <li style={{ marginBottom: '8px' }}><span onClick={() => navigate('/politique-confidentialite')} style={{ color: '#424245', cursor: 'pointer' }}>Confidentialité</span></li>
                             <li style={{ marginBottom: '8px' }}><span style={{ color: '#424245', cursor: 'pointer' }}>CGU</span></li>
                         </ul>
                     </div>
