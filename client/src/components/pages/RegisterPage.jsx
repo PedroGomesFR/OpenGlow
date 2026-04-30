@@ -15,6 +15,16 @@ function RegisterPage({ setUser }) {
     prenom: '', nom: '', dateDeNaissance: '', email: '', password: '', profession: '', companyName: '', siret: '', address: '', latitude: '', longitude: ''
   });
   const [errorMessages, setErrorMessages] = useState({});
+
+  const passwordRules = [
+    { label: '12 caractères minimum', test: (p) => p.length >= 12 },
+    { label: 'Une majuscule', test: (p) => /[A-Z]/.test(p) },
+    { label: 'Une minuscule', test: (p) => /[a-z]/.test(p) },
+    { label: 'Un chiffre', test: (p) => /[0-9]/.test(p) },
+    { label: 'Un caractère spécial (!@#$%...)', test: (p) => /[^A-Za-z0-9]/.test(p) },
+  ];
+
+  const isPasswordValid = (p) => passwordRules.every((r) => r.test(p));
   const [verificationMode, setVerificationMode] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [registeredEmail, setRegisteredEmail] = useState('');
@@ -67,6 +77,11 @@ function RegisterPage({ setUser }) {
     e.preventDefault();
     if (!captchaToken) {
       alert('Veuillez valider le CAPTCHA avant de continuer.');
+      return;
+    }
+
+    if (!isPasswordValid(formData.password)) {
+      alert('Le mot de passe ne respecte pas les critères de sécurité requis.');
       return;
     }
     const type = typePerson === 'Client' ? 'client' : 'professional';
@@ -298,9 +313,21 @@ function RegisterPage({ setUser }) {
                 <label className="form-label">{t('email_label')}</label>
                 <input className="form-input" type="email" name="email" required onChange={handleChange} value={formData.email} />
               </div>
-              <div className="form-group" style={{ marginBottom: '30px' }}>
+              <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label className="form-label">{t('password_label')}</label>
                 <input className="form-input" type="password" name="password" required onChange={handleChange} value={formData.password} />
+                {formData.password.length > 0 && (
+                  <ul style={{ listStyle: 'none', padding: '8px 0 0 0', margin: 0, fontSize: '12px' }}>
+                    {passwordRules.map((rule, i) => {
+                      const ok = rule.test(formData.password);
+                      return (
+                        <li key={i} style={{ color: ok ? '#34C759' : '#FF3B30', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
+                          <span>{ok ? '✓' : '✗'}</span> {rule.label}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
               </div>
 
               {/* reCAPTCHA */}

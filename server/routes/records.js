@@ -57,6 +57,16 @@ router.get('/', async (req, res) => {
   }
 });
 
+// ─── Helper: validate GDPR/CNIL compliant password ─────────────────────────
+const isPasswordStrong = (password) => {
+  if (!password || password.length < 12) return false;
+  if (!/[A-Z]/.test(password)) return false;
+  if (!/[a-z]/.test(password)) return false;
+  if (!/[0-9]/.test(password)) return false;
+  if (!/[^A-Za-z0-9]/.test(password)) return false;
+  return true;
+};
+
 // Register route
 router.post('/register', async (req, res) => {
   try {
@@ -66,6 +76,11 @@ router.post('/register', async (req, res) => {
     const captchaOk = await verifyCaptcha(captchaToken, req);
     if (!captchaOk) {
       return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
+    }
+
+    // Validate password strength (CNIL requirements)
+    if (!isPasswordStrong(password)) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' });
     }
 
     const db = await connectDB();
