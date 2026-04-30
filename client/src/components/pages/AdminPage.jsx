@@ -2,9 +2,13 @@ import { useState, useEffect } from 'react';
 import { IoTrash, IoShieldCheckmark, IoPeople, IoArrowBack } from 'react-icons/io5';
 import { useNavigate } from 'react-router-dom';
 import '../css/AppleDesign.css';
+import { useToast } from '../common/ToastContext';
+import { useConfirm } from '../common/ConfirmContext';
 
 function AdminPage() {
     const navigate = useNavigate();
+    const toast = useToast();
+    const confirm = useConfirm();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -19,7 +23,7 @@ function AdminPage() {
         try {
             const user = JSON.parse(userStr);
             if (!user.isAdmin) {
-                alert("Accès refusé. Réservé aux administrateurs.");
+                toast("Accès refusé. Réservé aux administrateurs.", 'error');
                 window.location.href = '/';
                 return;
             }
@@ -52,7 +56,13 @@ function AdminPage() {
     };
 
     const handleDeleteUser = async (userId) => {
-        if (!confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.')) return;
+        const confirmed = await confirm({
+            title: 'Supprimer cet utilisateur',
+            message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
+            confirmLabel: 'Supprimer',
+            danger: true,
+        });
+        if (!confirmed) return;
 
         try {
             const token = localStorage.getItem('token');
@@ -63,13 +73,13 @@ function AdminPage() {
 
             if (response.ok) {
                 setUsers(users.filter(u => u._id !== userId));
-                alert('Utilisateur supprimé avec succès.');
+                toast('Utilisateur supprimé avec succès.', 'success');
             } else {
-                alert('Erreur lors de la suppression.');
+                toast('Erreur lors de la suppression.', 'error');
             }
         } catch (error) {
             console.error('Error deleting user:', error);
-            alert('Erreur lors de la suppression.');
+            toast('Erreur lors de la suppression.', 'error');
         }
     };
 

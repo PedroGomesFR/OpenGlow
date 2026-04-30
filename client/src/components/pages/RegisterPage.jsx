@@ -4,9 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import ReCAPTCHA from "react-google-recaptcha";
+import { useToast } from '../common/ToastContext';
 
 function RegisterPage({ setUser }) {
   const { t } = useTranslation();
+  const toast = useToast();
   const [typePerson, setTypePerson] = useState('Client');
   const navigate = useNavigate();
   const recaptchaRef = useRef(null);
@@ -77,12 +79,12 @@ function RegisterPage({ setUser }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!captchaToken) {
-      alert('Veuillez valider le CAPTCHA avant de continuer.');
+      toast('Veuillez valider le CAPTCHA avant de continuer.', 'warning');
       return;
     }
 
     if (!isPasswordValid(formData.password)) {
-      alert('Le mot de passe ne respecte pas les critères de sécurité requis.');
+      toast('Le mot de passe ne respecte pas les critères de sécurité requis.', 'error');
       return;
     }
 
@@ -93,20 +95,20 @@ function RegisterPage({ setUser }) {
       const age = today.getFullYear() - birthDate.getFullYear() -
         (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0);
       if (age < 18) {
-        alert('Vous devez avoir au moins 18 ans pour vous inscrire.');
+        toast('Vous devez avoir au moins 18 ans pour vous inscrire.', 'error');
         return;
       }
     }
 
     if (!consentChecked) {
-      alert('Veuillez accepter les conditions générales et la politique de confidentialité.');
+      toast('Veuillez accepter les conditions générales et la politique de confidentialité.', 'warning');
       return;
     }
     const type = typePerson === 'Client' ? 'client' : 'professional';
 
     if (type === 'professional') {
       if (!formData.address || !formData.latitude || !formData.longitude) {
-        alert("Veuillez sélectionner une adresse valide dans la liste proposée.");
+        toast('Veuillez sélectionner une adresse valide dans la liste proposée.', 'warning');
         return;
       }
     }
@@ -122,8 +124,8 @@ function RegisterPage({ setUser }) {
         const data = await response.json();
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
-        if (data.emailUsed) alert(t('email_used'));
-        else alert(t('register_error'));
+        if (data.emailUsed) toast(t('email_used'), 'error');
+        else toast(data.error || t('register_error'), 'error');
       } else {
         const successData = await response.json();
         if (successData.requiresVerification) {
@@ -152,7 +154,7 @@ function RegisterPage({ setUser }) {
 
       if (!response.ok) {
         const data = await response.json();
-        alert(data.error || 'Code invalide ou expiré');
+        toast(data.error || 'Code invalide ou expiré', 'error');
       } else {
         const successData = await response.json();
         localStorage.setItem("user", JSON.stringify(successData.user));

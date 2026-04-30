@@ -4,10 +4,14 @@ import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/ProfilePageNew.css';
 import ProfessionalDashboard from '../dashboard/ProfessionalDashboard';
+import { useToast } from '../common/ToastContext';
+import { useConfirm } from '../common/ConfirmContext';
 
 function ProfilePage({ user, setUser }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const toast = useToast();
+    const confirm = useConfirm();
 
     // IF PROFESSIONAL -> Render Dashboard
     if (user && user.isClient === false) {
@@ -32,14 +36,14 @@ function ProfilePage({ user, setUser }) {
 
             if (response.ok) {
                 const data = await response.json();
-                alert(t('photo_updated'));
+                toast(t('photo_updated'), 'success');
                 const updatedUser = { ...user, profilePhoto: data.photoUrl };
                 setUser(updatedUser);
                 localStorage.setItem('user', JSON.stringify(updatedUser));
             }
         } catch (error) {
             console.error('Error uploading photo:', error);
-            alert(t('error_upload'));
+            toast(t('error_upload'), 'error');
         }
     };
 
@@ -50,9 +54,13 @@ function ProfilePage({ user, setUser }) {
     };
 
     const handleDeleteAccount = async () => {
-        const confirmed = window.confirm(
-            'Êtes-vous sûr de vouloir supprimer votre compte ?\n\nCette action est irréversible. Toutes vos données (réservations, avis, photos) seront définitivement supprimées conformément à votre droit à l\'effacement (RGPD art. 17).'
-        );
+        const confirmed = await confirm({
+            title: 'Supprimer mon compte',
+            message: 'Cette action est irréversible. Toutes vos données (réservations, avis, photos) seront définitivement supprimées conformément à votre droit à l\'effacement (RGPD art. 17).',
+            confirmLabel: 'Supprimer définitivement',
+            cancelLabel: 'Annuler',
+            danger: true,
+        });
         if (!confirmed) return;
 
         const token = localStorage.getItem('token');
@@ -67,10 +75,10 @@ function ProfilePage({ user, setUser }) {
                 window.location.href = '/home';
             } else {
                 const data = await res.json();
-                alert(data.error || 'Erreur lors de la suppression du compte.');
+                toast(data.error || 'Erreur lors de la suppression du compte.', 'error');
             }
         } catch {
-            alert('Erreur réseau. Veuillez réessayer.');
+            toast('Erreur réseau. Veuillez réessayer.', 'error');
         }
     };
 

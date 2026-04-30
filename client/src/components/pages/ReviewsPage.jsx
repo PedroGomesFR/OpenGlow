@@ -17,11 +17,13 @@ import {
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import '../css/ReviewsPage.css';
+import { useToast } from '../common/ToastContext';
 
 function ReviewsPage({ user, professionalId: propProfessionalId }) {
     const { professionalId: paramProfessionalId } = useParams();
     const professionalId = propProfessionalId || paramProfessionalId;
     const navigate = useNavigate();
+    const toast = useToast();
     const [reviews, setReviews] = useState([]);
     const [stats, setStats] = useState(null);
     const [professional, setProfessional] = useState(null);
@@ -99,7 +101,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         e.preventDefault();
 
         if (!user) {
-            alert('Vous devez être connecté pour laisser un avis');
+            toast('Vous devez être connecté pour laisser un avis', 'warning');
             navigate('/login');
             return;
         }

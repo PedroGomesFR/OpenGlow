@@ -3,11 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone } from 'react-icons/io5';
 import '../css/AppleDesign.css';
+import { useToast } from '../common/ToastContext';
 
 function ProfessionalDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const toast = useToast();
     const [professional, setProfessional] = useState(null);
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -79,14 +81,14 @@ function ProfessionalDetailPage() {
         e.preventDefault();
 
         if (!localStorage.getItem('token')) {
-            alert(t('alert_login_required'));
+            toast(t('alert_login_required'), 'warning');
             navigate('/login');
             return;
         }
 
         const selectedService = services.find(s => s._id === bookingData.serviceId);
         if (!selectedService) {
-            alert(t('alert_select_service'));
+            toast(t('alert_select_service'), 'warning');
             return;
         }
 
@@ -108,14 +110,14 @@ function ProfessionalDetailPage() {
             });
 
             if (response.ok) {
-                alert(t('alert_booking_success'));
+                toast(t('alert_booking_success'), 'success');
                 navigate('/bookings');
             } else {
-                alert(t('alert_booking_error'));
+                toast(t('alert_booking_error'), 'error');
             }
         } catch (error) {
             console.error('Error booking:', error);
-            alert(t('alert_booking_error'));
+            toast(t('alert_booking_error'), 'error');
         }
     };
 

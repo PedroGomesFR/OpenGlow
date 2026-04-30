@@ -22,9 +22,11 @@ import ServiceManagement from '../pages/ServiceManagement';
 import ReviewsPage from '../pages/ReviewsPage';
 import BookingsPage from '../pages/BookingsPage';
 import Announcements from './Announcements';
+import { useToast } from '../common/ToastContext';
 
 function ProfessionalDashboard({ user, setUser }) {
     const navigate = useNavigate();
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState('planning');
     const [profileData, setProfileData] = useState({
         description: user?.description || '',
@@ -101,7 +103,7 @@ function ProfessionalDashboard({ user, setUser }) {
 
             if (response.ok) {
                 const resData = await response.json();
-                alert('Profil mis à jour avec succès! (Localisation détectée)');
+                toast('Profil mis à jour avec succès !', 'success');
 
                 // Merge response data to ensure we have the lat/lon if server processed it
                 const updatedUser = {
@@ -116,7 +118,7 @@ function ProfessionalDashboard({ user, setUser }) {
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('Erreur lors de la mise à jour');
+            toast('Erreur lors de la mise à jour', 'error');
         }
     };
 
@@ -140,7 +142,7 @@ function ProfessionalDashboard({ user, setUser }) {
                     const updatedUser = { ...user, profilePhoto: data.photoUrl };
                     setUser(updatedUser);
                     localStorage.setItem('user', JSON.stringify(updatedUser));
-                    alert('Photo de profil mise à jour!');
+                    toast('Photo de profil mise à jour !', 'success');
                 }
             } catch (error) { console.error(error); }
         } else if (type === 'salon') {
@@ -156,7 +158,7 @@ function ProfessionalDashboard({ user, setUser }) {
                     const updatedUser = { ...user, salonPhotos: [...(user.salonPhotos || []), ...data.photoUrls] };
                     setUser(updatedUser);
                     localStorage.setItem('user', JSON.stringify(updatedUser));
-                    alert('Photos ajoutées!');
+                    toast('Photos ajoutées !', 'success');
                 }
             } catch (error) { console.error(error); }
         }

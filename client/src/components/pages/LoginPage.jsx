@@ -5,10 +5,12 @@ import Input from "../common/Input";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../common/ToastContext';
 
 function LoginPage({ setUser }) {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const toast = useToast();
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errorMessages, setErrorMessages] = useState({ email: '', password: '' });
   const recaptchaRef = useRef(null);
@@ -22,7 +24,7 @@ function LoginPage({ setUser }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!captchaToken) {
-      alert('Veuillez valider le CAPTCHA avant de continuer.');
+      toast('Veuillez valider le CAPTCHA avant de continuer.', 'warning');
       return;
     }
     try {
@@ -36,9 +38,9 @@ function LoginPage({ setUser }) {
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
         if (data.requiresVerification) {
-          alert('Votre compte n\'est pas vérifié. Veuillez vous réinscrire avec la même adresse e-mail pour recevoir un nouveau code.');
+          toast('Votre compte n\'est pas vérifié. Veuillez vous réinscrire avec la même adresse e-mail pour recevoir un nouveau code.', 'warning');
         } else {
-          alert(t('login_error') + " : " + (data.error || "Erreur"));
+          toast(t('login_error') + " : " + (data.error || "Erreur"), 'error');
         }
       } else {
         const successData = await response.json();
@@ -51,7 +53,7 @@ function LoginPage({ setUser }) {
       console.error("Error during login:", error);
       recaptchaRef.current?.reset();
       setCaptchaToken(null);
-      alert(t('generic_error'));
+      toast(t('generic_error'), 'error');
     }
   };
 

@@ -8,9 +8,11 @@ import {
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import '../css/ServiceManagement.css';
+import { useToast } from '../common/ToastContext';
 
 function ServiceManagement({ user }) {
     const navigate = useNavigate();
+    const toast = useToast();
     const [services, setServices] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [editingService, setEditingService] = useState(null);
@@ -55,7 +57,7 @@ function ServiceManagement({ user }) {
         try {
             const token = localStorage.getItem('token');
             if (!token) {
-                alert("Erreur: Vous n'êtes pas connecté. Veuillez vous reconnecter.");
+                toast("Erreur: Vous n'êtes pas connecté. Veuillez vous reconnecter.", 'error');
                 window.location.href = '/login';
                 return;
             }

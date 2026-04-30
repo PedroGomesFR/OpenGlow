@@ -4,11 +4,13 @@ import 'dayjs/locale/fr';
 import { useNavigate } from "react-router-dom";
 import { IoCalendar, IoSettings, IoSave, IoClipboardOutline, IoAdd, IoClose, IoPerson, IoMail, IoCall, IoTime, IoCut } from 'react-icons/io5';
 import '../css/AppleDesign.css'; // Ensure this path is correct based on file structure
+import { useToast } from './ToastContext';
 
 dayjs.locale('fr');
 
 function Planning() {
   const navigate = useNavigate();
+  const toast = useToast();
   const storedUser = localStorage.getItem("user");
   const token = localStorage.getItem("token");
   const user = storedUser ? JSON.parse(storedUser) : null;
@@ -125,11 +127,11 @@ function Planning() {
         body: JSON.stringify(settings)
       });
       if (response.ok) {
-        alert('Paramètres enregistrés avec succès !');
+        toast('Paramètres enregistrés avec succès !', 'success');
       }
     } catch (error) {
       console.error('Error saving settings:', error);
-      alert('Erreur lors de l\'enregistrement');
+      toast('Erreur lors de l\'enregistrement', 'error');
     }
   };
 

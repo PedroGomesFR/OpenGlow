@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { IoMegaphone, IoAdd, IoTrash, IoPencil, IoCalendar, IoCheckmarkCircle, IoCloseCircle, IoCut } from 'react-icons/io5';
+import { useToast } from '../common/ToastContext';
+import { useConfirm } from '../common/ConfirmContext';
 
 function Announcements({ user }) {
+    const toast = useToast();
+    const confirm = useConfirm();
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -107,7 +111,7 @@ function Announcements({ user }) {
                 handleCloseModal();
             } else {
                 const errorData = await response.json();
-                alert(errorData.error || 'Erreur lors de l\'enregistrement');
+                toast(errorData.error || 'Erreur lors de l\'enregistrement', 'error');
             }
         } catch (error) {
             console.error('Error saving announcement:', error);
@@ -115,7 +119,13 @@ function Announcements({ user }) {
     };
 
     const handleDelete = async (id) => {
-        if (!window.confirm('Voulez-vous vraiment supprimer cette annonce ?')) return;
+        const confirmed = await confirm({
+            title: 'Supprimer l\'annonce',
+            message: 'Voulez-vous vraiment supprimer cette annonce ?',
+            confirmLabel: 'Supprimer',
+            danger: true,
+        });
+        if (!confirmed) return;
         const token = localStorage.getItem('token');
         try {
             const response = await fetch(`${window.API_URL}/announcements/${id}`, {

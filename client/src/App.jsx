@@ -29,6 +29,8 @@ import AdminPage from './components/pages/AdminPage.jsx';
 import Footer from './components/common/Footer.jsx';
 import MentionsLegales from './components/pages/MentionsLegales.jsx';
 import CookieBanner from './components/common/CookieBanner.jsx';
+import { ToastProvider } from './components/common/ToastContext.jsx';
+import { ConfirmProvider } from './components/common/ConfirmContext.jsx';
 
 function App() {
   const { i18n } = useTranslation();
@@ -47,6 +49,8 @@ function App() {
 
   return (
     <>
+      <ToastProvider>
+      <ConfirmProvider>
       <Router>
         <Header user={user} />
 
@@ -87,6 +91,8 @@ function App() {
         <Footer />
         <CookieBanner />
       </Router>
+      </ConfirmProvider>
+      </ToastProvider>
     </>
   )
 }

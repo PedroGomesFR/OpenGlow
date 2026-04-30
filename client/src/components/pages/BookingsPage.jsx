@@ -3,10 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IoCalendar, IoMail, IoCall } from 'react-icons/io5';
 import '../css/AppleDesign.css';
+import { useToast } from '../common/ToastContext';
+import { useConfirm } from '../common/ConfirmContext';
 
 function BookingsPage() {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const toast = useToast();
+    const confirm = useConfirm();
     const [bookings, setBookings] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -86,7 +90,13 @@ function BookingsPage() {
     };
 
     const handleDelete = async (bookingId) => {
-        if (!window.confirm(t('confirm_delete_booking'))) return;
+        const confirmed = await confirm({
+            title: 'Supprimer la réservation',
+            message: t('confirm_delete_booking') || 'Êtes-vous sûr de vouloir supprimer cette réservation ?',
+            confirmLabel: 'Supprimer',
+            danger: true,
+        });
+        if (!confirmed) return;
 
         try {
             const token = localStorage.getItem('token');
@@ -194,18 +204,21 @@ function BookingsPage() {
 
                                 <div className="booking-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                     {!user.isClient && booking.status === 'pending' && (
-                                        <button className="btn btn-primary btn-sm" onClick={() => {
-                                            if (window.confirm(t('confirm_accept_booking') || 'Confirmer ce rendez-vous ?')) handleStatusUpdate(booking._id, 'confirmed');
+                                        <button className="btn btn-primary btn-sm" onClick={async () => {
+                                            const ok = await confirm({ title: 'Confirmer le rendez-vous', message: t('confirm_accept_booking') || 'Confirmer ce rendez-vous ?', confirmLabel: 'Confirmer' });
+                                            if (ok) handleStatusUpdate(booking._id, 'confirmed');
                                         }}>{t('action_confirm')}</button>
                                     )}
                                     {!user.isClient && booking.status === 'confirmed' && (
-                                        <button className="btn btn-primary btn-sm" onClick={() => {
-                                            if (window.confirm(t('confirm_complete_booking') || 'Marquer ce rendez-vous comme terminé ?')) handleStatusUpdate(booking._id, 'completed');
+                                        <button className="btn btn-primary btn-sm" onClick={async () => {
+                                            const ok = await confirm({ title: 'Terminer le rendez-vous', message: t('confirm_complete_booking') || 'Marquer ce rendez-vous comme terminé ?', confirmLabel: 'Terminer' });
+                                            if (ok) handleStatusUpdate(booking._id, 'completed');
                                         }}>{t('action_complete')}</button>
                                     )}
                                     {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                                        <button className="btn btn-danger btn-sm" onClick={() => {
-                                            if (window.confirm(t('confirm_cancel_booking') || 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?')) handleStatusUpdate(booking._id, 'cancelled');
+                                        <button className="btn btn-danger btn-sm" onClick={async () => {
+                                            const ok = await confirm({ title: 'Annuler le rendez-vous', message: t('confirm_cancel_booking') || 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?', confirmLabel: 'Annuler le RDV', danger: true });
+                                            if (ok) handleStatusUpdate(booking._id, 'cancelled');
                                         }}>{t('action_cancel')}</button>
                                     )}
                                     {!user.isClient && (
