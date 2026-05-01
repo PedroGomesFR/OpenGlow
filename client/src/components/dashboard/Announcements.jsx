@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { IoMegaphone, IoAdd, IoTrash, IoPencil, IoCalendar, IoCheckmarkCircle, IoCloseCircle, IoCut } from 'react-icons/io5';
 import { useToast } from '../common/ToastContext';
 import { useConfirm } from '../common/ConfirmContext';
+import { useTranslation } from 'react-i18next';
 
 function Announcements({ user }) {
     const toast = useToast();
     const confirm = useConfirm();
+    const { t } = useTranslation();
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -111,7 +113,7 @@ function Announcements({ user }) {
                 handleCloseModal();
             } else {
                 const errorData = await response.json();
-                toast(errorData.error || 'Erreur lors de l\'enregistrement', 'error');
+                toast(errorData.error || t('announcement_save_error'), 'error');
             }
         } catch (error) {
             console.error('Error saving announcement:', error);
@@ -120,9 +122,9 @@ function Announcements({ user }) {
 
     const handleDelete = async (id) => {
         const confirmed = await confirm({
-            title: 'Supprimer l\'annonce',
-            message: 'Voulez-vous vraiment supprimer cette annonce ?',
-            confirmLabel: 'Supprimer',
+            title: t('announcement_delete_title'),
+            message: t('announcement_delete_message'),
+            confirmLabel: t('action_delete'),
             danger: true,
         });
         if (!confirmed) return;
@@ -163,11 +165,11 @@ function Announcements({ user }) {
         <div className="announcements-container">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div>
-                    <h2 style={{ marginBottom: '5px' }}>Annonces & Promotions</h2>
-                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>Gérez vos offres spéciales et actualités pour attirer plus de clients.</p>
+                    <h2 style={{ marginBottom: '5px' }}>{t('announcements_title')}</h2>
+                    <p style={{ color: 'var(--text-secondary)', margin: 0 }}>{t('announcements_subtitle')}</p>
                 </div>
                 <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-                    <IoAdd size={20} /> Nouvelle Annonce
+                    <IoAdd size={20} /> {t('announcement_new')}
                 </button>
             </div>
 
@@ -180,12 +182,12 @@ function Announcements({ user }) {
                     <div style={{ fontSize: '48px', color: 'var(--gray-300)', marginBottom: '20px' }}>
                         <IoMegaphone />
                     </div>
-                    <h3>Aucune annonce pour le moment</h3>
+                    <h3>{t('announcement_none_title')}</h3>
                     <p style={{ maxWidth: '400px', margin: '0 auto 24px auto' }}>
-                        Créez votre première annonce pour informer vos clients de vos promotions ou nouveautés.
+                        {t('announcement_none_desc')}
                     </p>
                     <button className="btn btn-primary" onClick={() => handleOpenModal()}>
-                        Créer une annonce
+                        {t('announcement_create')}
                     </button>
                 </div>
             ) : (
@@ -197,19 +199,19 @@ function Announcements({ user }) {
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
                                         <h3 style={{ margin: 0 }}>{announcement.title}</h3>
                                         <span className={`badge ${announcement.isActive ? 'badge-primary' : 'badge-gray'}`}>
-                                            {announcement.isActive ? 'Active' : 'Inactive'}
+                                            {announcement.isActive ? t('status_active') : t('status_inactive')}
                                         </span>
                                     </div>
                                     <p style={{ margin: 0 }}>{announcement.description}</p>
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    <button className="icon-btn" onClick={() => toggleActive(announcement)} title={announcement.isActive ? 'Désactiver' : 'Activer'}>
+                                    <button className="icon-btn" onClick={() => toggleActive(announcement)} title={announcement.isActive ? t('deactivate') : t('activate')}>
                                         {announcement.isActive ? <IoCloseCircle size={20} color="var(--danger)" /> : <IoCheckmarkCircle size={20} color="var(--primary)" />}
                                     </button>
-                                    <button className="icon-btn" onClick={() => handleOpenModal(announcement)} title="Modifier">
+                                    <button className="icon-btn" onClick={() => handleOpenModal(announcement)} title={t('edit')}>
                                         <IoPencil size={18} />
                                     </button>
-                                    <button className="icon-btn" onClick={() => handleDelete(announcement._id)} title="Supprimer">
+                                    <button className="icon-btn" onClick={() => handleDelete(announcement._id)} title={t('action_delete')}>
                                         <IoTrash size={18} color="var(--danger)" />
                                     </button>
                                 </div>
@@ -218,13 +220,13 @@ function Announcements({ user }) {
                             <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: 'var(--text-secondary)', borderTop: '1px solid var(--gray-100)', paddingTop: '15px' }}>
                                 {announcement.discountPercent && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                        <strong>Remise:</strong> {announcement.discountPercent}%
+                                        <strong>{t('discount_label')}:</strong> {announcement.discountPercent}%
                                     </div>
                                 )}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <IoCalendar size={14} />
-                                    <span>Du {new Date(announcement.startDate).toLocaleDateString()}</span>
-                                    {announcement.endDate && <span>au {new Date(announcement.endDate).toLocaleDateString()}</span>}
+                                    <span>{t('from_label')} {new Date(announcement.startDate).toLocaleDateString()}</span>
+                                    {announcement.endDate && <span>{t('to_label')} {new Date(announcement.endDate).toLocaleDateString()}</span>}
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                     <span className="badge badge-gray" style={{ textTransform: 'capitalize' }}>{announcement.type}</span>
@@ -232,7 +234,7 @@ function Announcements({ user }) {
                                 {announcement.serviceId && (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
                                         <IoCut size={14} />
-                                        <span>{services.find(s => s._id === announcement.serviceId)?.name || 'Service lié'}</span>
+                                        <span>{services.find(s => s._id === announcement.serviceId)?.name || t('linked_service')}</span>
                                     </div>
                                 )}
                             </div>
@@ -245,40 +247,40 @@ function Announcements({ user }) {
                 <div className="modal-overlay">
                     <div className="modal-content" style={{ maxWidth: '500px' }}>
                         <div className="modal-header">
-                            <h3 className="modal-title">{editingAnnouncement ? 'Modifier l\'annonce' : 'Nouvelle annonce'}</h3>
+                            <h3 className="modal-title">{editingAnnouncement ? t('announcement_edit') : t('announcement_new')}</h3>
                             <button className="modal-close" onClick={handleCloseModal}>&times;</button>
                         </div>
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label className="form-label">Titre de l'annonce</label>
+                                <label className="form-label">{t('announcement_title_label')}</label>
                                 <input 
                                     className="form-input" 
                                     type="text" 
-                                    placeholder="Ex: Soldes d'été -20%" 
+                                    placeholder={t('announcement_title_placeholder')} 
                                     value={formData.title}
                                     onChange={(e) => setFormData({...formData, title: e.target.value})}
                                     required
                                 />
                             </div>
                             <div className="form-group">
-                                <label className="form-label">Description</label>
+                                <label className="form-label">{t('label_description')}</label>
                                 <textarea 
                                     className="form-textarea" 
                                     rows="3" 
-                                    placeholder="Détails de votre offre..."
+                                    placeholder={t('announcement_desc_placeholder')}
                                     value={formData.description}
                                     onChange={(e) => setFormData({...formData, description: e.target.value})}
                                     required
                                 ></textarea>
                             </div>
                             <div className="form-group">
-                                <label className="form-label">Prestation concernée (Optionnel)</label>
+                                <label className="form-label">{t('announcement_service_optional')}</label>
                                 <select 
                                     className="form-select"
                                     value={formData.serviceId}
                                     onChange={(e) => setFormData({...formData, serviceId: e.target.value})}
                                 >
-                                    <option value="">-- Toutes les prestations --</option>
+                                    <option value="">{t('announcement_all_services')}</option>
                                     {services.map(s => (
                                         <option key={s._id} value={s._id}>{s.name} ({s.price}€)</option>
                                     ))}
@@ -286,24 +288,24 @@ function Announcements({ user }) {
                             </div>
                             <div className="grid grid-2">
                                 <div className="form-group">
-                                    <label className="form-label">Type</label>
+                                    <label className="form-label">{t('label_type')}</label>
                                     <select 
                                         className="form-select"
                                         value={formData.type}
                                         onChange={(e) => setFormData({...formData, type: e.target.value})}
                                     >
-                                        <option value="promotion">Promotion</option>
-                                        <option value="news">Nouveauté</option>
-                                        <option value="event">Événement</option>
-                                        <option value="other">Autre</option>
+                                        <option value="promotion">{t('type_promotion')}</option>
+                                        <option value="news">{t('type_news')}</option>
+                                        <option value="event">{t('type_event')}</option>
+                                        <option value="other">{t('type_other')}</option>
                                     </select>
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Remise (%) - Optionnel</label>
+                                    <label className="form-label">{t('announcement_discount_optional')}</label>
                                     <input 
                                         className="form-input" 
                                         type="number" 
-                                        placeholder="Ex: 20"
+                                        placeholder={t('announcement_discount_placeholder')}
                                         value={formData.discountPercent}
                                         onChange={(e) => setFormData({...formData, discountPercent: e.target.value})}
                                     />
@@ -311,7 +313,7 @@ function Announcements({ user }) {
                             </div>
                             <div className="grid grid-2">
                                 <div className="form-group">
-                                    <label className="form-label">Date de début</label>
+                                    <label className="form-label">{t('start_date')}</label>
                                     <input 
                                         className="form-input" 
                                         type="date"
@@ -321,7 +323,7 @@ function Announcements({ user }) {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label className="form-label">Date de fin (Optionnel)</label>
+                                    <label className="form-label">{t('end_date_optional')}</label>
                                     <input 
                                         className="form-input" 
                                         type="date"
@@ -332,10 +334,10 @@ function Announcements({ user }) {
                             </div>
                             <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
                                 <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>
-                                    {editingAnnouncement ? 'Enregistrer les modifications' : 'Créer l\'annonce'}
+                                    {editingAnnouncement ? t('save_changes') : t('announcement_create')}
                                 </button>
                                 <button type="button" className="btn btn-secondary" onClick={handleCloseModal}>
-                                    Annuler
+                                    {t('action_cancel')}
                                 </button>
                             </div>
                         </form>

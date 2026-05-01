@@ -28,17 +28,17 @@ const Footer = () => {
 
                     {/* Navigation */}
                     <div>
-                        <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px', textTransform: 'uppercase', color: '#86868b' }}>Navigation</h4>
+                        <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px', textTransform: 'uppercase', color: '#86868b' }}>{t('footer_navigation')}</h4>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '13px' }}>
                             <li style={{ marginBottom: '8px' }}><a href="/" style={{ color: '#424245', textDecoration: 'none' }}>{t('home')}</a></li>
                             <li style={{ marginBottom: '8px' }}><a href="/recherche" style={{ color: '#424245', textDecoration: 'none' }}>{t('find_pro')}</a></li>
-                            <li style={{ marginBottom: '8px' }}><a href="/login" style={{ color: '#424245', textDecoration: 'none' }}>{t('login')} Pro</a></li>
+                            <li style={{ marginBottom: '8px' }}><a href="/login" style={{ color: '#424245', textDecoration: 'none' }}>{t('footer_pro_login')}</a></li>
                         </ul>
                     </div>
 
                     {/* Legal */}
                     <div>
-                        <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px', textTransform: 'uppercase', color: '#86868b' }}>Légal</h4>
+                        <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px', textTransform: 'uppercase', color: '#86868b' }}>{t('footer_legal')}</h4>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '13px' }}>
                             <li style={{ marginBottom: '8px' }}>
                                 <span onClick={() => navigate('/mentions-legales')} style={{ color: '#424245', cursor: 'pointer' }}>{t('legal_mentions')}</span>
@@ -46,8 +46,8 @@ const Footer = () => {
                             <li style={{ marginBottom: '8px' }}>
                                 <span onClick={() => navigate('/cgp')} style={{ color: '#424245', cursor: 'pointer' }}>{t('cgp')}</span>
                             </li>
-                            <li style={{ marginBottom: '8px' }}><span onClick={() => navigate('/politique-confidentialite')} style={{ color: '#424245', cursor: 'pointer' }}>Confidentialité</span></li>
-                            <li style={{ marginBottom: '8px' }}><span style={{ color: '#424245', cursor: 'pointer' }}>CGU</span></li>
+                            <li style={{ marginBottom: '8px' }}><span onClick={() => navigate('/politique-confidentialite')} style={{ color: '#424245', cursor: 'pointer' }}>{t('footer_privacy')}</span></li>
+                            <li style={{ marginBottom: '8px' }}><span style={{ color: '#424245', cursor: 'pointer' }}>{t('footer_terms_short')}</span></li>
                         </ul>
                     </div>
                 </div>
@@ -67,7 +67,7 @@ const Footer = () => {
                         Copyright © {currentYear} OpenGlow Beauty Inc. {t('footer_rights')}
                     </div>
                     <div>
-                        France
+                        {t('country_france')}
                     </div>
                 </div>
             </div>

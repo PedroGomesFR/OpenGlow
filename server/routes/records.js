@@ -226,6 +226,7 @@ router.post('/verify-email', async (req, res) => {
         id: user._id,
         prenom: user.prenom,
         nom: user.nom,
+        dateDeNaissance: user.dateDeNaissance,
         email: user.email,
         isClient: user.isClient,
         isAdmin: user.isAdmin || false,
@@ -286,6 +287,7 @@ router.post('/login', loginLimiter, async (req, res) => {
         id: user._id,
         prenom: user.prenom,
         nom: user.nom,
+        dateDeNaissance: user.dateDeNaissance,
         email: user.email,
         isClient: user.isClient,
         isAdmin: user.isAdmin || false, // Return isAdmin status
@@ -409,16 +411,61 @@ router.delete('/delete-account', verifyToken, async (req, res) => {
 router.put('/update-profile', verifyToken, async (req, res) => {
   try {
     const userId = req.userId;
-    const { description, address, phone, openingHours, companyName, latitude, longitude } = req.body;
+    const {
+      description,
+      address,
+      phone,
+      openingHours,
+      companyName,
+      latitude,
+      longitude,
+      prenom,
+      nom,
+      dateDeNaissance
+    } = req.body;
 
     const db = await connectDB();
     const updateData = { updatedAt: new Date() };
 
     if (description !== undefined) updateData.description = description;
     if (address !== undefined) updateData.address = address;
-    if (phone !== undefined) updateData.phone = phone;
+    if (phone !== undefined) {
+      const normalizedPhone = phone ? String(phone).trim() : '';
+      if (normalizedPhone && !/^\+?[0-9\s().-]{6,20}$/.test(normalizedPhone)) {
+        return res.status(400).json({ error: 'Numéro de téléphone invalide.' });
+      }
+      updateData.phone = normalizedPhone || null;
+    }
     if (openingHours !== undefined) updateData.openingHours = openingHours;
     if (companyName !== undefined) updateData.companyName = companyName;
+
+    if (prenom !== undefined) {
+      const cleanedPrenom = String(prenom).trim();
+      if (!cleanedPrenom || cleanedPrenom.length > 80) {
+        return res.status(400).json({ error: 'Prénom invalide.' });
+      }
+      updateData.prenom = cleanedPrenom;
+    }
+
+    if (nom !== undefined) {
+      const cleanedNom = String(nom).trim();
+      if (!cleanedNom || cleanedNom.length > 80) {
+        return res.status(400).json({ error: 'Nom invalide.' });
+      }
+      updateData.nom = cleanedNom;
+    }
+
+    if (dateDeNaissance !== undefined) {
+      if (!dateDeNaissance) {
+        updateData.dateDeNaissance = null;
+      } else {
+        const birthDate = new Date(dateDeNaissance);
+        if (Number.isNaN(birthDate.getTime())) {
+          return res.status(400).json({ error: 'Date de naissance invalide.' });
+        }
+        updateData.dateDeNaissance = dateDeNaissance;
+      }
+    }
 
     // GPS coordinates
     if (latitude !== undefined && longitude !== undefined) {

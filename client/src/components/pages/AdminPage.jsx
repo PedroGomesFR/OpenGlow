@@ -4,11 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import '../css/AppleDesign.css';
 import { useToast } from '../common/ToastContext';
 import { useConfirm } from '../common/ConfirmContext';
+import { useTranslation } from 'react-i18next';
 
 function AdminPage() {
     const navigate = useNavigate();
     const toast = useToast();
     const confirm = useConfirm();
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -23,7 +25,7 @@ function AdminPage() {
         try {
             const user = JSON.parse(userStr);
             if (!user.isAdmin) {
-                toast("Accès refusé. Réservé aux administrateurs.", 'error');
+                toast(t('admin_access_denied'), 'error');
                 window.location.href = '/';
                 return;
             }
@@ -57,9 +59,9 @@ function AdminPage() {
 
     const handleDeleteUser = async (userId) => {
         const confirmed = await confirm({
-            title: 'Supprimer cet utilisateur',
-            message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.',
-            confirmLabel: 'Supprimer',
+            title: t('admin_delete_user_title'),
+            message: t('admin_delete_user_message'),
+            confirmLabel: t('action_delete'),
             danger: true,
         });
         if (!confirmed) return;
@@ -73,13 +75,13 @@ function AdminPage() {
 
             if (response.ok) {
                 setUsers(users.filter(u => u._id !== userId));
-                toast('Utilisateur supprimé avec succès.', 'success');
+                toast(t('admin_user_deleted'), 'success');
             } else {
-                toast('Erreur lors de la suppression.', 'error');
+                toast(t('admin_delete_error'), 'error');
             }
         } catch (error) {
             console.error('Error deleting user:', error);
-            toast('Erreur lors de la suppression.', 'error');
+            toast(t('admin_delete_error'), 'error');
         }
     };
 
@@ -93,42 +95,42 @@ function AdminPage() {
             <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '30px' }}>
                     <button onClick={() => navigate('/')} className="btn btn-outline" style={{ marginRight: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <IoArrowBack /> Retour
+                        <IoArrowBack /> {t('return_btn')}
                     </button>
                     <div>
                         <h1 style={{ marginBottom: '5px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <IoShieldCheckmark color="var(--primary)" /> Administration
+                            <IoShieldCheckmark color="var(--primary)" /> {t('admin_title')}
                         </h1>
-                        <p className="text-secondary">Monitorez et gérez les utilisateurs de la plateforme.</p>
+                        <p className="text-secondary">{t('admin_subtitle')}</p>
                     </div>
                 </div>
 
                 <div className="grid grid-3" style={{ marginBottom: '40px' }}>
                     <div className="card">
-                        <div className="text-secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>TOTAL UTILISATEURS</div>
+                        <div className="text-secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('admin_total_users')}</div>
                         <div style={{ fontSize: '32px', fontWeight: '700', margin: '10px 0' }}>{users.length}</div>
                         <IoPeople className="text-secondary" size={24} />
                     </div>
                     <div className="card">
-                        <div className="text-secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>CLIENTS</div>
+                        <div className="text-secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('admin_clients')}</div>
                         <div style={{ fontSize: '32px', fontWeight: '700', margin: '10px 0', color: 'var(--primary)' }}>{clients.length}</div>
                     </div>
                     <div className="card">
-                        <div className="text-secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>PROFESSIONNELS</div>
+                        <div className="text-secondary" style={{ fontSize: '12px', fontWeight: 'bold' }}>{t('admin_professionals')}</div>
                         <div style={{ fontSize: '32px', fontWeight: '700', margin: '10px 0', color: 'var(--primary)' }}>{professionals.length}</div>
                     </div>
                 </div>
 
                 <div className="card">
-                    <h2 style={{ marginBottom: '20px' }}>Utilisateurs ({users.length})</h2>
+                    <h2 style={{ marginBottom: '20px' }}>{t('admin_users_count', { count: users.length })}</h2>
                     <div style={{ overflowX: 'auto' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                             <thead>
                                 <tr style={{ borderBottom: '1px solid #E5E5E5' }}>
-                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>NOM / EMAIL</th>
-                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>ROLE</th>
-                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>ENTREPRISE</th>
-                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>ACTIONS</th>
+                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>{t('admin_name_email')}</th>
+                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>{t('admin_role')}</th>
+                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>{t('admin_company')}</th>
+                                    <th style={{ padding: '12px', color: '#86868b', fontSize: '13px' }}>{t('admin_actions')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -167,7 +169,7 @@ function AdminPage() {
                                                     alignItems: 'center',
                                                     justifyContent: 'center'
                                                 }}
-                                                title="Supprimer"
+                                                title={t('action_delete')}
                                             >
                                                 <IoTrash />
                                             </button>

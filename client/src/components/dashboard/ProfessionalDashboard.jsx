@@ -23,10 +23,12 @@ import ReviewsPage from '../pages/ReviewsPage';
 import BookingsPage from '../pages/BookingsPage';
 import Announcements from './Announcements';
 import { useToast } from '../common/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 function ProfessionalDashboard({ user, setUser }) {
     const navigate = useNavigate();
     const toast = useToast();
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('planning');
     const [profileData, setProfileData] = useState({
         description: user?.description || '',
@@ -50,13 +52,13 @@ function ProfessionalDashboard({ user, setUser }) {
     }, [user]);
 
     const menuItems = [
-        { id: 'overview', label: 'Vue d\'ensemble', icon: <IoGrid size={18} /> },
-        { id: 'bookings', label: 'Réservations', icon: <IoCalendarNumber size={18} /> },
-        { id: 'planning', label: 'Planning', icon: <IoCalendar size={18} /> },
-        { id: 'services', label: 'Prestations', icon: <IoCut size={18} /> },
-        { id: 'reviews', label: 'Avis Clients', icon: <IoStar size={18} /> },
-        { id: 'announcements', label: 'Annonces', icon: <IoMegaphone size={18} /> },
-        { id: 'settings', label: 'Mon Profil', icon: <IoPerson size={18} /> },
+        { id: 'overview', label: t('pro_tab_overview'), icon: <IoGrid size={18} /> },
+        { id: 'bookings', label: t('pro_tab_bookings'), icon: <IoCalendarNumber size={18} /> },
+        { id: 'planning', label: t('pro_tab_planning'), icon: <IoCalendar size={18} /> },
+        { id: 'services', label: t('pro_tab_services'), icon: <IoCut size={18} /> },
+        { id: 'reviews', label: t('pro_tab_reviews'), icon: <IoStar size={18} /> },
+        { id: 'announcements', label: t('pro_tab_announcements'), icon: <IoMegaphone size={18} /> },
+        { id: 'settings', label: t('pro_tab_profile'), icon: <IoPerson size={18} /> },
     ];
 
     const deconnection = () => {
@@ -103,7 +105,7 @@ function ProfessionalDashboard({ user, setUser }) {
 
             if (response.ok) {
                 const resData = await response.json();
-                toast('Profil mis à jour avec succès !', 'success');
+                toast(t('profile_update_success'), 'success');
 
                 // Merge response data to ensure we have the lat/lon if server processed it
                 const updatedUser = {
@@ -118,7 +120,7 @@ function ProfessionalDashboard({ user, setUser }) {
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            toast('Erreur lors de la mise à jour', 'error');
+            toast(t('profile_update_error'), 'error');
         }
     };
 
@@ -142,7 +144,7 @@ function ProfessionalDashboard({ user, setUser }) {
                     const updatedUser = { ...user, profilePhoto: data.photoUrl };
                     setUser(updatedUser);
                     localStorage.setItem('user', JSON.stringify(updatedUser));
-                    toast('Photo de profil mise à jour !', 'success');
+                    toast(t('photo_updated'), 'success');
                 }
             } catch (error) { console.error(error); }
         } else if (type === 'salon') {
@@ -158,7 +160,7 @@ function ProfessionalDashboard({ user, setUser }) {
                     const updatedUser = { ...user, salonPhotos: [...(user.salonPhotos || []), ...data.photoUrls] };
                     setUser(updatedUser);
                     localStorage.setItem('user', JSON.stringify(updatedUser));
-                    toast('Photos ajoutées !', 'success');
+                    toast(t('pro_photos_added'), 'success');
                 }
             } catch (error) { console.error(error); }
         }
@@ -185,7 +187,7 @@ function ProfessionalDashboard({ user, setUser }) {
                         <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
                             <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '18px' }}>
-                                    <IoCamera color="var(--primary)" /> Photos & Visuels
+                                    <IoCamera color="var(--primary)" /> {t('pro_visuals_title')}
                                 </h3>
                             </div>
                             
@@ -237,16 +239,16 @@ function ProfessionalDashboard({ user, setUser }) {
                                                 boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                                                 transition: 'all 0.2s'
                                             }}
-                                            title="Modifier la photo"
+                                            title={t('edit_photo')}
                                         >
                                             <IoCamera size={18} />
                                             <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'profile')} style={{ display: 'none' }} />
                                         </label>
                                     </div>
                                     <div>
-                                        <h4 style={{ margin: '0 0 5px 0' }}>Photo de profil</h4>
+                                        <h4 style={{ margin: '0 0 5px 0' }}>{t('pro_profile_photo')}</h4>
                                         <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, maxWidth: '400px' }}>
-                                            Apparaît sur votre fiche publique pour que les clients vous reconnaissent facilement.
+                                            {t('pro_profile_photo_desc')}
                                         </p>
                                     </div>
                                 </div>
@@ -254,9 +256,9 @@ function ProfessionalDashboard({ user, setUser }) {
                                 {/* Salon Photos Area */}
                                 <div>
                                     <h4 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #E5E5E5', paddingTop: '30px', margin: '0 0 16px 0' }}>
-                                        Galerie d'images (Salon & Réalisations)
+                                        {t('pro_gallery_title')}
                                         <label className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', cursor: 'pointer', display: 'flex', gap: '6px', margin: 0 }}>
-                                            <IoCamera size={16} /> Ajouter des photos
+                                            <IoCamera size={16} /> {t('pro_add_photos')}
                                             <input type="file" multiple accept="image/*" onChange={(e) => handlePhotoUpload(e, 'salon')} style={{ display: 'none' }} />
                                         </label>
                                     </h4>
@@ -292,8 +294,8 @@ function ProfessionalDashboard({ user, setUser }) {
                                             color: '#86868b'
                                         }}>
                                             <IoBusiness size={40} style={{ opacity: 0.5, marginBottom: '10px' }} />
-                                            <p style={{ margin: '0 0 5px 0', fontWeight: '500' }}>Aucune photo pour l'instant.</p>
-                                            <p style={{ fontSize: '13px', margin: 0 }}>Ajoutez des photos de votre espace ou de vos réalisations pour attirer plus de clients.</p>
+                                            <p style={{ margin: '0 0 5px 0', fontWeight: '500' }}>{t('pro_no_photos')}</p>
+                                            <p style={{ fontSize: '13px', margin: 0 }}>{t('pro_no_photos_desc')}</p>
                                         </div>
                                     )}
                                 </div>
@@ -304,81 +306,81 @@ function ProfessionalDashboard({ user, setUser }) {
                         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
                             <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '18px' }}>
-                                    <IoBusiness color="var(--primary)" /> Informations de l'établissement
+                                    <IoBusiness color="var(--primary)" /> {t('pro_business_info')}
                                 </h3>
                             </div>
                             
                             <form onSubmit={handleProfileUpdate} style={{ padding: '24px' }}>
                                 <div className="form-group" style={{ marginBottom: '24px' }}>
                                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                         Mon Entreprise (Nom public)
+                                         {t('pro_company_public_name')}
                                     </label>
                                     <input
                                         className="form-input"
                                         type="text"
                                         value={profileData.companyName}
                                         onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
-                                        placeholder="Ex: Institut Beauté Plus"
+                                        placeholder={t('pro_company_placeholder')}
                                     />
                                 </div>
                                 
                                 <div className="grid grid-2" style={{ gap: '24px', marginBottom: '24px' }}>
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <IoCall /> Numéro de Téléphone
+                                            <IoCall /> {t('pro_phone_number')}
                                         </label>
                                         <input
                                             className="form-input"
                                             type="tel"
                                             value={profileData.phone}
                                             onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-                                            placeholder="Ex: 01 23 45 67 89"
+                                            placeholder={t('pro_phone_placeholder')}
                                         />
                                     </div>
                                     <div className="form-group" style={{ marginBottom: 0 }}>
                                         <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            <IoLocation /> Adresse Complète
+                                            <IoLocation /> {t('pro_full_address')}
                                         </label>
                                         <input
                                             className="form-input"
                                             type="text"
                                             value={profileData.address}
                                             onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
-                                            placeholder="Ex: 10 Rue de Paris, 75001 Paris"
+                                            placeholder={t('pro_address_placeholder')}
                                         />
                                     </div>
                                 </div>
                                 
                                 <div className="form-group" style={{ marginBottom: '24px' }}>
                                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <IoTime /> Horaires d'ouverture (Affichage libre)
+                                        <IoTime /> {t('pro_opening_hours')}
                                     </label>
                                     <input
                                         className="form-input"
                                         type="text"
                                         value={profileData.openingHours}
                                         onChange={(e) => setProfileData({ ...profileData, openingHours: e.target.value })}
-                                        placeholder="Ex: Lundi-Vendredi 9h-18h, Samedi 9h-12h"
+                                        placeholder={t('pro_opening_hours_placeholder')}
                                     />
                                 </div>
                                 
                                 <div className="form-group" style={{ marginBottom: 0 }}>
-                                    <label className="form-label">Description / Notre Expertise</label>
+                                    <label className="form-label">{t('pro_description_expertise')}</label>
                                     <textarea
                                         className="form-textarea"
                                         rows="5"
                                         value={profileData.description}
                                         onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
-                                        placeholder="Présentez votre établissement, votre équipe et votre savoir-faire en quelques lignes..."
+                                        placeholder={t('pro_description_placeholder')}
                                     ></textarea>
                                 </div>
 
                                 <div style={{ display: 'flex', gap: '15px', marginTop: '30px', paddingTop: '24px', borderTop: '1px solid #E5E5E5' }}>
                                     <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '15px' }}>
-                                        Enregistrer les modifications
+                                        {t('save_changes')}
                                     </button>
                                     <button type="button" className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '15px' }} onClick={() => navigate(`/professional/${user._id || user.id}`)}>
-                                        Aperçu public
+                                        {t('public_preview')}
                                     </button>
                                 </div>
                             </form>
@@ -407,15 +409,15 @@ function ProfessionalDashboard({ user, setUser }) {
                         fontSize: '11px',
                         marginBottom: '10px'
                     }}>
-                        <IoBusiness size={12} /> ESPACE PRO
+                        <IoBusiness size={12} /> {t('pro_space')}
                     </div>
                     <h2 style={{ fontSize: '22px', fontWeight: '700', margin: 0, letterSpacing: '-0.5px' }}>OpenGlow</h2>
-                    <div style={{ fontSize: '13px', color: '#86868b', marginTop: '6px' }}>{user.companyName || 'Mon Salon'}</div>
+                    <div style={{ fontSize: '13px', color: '#86868b', marginTop: '6px' }}>{user.companyName || t('pro_my_salon')}</div>
                 </div>
 
                 {/* Mobile Header (simplified) */}
                 <div className="mobile-only" style={{ marginBottom: '10px', textAlign: 'center' }}>
-                    <strong>OpenGlow Pro</strong>
+                    <strong>{t('pro_mobile_header')}</strong>
                 </div>
 
                 <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -466,7 +468,7 @@ function ProfessionalDashboard({ user, setUser }) {
                         }}
                     >
                         <IoLogOut />
-                        Déconnexion
+                        {t('logout')}
                     </button>
                 </div>
             </div>

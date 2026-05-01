@@ -91,9 +91,9 @@ function BookingsPage() {
 
     const handleDelete = async (bookingId) => {
         const confirmed = await confirm({
-            title: 'Supprimer la réservation',
-            message: t('confirm_delete_booking') || 'Êtes-vous sûr de vouloir supprimer cette réservation ?',
-            confirmLabel: 'Supprimer',
+            title: t('delete_booking_title'),
+            message: t('confirm_delete_booking_message'),
+            confirmLabel: t('action_delete'),
             danger: true,
         });
         if (!confirmed) return;
@@ -205,19 +205,19 @@ function BookingsPage() {
                                 <div className="booking-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
                                     {!user.isClient && booking.status === 'pending' && (
                                         <button className="btn btn-primary btn-sm" onClick={async () => {
-                                            const ok = await confirm({ title: 'Confirmer le rendez-vous', message: t('confirm_accept_booking') || 'Confirmer ce rendez-vous ?', confirmLabel: 'Confirmer' });
+                                            const ok = await confirm({ title: t('confirm_booking_title'), message: t('confirm_accept_booking'), confirmLabel: t('action_confirm') });
                                             if (ok) handleStatusUpdate(booking._id, 'confirmed');
                                         }}>{t('action_confirm')}</button>
                                     )}
                                     {!user.isClient && booking.status === 'confirmed' && (
                                         <button className="btn btn-primary btn-sm" onClick={async () => {
-                                            const ok = await confirm({ title: 'Terminer le rendez-vous', message: t('confirm_complete_booking') || 'Marquer ce rendez-vous comme terminé ?', confirmLabel: 'Terminer' });
+                                            const ok = await confirm({ title: t('complete_booking_title'), message: t('confirm_complete_booking'), confirmLabel: t('action_complete') });
                                             if (ok) handleStatusUpdate(booking._id, 'completed');
                                         }}>{t('action_complete')}</button>
                                     )}
                                     {(booking.status === 'pending' || booking.status === 'confirmed') && (
                                         <button className="btn btn-danger btn-sm" onClick={async () => {
-                                            const ok = await confirm({ title: 'Annuler le rendez-vous', message: t('confirm_cancel_booking') || 'Êtes-vous sûr de vouloir annuler ce rendez-vous ?', confirmLabel: 'Annuler le RDV', danger: true });
+                                            const ok = await confirm({ title: t('cancel_booking_title'), message: t('confirm_cancel_booking'), confirmLabel: t('cancel_booking_confirm'), danger: true });
                                             if (ok) handleStatusUpdate(booking._id, 'cancelled');
                                         }}>{t('action_cancel')}</button>
                                     )}

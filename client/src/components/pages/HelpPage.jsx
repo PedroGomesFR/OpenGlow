@@ -1,45 +1,47 @@
 import { useNavigate } from 'react-router-dom';
 import { IoArrowBack, IoSearch, IoCut, IoCalendar, IoCard, IoSettings, IoChatbubbles, IoChevronForward } from 'react-icons/io5';
 import '../css/AppleDesign.css';
+import { useTranslation } from 'react-i18next';
 
 function HelpPage() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const helpTopics = [
         {
             icon: <IoSettings size={24} color="var(--primary)" />,
-            title: "Configurer mon profil",
-            desc: "Apprenez à mettre en valeur votre salon avec des photos, adresses, et informations d'ouverture.",
+            title: t('help_topic_profile_title'),
+            desc: t('help_topic_profile_desc'),
         },
         {
             icon: <IoCut size={24} color="var(--primary)" />,
-            title: "Gérer mes prestations",
-            desc: "Ajouter, modifier ou désactiver les prestations disponibles pour vos clients.",
+            title: t('help_topic_services_title'),
+            desc: t('help_topic_services_desc'),
         },
         {
             icon: <IoCalendar size={24} color="var(--primary)" />,
-            title: "Mon Planning & Réservations",
-            desc: "Comprendre où consulter vos prochains rendez-vous et comment les valider.",
+            title: t('help_topic_planning_title'),
+            desc: t('help_topic_planning_desc'),
         },
         {
             icon: <IoCard size={24} color="var(--primary)" />,
-            title: "Abonnement professionnel",
-            desc: "Obtenez de l'aide concernant le passage à la version premium (facturation et avantages).",
+            title: t('help_topic_subscription_title'),
+            desc: t('help_topic_subscription_desc'),
         }
     ];
 
     const faqs = [
         {
-            q: "J'ai oublié mon mot de passe, comment le réinitialiser ?",
-            a: "Actuellement, veuillez contacter le support directement avec votre adresse e-mail professionnelle pour demander une réinitialisation manuelle."
+            q: t('help_faq_1_q'),
+            a: t('help_faq_1_a')
         },
         {
-            q: "Les clients peuvent-ils réserver sans mon accord ?",
-            a: "Par défaut, les clients peuvent réserver les créneaux disponibles. Vous serez notifié. Une option d'approbation manuelle arrivera prochainement."
+            q: t('help_faq_2_q'),
+            a: t('help_faq_2_a')
         },
         {
-            q: "Comment supprimer une photo de mon salon ?",
-            a: "Dans la version actuelle, vous pouvez téléverser de nouvelles photos. Pour archiver des anciennes, rendez-vous dans la console d'administration OpenGlow."
+            q: t('help_faq_3_q'),
+            a: t('help_faq_3_a')
         }
     ];
 
@@ -55,16 +57,16 @@ function HelpPage() {
                         fontSize: '15px', fontWeight: '500', marginBottom: '30px'
                     }}
                 >
-                    <IoArrowBack /> Retour
+                    <IoArrowBack /> {t('return_btn')}
                 </button>
 
                 <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-                    <h1 style={{ fontSize: '36px', fontWeight: '700', marginBottom: '15px' }}>Bonjour, comment pouvons-nous aider ?</h1>
+                    <h1 style={{ fontSize: '36px', fontWeight: '700', marginBottom: '15px' }}>{t('help_title')}</h1>
                     <div style={{ position: 'relative', maxWidth: '600px', margin: '0 auto' }}>
                         <IoSearch style={{ position: 'absolute', top: '50%', left: '16px', transform: 'translateY(-50%)', color: '#86868b', fontSize: '20px' }} />
                         <input 
                             type="text" 
-                            placeholder="Rechercher une question ou un thème..." 
+                            placeholder={t('help_search_placeholder')} 
                             style={{ 
                                 width: '100%', padding: '16px 16px 16px 50px',
                                 borderRadius: '30px', border: '1px solid transparent',
@@ -97,7 +99,7 @@ function HelpPage() {
                 <div className="card" style={{ padding: '0', overflow: 'hidden', marginBottom: '40px' }}>
                     <div style={{ padding: '24px', background: '#FAFAFA', borderBottom: '1px solid #E5E5EA' }}>
                         <h2 style={{ fontSize: '20px', margin: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <IoChatbubbles color="var(--primary)" /> Questions fréquentes (FAQ)
+                            <IoChatbubbles color="var(--primary)" /> {t('help_faq_title')}
                         </h2>
                     </div>
                     <div style={{ padding: '0 24px' }}>
@@ -114,10 +116,10 @@ function HelpPage() {
                 </div>
 
                 <div className="card" style={{ textAlign: 'center', padding: '40px', background: 'var(--primary)', color: 'white' }}>
-                    <h2 style={{ color: 'white', margin: '0 0 10px 0' }}>Vous ne trouvez pas votre réponse ?</h2>
-                    <p style={{ opacity: 0.9, marginBottom: '20px' }}>Notre équipe support professionnel est disponible par e-mail.</p>
+                    <h2 style={{ color: 'white', margin: '0 0 10px 0' }}>{t('help_contact_title')}</h2>
+                    <p style={{ opacity: 0.9, marginBottom: '20px' }}>{t('help_contact_desc')}</p>
                     <button className="btn" style={{ background: 'white', color: 'var(--primary)', fontWeight: '600' }}>
-                        Contacter le support
+                        {t('help_contact_cta')}
                     </button>
                 </div>
             </div>

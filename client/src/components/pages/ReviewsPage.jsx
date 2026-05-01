@@ -18,12 +18,14 @@ import {
 import '../css/AppleDesign.css';
 import '../css/ReviewsPage.css';
 import { useToast } from '../common/ToastContext';
+import { useTranslation } from 'react-i18next';
 
 function ReviewsPage({ user, professionalId: propProfessionalId }) {
     const { professionalId: paramProfessionalId } = useParams();
     const professionalId = propProfessionalId || paramProfessionalId;
     const navigate = useNavigate();
     const toast = useToast();
+    const { t } = useTranslation();
     const [reviews, setReviews] = useState([]);
     const [stats, setStats] = useState(null);
     const [professional, setProfessional] = useState(null);
@@ -101,7 +103,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         e.preventDefault();
 
         if (!user) {
-            toast('Vous devez être connecté pour laisser un avis', 'warning');
+            toast(t('reviews_login_required'), 'warning');
             navigate('/login');
             return;
         }
@@ -138,7 +140,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
     };
 
     const handleDelete = async (reviewId) => {
-        if (!confirm('Supprimer cet avis ?')) return;
+        if (!confirm(t('reviews_delete_confirm'))) return;
 
         try {
             const token = localStorage.getItem('token');
@@ -214,7 +216,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                 {/* Header */}
                 <div className="page-header">
                     <button className="btn btn-outline" onClick={() => navigate(-1)} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <IoArrowBack /> Retour
+                        <IoArrowBack /> {t('return_btn')}
                     </button>
                 </div>
 
@@ -237,7 +239,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                                 {renderStars(Math.round(stats.average), false, true)}
                                 <span className="rating-text">
                                     <strong>{stats.average.toFixed(1)}</strong> / 5
-                                    <span className="review-count">({stats.total} avis)</span>
+                                    <span className="review-count">({stats.total} {t('reviews_count')})</span>
                                 </span>
                             </div>
                         )}
@@ -252,7 +254,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                             }}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
-                            <IoCreate /> Laisser un avis
+                            <IoCreate /> {t('reviews_leave')}
                         </button>
                     )}
                 </div>
@@ -260,7 +262,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                 {/* Statistics */}
                 {stats && stats.total > 0 && (
                     <div className="stats-section card">
-                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoBarChart /> Statistiques des avis</h2>
+                        <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoBarChart /> {t('reviews_stats_title')}</h2>
                         <div className="distribution-grid">
                             {[5, 4, 3, 2, 1].map(star => (
                                 <div key={star} className="distribution-row">
@@ -277,7 +279,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
 
                 {/* Reviews List */}
                 <div className="reviews-section">
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoChatbubbles /> Avis clients ({reviews.length})</h2>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoChatbubbles /> {t('reviews_clients_count', { count: reviews.length })}</h2>
                     {reviews.length > 0 ? (
                         <div className="reviews-list">
                             {reviews.map(review => (
@@ -328,14 +330,14 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                                                 }}
                                                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                                             >
-                                                <IoPencil /> Modifier
+                                                <IoPencil /> {t('edit')}
                                             </button>
                                             <button
                                                 className="btn btn-sm btn-outline"
                                                 onClick={() => handleDelete(review._id)}
                                                 style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
                                             >
-                                                <IoTrash /> Supprimer
+                                                <IoTrash /> {t('action_delete')}
                                             </button>
                                         </div>
                                     )}
@@ -347,15 +349,15 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                             <div className="empty-state-icon">
                                 <IoChatbubbleEllipses size={48} color="#86868b" />
                             </div>
-                            <h3>Aucun avis pour le moment</h3>
-                            <p>Soyez le premier à partager votre expérience</p>
+                            <h3>{t('reviews_none_title')}</h3>
+                            <p>{t('reviews_none_desc')}</p>
                             {user && user.isClient !== false && (
                                 <button
                                     className="btn btn-primary"
                                     onClick={() => setShowModal(true)}
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px' }}
                                 >
-                                    <IoCreate /> Laisser un avis
+                                    <IoCreate /> {t('reviews_leave')}
                                 </button>
                             )}
                         </div>
@@ -369,34 +371,34 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                     <div className="modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                {editingReview ? <><IoPencil /> Modifier votre avis</> : <><IoCreate /> Laisser un avis</>}
+                                {editingReview ? <><IoPencil /> {t('reviews_edit')}</> : <><IoCreate /> {t('reviews_leave')}</>}
                             </h2>
                             <button className="modal-close" onClick={() => setShowModal(false)}><IoClose /></button>
                         </div>
 
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
-                                <label className="form-label">Note *</label>
+                                <label className="form-label">{t('reviews_rating_label')}</label>
                                 <div className="rating-input">
                                     {renderStars(reviewData.rating, true, true)}
                                     <span className="rating-label">
-                                        {reviewData.rating === 5 ? 'Excellent' :
-                                            reviewData.rating === 4 ? 'Très bien' :
-                                                reviewData.rating === 3 ? 'Bien' :
-                                                    reviewData.rating === 2 ? 'Moyen' : 'Décevant'}
+                                        {reviewData.rating === 5 ? t('rating_5') :
+                                            reviewData.rating === 4 ? t('rating_4') :
+                                                reviewData.rating === 3 ? t('rating_3') :
+                                                    reviewData.rating === 2 ? t('rating_2') : t('rating_1')}
                                     </span>
                                 </div>
                             </div>
 
                             {services.length > 0 && (
                                 <div className="form-group">
-                                    <label className="form-label">Prestation (optionnel)</label>
+                                    <label className="form-label">{t('reviews_service_optional')}</label>
                                     <select
                                         className="form-select"
                                         value={reviewData.serviceId || ''}
                                         onChange={(e) => setReviewData({ ...reviewData, serviceId: e.target.value || null })}
                                     >
-                                        <option value="">Aucune prestation spécifique</option>
+                                        <option value="">{t('reviews_no_specific_service')}</option>
                                         {services.map(service => (
                                             <option key={service._id} value={service._id}>
                                                 {service.name}
@@ -407,10 +409,10 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                             )}
 
                             <div className="form-group">
-                                <label className="form-label">Commentaire</label>
+                                <label className="form-label">{t('reviews_comment')}</label>
                                 <textarea
                                     className="form-textarea"
-                                    placeholder="Partagez votre expérience..."
+                                    placeholder={t('reviews_comment_placeholder')}
                                     value={reviewData.comment}
                                     onChange={(e) => setReviewData({ ...reviewData, comment: e.target.value })}
                                     rows="5"
@@ -419,10 +421,10 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
 
                             <div className="modal-actions">
                                 <button type="submit" className="btn btn-primary btn-lg" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    {editingReview ? <><IoSave /> Mettre à jour</> : <><IoCreate /> Publier</>}
+                                    {editingReview ? <><IoSave /> {t('reviews_update')}</> : <><IoCreate /> {t('reviews_publish')}</>}
                                 </button>
                                 <button type="button" className="btn btn-outline" onClick={() => setShowModal(false)}>
-                                    Annuler
+                                    {t('action_cancel')}
                                 </button>
                             </div>
                         </form>

@@ -79,12 +79,12 @@ function RegisterPage({ setUser }) {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!captchaToken) {
-      toast('Veuillez valider le CAPTCHA avant de continuer.', 'warning');
+      toast(t('captcha_required'), 'warning');
       return;
     }
 
     if (!isPasswordValid(formData.password)) {
-      toast('Le mot de passe ne respecte pas les critères de sécurité requis.', 'error');
+      toast(t('password_rules_error'), 'error');
       return;
     }
 
@@ -95,20 +95,20 @@ function RegisterPage({ setUser }) {
       const age = today.getFullYear() - birthDate.getFullYear() -
         (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0);
       if (age < 18) {
-        toast('Vous devez avoir au moins 18 ans pour vous inscrire.', 'error');
+        toast(t('must_be_adult'), 'error');
         return;
       }
     }
 
     if (!consentChecked) {
-      toast('Veuillez accepter les conditions générales et la politique de confidentialité.', 'warning');
+      toast(t('consent_required'), 'warning');
       return;
     }
     const type = typePerson === 'Client' ? 'client' : 'professional';
 
     if (type === 'professional') {
       if (!formData.address || !formData.latitude || !formData.longitude) {
-        toast('Veuillez sélectionner une adresse valide dans la liste proposée.', 'warning');
+        toast(t('valid_address_required'), 'warning');
         return;
       }
     }
@@ -154,7 +154,7 @@ function RegisterPage({ setUser }) {
 
       if (!response.ok) {
         const data = await response.json();
-        toast(data.error || 'Code invalide ou expiré', 'error');
+        toast(data.error || t('verification_code_invalid'), 'error');
       } else {
         const successData = await response.json();
         localStorage.setItem("user", JSON.stringify(successData.user));
@@ -172,9 +172,9 @@ function RegisterPage({ setUser }) {
       <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '40px' }}>
         {verificationMode ? (
           <div style={{ textAlign: 'center' }}>
-            <h2 style={{ marginBottom: '20px' }}>Vérifiez votre e-mail</h2>
+            <h2 style={{ marginBottom: '20px' }}>{t('verify_email_title')}</h2>
             <p style={{ marginBottom: '30px', color: 'var(--text-secondary)' }}>
-              Nous avons envoyé un code à 6 chiffres à <b>{registeredEmail}</b>.<br />Entrez-le ci-dessous pour finaliser votre inscription.
+              {t('verify_email_message', { email: registeredEmail })}
             </p>
             <form onSubmit={handleVerify}>
               <div className="form-group" style={{ marginBottom: '30px' }}>
@@ -189,10 +189,10 @@ function RegisterPage({ setUser }) {
                   style={{ fontSize: '24px', letterSpacing: '8px', textAlign: 'center', fontWeight: 'bold' }}
                 />
               </div>
-              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }}>Valider mon compte</button>
+              <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%' }}>{t('validate_account')}</button>
             </form>
             <button onClick={() => setVerificationMode(false)} className="btn btn-outline" style={{ width: '100%', marginTop: '15px' }}>
-              Modifier mes informations
+              {t('edit_my_information')}
             </button>
           </div>
         ) : (
@@ -288,11 +288,11 @@ function RegisterPage({ setUser }) {
                   </div>
 
                   <div className="form-group" style={{ marginBottom: '15px', position: 'relative' }}>
-                    <label className="form-label">Adresse de l'établissement</label>
+                    <label className="form-label">{t('business_address_label')}</label>
                     <input 
                       className="form-input" 
                       type="text" 
-                      placeholder="Saisissez une adresse complète..."
+                      placeholder={t('business_address_placeholder')}
                       value={addressQuery}
                       onChange={(e) => {
                          setAddressQuery(e.target.value);
@@ -303,7 +303,7 @@ function RegisterPage({ setUser }) {
                       onFocus={() => { if(addressSuggestions.length > 0) setShowAddressSuggestions(true); }}
                       required 
                     />
-                    {isSearchingAddress && <div style={{position: 'absolute', right: '10px', top: '35px', fontSize: '12px', color: '#888'}}>Recherche...</div>}
+                    {isSearchingAddress && <div style={{position: 'absolute', right: '10px', top: '35px', fontSize: '12px', color: '#888'}}>{t('searching')}</div>}
                     
                     {showAddressSuggestions && addressSuggestions.length > 0 && (
                       <ul style={{
@@ -361,11 +361,11 @@ function RegisterPage({ setUser }) {
                   required
                 />
                 <label htmlFor="consent" style={{ fontSize: '13px', color: '#424245', cursor: 'pointer', lineHeight: '1.5' }}>
-                  J'ai lu et j'accepte les{' '}
-                  <a href="/cgp" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>Conditions Générales</a>
-                  {' '}et la{' '}
-                  <a href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>Politique de Confidentialité</a>.
-                  J'atteste avoir au moins 18 ans.
+                  {t('register_consent_prefix')}{' '}
+                  <a href="/cgp" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>{t('register_consent_terms')}</a>
+                  {' '}{t('register_consent_and')}{' '}
+                  <a href="/politique-confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)' }}>{t('register_consent_policy')}</a>.
+                  {' '}{t('register_consent_adult')}
                 </label>
               </div>
 

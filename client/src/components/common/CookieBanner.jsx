@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const COOKIE_KEY = 'openglow_cookie_consent';
 
 const CookieBanner = () => {
     const [visible, setVisible] = useState(false);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const consent = localStorage.getItem(COOKIE_KEY);
@@ -43,13 +45,13 @@ const CookieBanner = () => {
             backdropFilter: 'blur(8px)'
         }}>
             <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.6', flex: 1, minWidth: '200px' }}>
-                Ce site utilise des cookies techniques nécessaires à son fonctionnement ainsi que <strong>Google reCAPTCHA</strong> (données envoyées à Google pour la sécurité).
+                {t('cookie_banner_text')} <strong>{t('cookie_recaptcha')}</strong> {t('cookie_banner_recaptcha_suffix')}
                 {' '}
                 <span
                     onClick={() => navigate('/politique-confidentialite')}
                     style={{ color: '#0071e3', cursor: 'pointer', textDecoration: 'underline' }}
                 >
-                    En savoir plus
+                    {t('cookie_learn_more')}
                 </span>
             </p>
             <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
@@ -66,7 +68,7 @@ const CookieBanner = () => {
                         cursor: 'pointer'
                     }}
                 >
-                    Refuser
+                    {t('action_decline')}
                 </button>
                 <button
                     onClick={accept}
@@ -81,7 +83,7 @@ const CookieBanner = () => {
                         cursor: 'pointer'
                     }}
                 >
-                    Accepter
+                    {t('action_accept')}
                 </button>
             </div>
         </div>

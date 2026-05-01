@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import '../css/AppleDesign.css';
 import '../css/MapView.css';
+import { useTranslation } from 'react-i18next';
 
 // Fix for default Leaflet icon issues in React
 const iconUrl = new URL('../../assets/marker-icon.png', import.meta.url).href;
@@ -84,6 +85,7 @@ function FlyToView({ center }) {
 
 function MapView() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [professionals, setProfessionals] = useState([]);
     const [selectedPro, setSelectedPro] = useState(null);
     const [userLocation, setUserLocation] = useState({ lat: 48.8566, lng: 2.3522 }); // Default Paris
@@ -158,9 +160,9 @@ function MapView() {
             {/* Sidebar */}
             <div className="map-sidebar">
                 <div className="sidebar-header">
-                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoLocation color="var(--primary)" /> Carte des Professionnels</h2>
+                    <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoLocation color="var(--primary)" /> {t('map_title')}</h2>
                     <p className="text-secondary">
-                        {filteredProfessionals.length} salon{filteredProfessionals.length > 1 ? 's' : ''} à proximité
+                        {t('map_nearby_count', { count: filteredProfessionals.length })}
                     </p>
                 </div>
 
@@ -170,7 +172,7 @@ function MapView() {
                         className={`filter-chip ${filterCategory === 'all' ? 'active' : ''}`}
                         onClick={() => setFilterCategory('all')}
                     >
-                        Tous
+                        {t('filters_all')}
                     </button>
                     {categories.map(cat => (
                         <button
@@ -231,7 +233,7 @@ function MapView() {
                                         navigate(`/professional/${pro._id}`);
                                     }}
                                 >
-                                    Voir
+                                    {t('view_profile')}
                                 </button>
                             </div>
                         );
@@ -256,7 +258,7 @@ function MapView() {
                     {/* User Marker */}
                     <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
                         <Popup>
-                            <b>Vous êtes ici</b>
+                            <b>{t('map_you_are_here')}</b>
                         </Popup>
                     </Marker>
 
@@ -290,7 +292,7 @@ function MapView() {
                                                 flex: 1
                                             }}
                                         >
-                                            Profil
+                                            {t('view_profile')}
                                         </button>
                                         <a 
                                             href={`https://www.google.com/maps/dir/?api=1&destination=${pro.latitude},${pro.longitude}`}
@@ -299,7 +301,7 @@ function MapView() {
                                             style={{
                                                 background: '#eee', color: '#333', textDecoration: 'none', padding: '5px 8px', borderRadius: '5px', fontSize: '12px', display: 'flex', alignItems: 'center'
                                             }}
-                                            title="Google Maps"
+                                            title={t('map_google_maps')}
                                         >
                                             <SiGooglemaps color="#4285F4" size={16} />
                                         </a>
@@ -310,7 +312,7 @@ function MapView() {
                                             style={{
                                                 background: '#eee', color: '#333', textDecoration: 'none', padding: '5px 8px', borderRadius: '5px', fontSize: '12px', display: 'flex', alignItems: 'center'
                                             }}
-                                            title="Waze"
+                                            title={t('map_waze')}
                                         >
                                             <SiWaze color="#33CCFF" size={16} />
                                         </a>
@@ -351,7 +353,7 @@ function MapView() {
                             <h3 style={{ margin: 0, fontSize: '16px' }}>{selectedPro.companyName}</h3>
                             <p style={{ margin: '2px 0', fontSize: '13px', color: '#666' }}>{selectedPro.address}</p>
                             <div style={{ display: 'flex', gap: '10px', marginTop: '8px', flexWrap: 'wrap' }}>
-                                <button className="btn btn-primary btn-sm" onClick={() => navigate(`/professional/${selectedPro._id}`)}>Voir profil</button>
+                                <button className="btn btn-primary btn-sm" onClick={() => navigate(`/professional/${selectedPro._id}`)}>{t('view_profile')}</button>
                                 <a 
                                     href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPro.latitude},${selectedPro.longitude}`}
                                     target="_blank"
@@ -370,7 +372,7 @@ function MapView() {
                                 >
                                     <SiWaze color="#33CCFF" size={16} /> Waze
                                 </a>
-                                <button className="btn btn-outline btn-sm" onClick={() => setSelectedPro(null)}>Fermer</button>
+                                <button className="btn btn-outline btn-sm" onClick={() => setSelectedPro(null)}>{t('action_close')}</button>
                             </div>
                         </div>
                     </div>

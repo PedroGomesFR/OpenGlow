@@ -24,7 +24,7 @@ function LoginPage({ setUser }) {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!captchaToken) {
-      toast('Veuillez valider le CAPTCHA avant de continuer.', 'warning');
+      toast(t('captcha_required'), 'warning');
       return;
     }
     try {
@@ -38,9 +38,9 @@ function LoginPage({ setUser }) {
         recaptchaRef.current?.reset();
         setCaptchaToken(null);
         if (data.requiresVerification) {
-          toast('Votre compte n\'est pas vérifié. Veuillez vous réinscrire avec la même adresse e-mail pour recevoir un nouveau code.', 'warning');
+          toast(t('account_not_verified_re_register'), 'warning');
         } else {
-          toast(t('login_error') + " : " + (data.error || "Erreur"), 'error');
+          toast(t('login_error') + " : " + (data.error || t('generic_error')), 'error');
         }
       } else {
         const successData = await response.json();

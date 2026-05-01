@@ -1,48 +1,50 @@
 import { useState } from 'react';
 import '../css/QuickGuide.css';
+import { useTranslation } from 'react-i18next';
 
 function QuickGuide({ isProfessional }) {
     const [showGuide, setShowGuide] = useState(false);
+    const { t } = useTranslation();
 
     const professionalSteps = [
         {
-            title: "Complétez votre profil",
-            description: "Ajoutez vos informations, photo, et description de votre salon"
+            title: t('quick_guide_pro_step_1_title'),
+            description: t('quick_guide_pro_step_1_desc')
         },
         {
-            title: "Ajoutez vos prestations",
-            description: "Créez vos services avec prix et durée dans l'onglet Prestations"
+            title: t('quick_guide_pro_step_2_title'),
+            description: t('quick_guide_pro_step_2_desc')
         },
         {
-            title: "Ajoutez des photos",
-            description: "Mettez en valeur votre salon avec de belles photos"
+            title: t('quick_guide_pro_step_3_title'),
+            description: t('quick_guide_pro_step_3_desc')
         },
         {
-            title: "Gérez vos réservations",
-            description: "Confirmez ou annulez les rendez-vous de vos clients"
+            title: t('quick_guide_pro_step_4_title'),
+            description: t('quick_guide_pro_step_4_desc')
         },
         {
-            title: "Consultez vos statistiques",
-            description: "Suivez vos performances dans la page Réservations"
+            title: t('quick_guide_pro_step_5_title'),
+            description: t('quick_guide_pro_step_5_desc')
         }
     ];
 
     const clientSteps = [
         {
-            title: "Recherchez un professionnel",
-            description: "Utilisez la page Recherche pour trouver votre salon"
+            title: t('quick_guide_client_step_1_title'),
+            description: t('quick_guide_client_step_1_desc')
         },
         {
-            title: "Consultez les prestations",
-            description: "Découvrez les services et tarifs proposés"
+            title: t('quick_guide_client_step_2_title'),
+            description: t('quick_guide_client_step_2_desc')
         },
         {
-            title: "Réservez en ligne",
-            description: "Choisissez votre prestation, date et heure"
+            title: t('quick_guide_client_step_3_title'),
+            description: t('quick_guide_client_step_3_desc')
         },
         {
-            title: "Gérez vos rendez-vous",
-            description: "Consultez et annulez vos réservations si besoin"
+            title: t('quick_guide_client_step_4_title'),
+            description: t('quick_guide_client_step_4_desc')
         }
     ];
 
@@ -53,7 +55,7 @@ function QuickGuide({ isProfessional }) {
             <button 
                 className="help-button"
                 onClick={() => setShowGuide(!showGuide)}
-                title="Guide d'utilisation"
+                title={t('quick_guide_title')}
             >
                 💡
             </button>
@@ -61,7 +63,7 @@ function QuickGuide({ isProfessional }) {
             {showGuide && (
                 <div className="guide-popup">
                     <div className="guide-header">
-                        <h3>🚀 Guide rapide</h3>
+                        <h3>{t('quick_guide_header')}</h3>
                         <button className="guide-close" onClick={() => setShowGuide(false)}>
                             ✕
                         </button>
