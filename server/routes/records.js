@@ -125,15 +125,19 @@ router.post('/register', async (req, res) => {
 
     const db = await connectDB();
     const users = db.collection('users');
+    const pendingRegistrations = db.collection('pending_registrations');
 
-    // Clean up any previous unverified registration attempts for this email
-    await users.deleteMany({ email: email, isVerified: false });
+    // Auto-clean pending registrations after 30 minutes
+    await pendingRegistrations.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-    // Check if email already exists (and is a verified account)
+    // Check if email already exists in final users collection
     const existingUser = await users.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ emailUsed: true });
     }
+
+    // Keep only the latest pending request for this email
+    await pendingRegistrations.deleteMany({ email });
 
     let isClient = null;
     if (type == 'client') {
@@ -155,7 +159,7 @@ router.post('/register', async (req, res) => {
     const verificationCode = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
     const verificationCodeExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins
 
-    const newUser = {
+    const pendingUser = {
       prenom,
       nom,
       dateDeNaissance,
@@ -176,14 +180,14 @@ router.post('/register', async (req, res) => {
       longitude: longitude ? parseFloat(longitude) : null,
       averageRating: 0,
       totalReviews: 0,
-      isVerified: false,
       verificationCode,
       verificationCodeExpires,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    const result = await users.insertOne(newUser);
+    await pendingRegistrations.insertOne(pendingUser);
 
     // Send Verification Email (Async)
     const emailSubject = isClient ? 'Code de vérification OpenGlow' : 'Code de vérification OpenGlow';
@@ -220,45 +224,67 @@ router.post('/verify-email', async (req, res) => {
 
     const db = await connectDB();
     const users = db.collection('users');
+    const pendingRegistrations = db.collection('pending_registrations');
 
-    const user = await users.findOne({ email });
-    if (!user) return res.status(400).json({ error: 'User not found' });
+    const existingUser = await users.findOne({ email });
+    if (existingUser) return res.status(400).json({ error: 'Account already verified' });
 
-    if (user.isVerified) return res.status(400).json({ error: 'Account already verified' });
+    const pendingUser = await pendingRegistrations.findOne({ email });
+    if (!pendingUser) return res.status(400).json({ error: 'User not found' });
 
-    if (user.verificationCode !== code) return res.status(400).json({ error: 'Invalid verification code' });
-    if (user.verificationCodeExpires < new Date()) return res.status(400).json({ error: 'Verification code expired' });
+    if (pendingUser.verificationCode !== code) return res.status(400).json({ error: 'Invalid verification code' });
+    if (pendingUser.verificationCodeExpires < new Date()) return res.status(400).json({ error: 'Verification code expired' });
 
-    // Mark as verified
-    await users.updateOne(
-      { _id: user._id },
-      {
-        $set: { isVerified: true },
-        $unset: { verificationCode: "", verificationCodeExpires: "" }
-      }
-    );
+    const userToInsert = {
+      prenom: pendingUser.prenom,
+      nom: pendingUser.nom,
+      dateDeNaissance: pendingUser.dateDeNaissance,
+      email: pendingUser.email,
+      password: pendingUser.password,
+      profession: pendingUser.profession || null,
+      companyName: pendingUser.companyName || null,
+      siret: pendingUser.siret || null,
+      isClient: pendingUser.isClient,
+      profilePhoto: pendingUser.profilePhoto || null,
+      salonPhotos: pendingUser.salonPhotos || [],
+      description: pendingUser.description || null,
+      address: pendingUser.address || null,
+      phone: pendingUser.phone || null,
+      openingHours: pendingUser.openingHours || null,
+      location: pendingUser.location || null,
+      latitude: pendingUser.latitude || null,
+      longitude: pendingUser.longitude || null,
+      averageRating: pendingUser.averageRating || 0,
+      totalReviews: pendingUser.totalReviews || 0,
+      isVerified: true,
+      createdAt: pendingUser.createdAt || new Date(),
+      updatedAt: new Date(),
+    };
 
-    const token = generateToken(user._id);
+    const insertResult = await users.insertOne(userToInsert);
+    await pendingRegistrations.deleteOne({ _id: pendingUser._id });
+
+    const token = generateToken(insertResult.insertedId);
 
     res.json({
       user: {
-        id: user._id,
-        prenom: user.prenom,
-        nom: user.nom,
-        dateDeNaissance: user.dateDeNaissance,
-        email: user.email,
-        isClient: user.isClient,
-        isAdmin: user.isAdmin || false,
-        companyName: user.companyName,
-        profilePhoto: user.profilePhoto,
-        salonPhotos: user.salonPhotos,
-        address: user.address,
-        description: user.description,
-        phone: user.phone,
-        openingHours: user.openingHours,
-        profession: user.profession,
-        latitude: user.latitude,
-        longitude: user.longitude
+        id: insertResult.insertedId,
+        prenom: userToInsert.prenom,
+        nom: userToInsert.nom,
+        dateDeNaissance: userToInsert.dateDeNaissance,
+        email: userToInsert.email,
+        isClient: userToInsert.isClient,
+        isAdmin: false,
+        companyName: userToInsert.companyName,
+        profilePhoto: userToInsert.profilePhoto,
+        salonPhotos: userToInsert.salonPhotos,
+        address: userToInsert.address,
+        description: userToInsert.description,
+        phone: userToInsert.phone,
+        openingHours: userToInsert.openingHours,
+        profession: userToInsert.profession,
+        latitude: userToInsert.latitude,
+        longitude: userToInsert.longitude
       },
       token
     });

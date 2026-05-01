@@ -16,6 +16,7 @@ function ProfilePage({ user, setUser }) {
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [profileForm, setProfileForm] = useState({
         prenom: user?.prenom || '',
         nom: user?.nom || '',
@@ -383,60 +384,77 @@ function ProfilePage({ user, setUser }) {
                         </form>
                     )}
 
-                    <form
-                        onSubmit={handleChangePassword}
-                        style={{
-                            textAlign: 'left',
-                            background: '#FAFAFA',
-                            border: '1px solid #E5E5EA',
-                            borderRadius: '12px',
-                            padding: '16px',
-                            marginBottom: '24px'
-                        }}
-                    >
-                        <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px' }}>{t('change_password_title')}</h3>
-                        <div style={{ display: 'grid', gap: '12px' }}>
-                            <div>
-                                <label htmlFor="currentPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('current_password_label')}</label>
-                                <input
-                                    id="currentPassword"
-                                    name="currentPassword"
-                                    type="password"
-                                    value={passwordForm.currentPassword}
-                                    onChange={handlePasswordFieldChange}
-                                    autoComplete="current-password"
-                                    style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
-                                />
+                    <div style={{ marginBottom: '24px' }}>
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => setShowPasswordForm((prev) => !prev)}
+                            style={{
+                                background: '#F2F2F7',
+                                color: '#1d1d1f',
+                                border: '1px solid #E5E5EA',
+                                width: '100%'
+                            }}
+                        >
+                            {showPasswordForm ? t('action_close') : t('change_password_title')}
+                        </button>
+                    </div>
+
+                    {showPasswordForm && (
+                        <form
+                            onSubmit={handleChangePassword}
+                            style={{
+                                textAlign: 'left',
+                                background: '#FAFAFA',
+                                border: '1px solid #E5E5EA',
+                                borderRadius: '12px',
+                                padding: '16px',
+                                marginBottom: '24px'
+                            }}
+                        >
+                            <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px' }}>{t('change_password_title')}</h3>
+                            <div style={{ display: 'grid', gap: '12px' }}>
+                                <div>
+                                    <label htmlFor="currentPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('current_password_label')}</label>
+                                    <input
+                                        id="currentPassword"
+                                        name="currentPassword"
+                                        type="password"
+                                        value={passwordForm.currentPassword}
+                                        onChange={handlePasswordFieldChange}
+                                        autoComplete="current-password"
+                                        style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="newPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('new_password_label')}</label>
+                                    <input
+                                        id="newPassword"
+                                        name="newPassword"
+                                        type="password"
+                                        value={passwordForm.newPassword}
+                                        onChange={handlePasswordFieldChange}
+                                        autoComplete="new-password"
+                                        style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label htmlFor="confirmPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('confirm_new_password_label')}</label>
+                                    <input
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        type="password"
+                                        value={passwordForm.confirmPassword}
+                                        onChange={handlePasswordFieldChange}
+                                        autoComplete="new-password"
+                                        style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
+                                    />
+                                </div>
+                                <button type="submit" className="btn" disabled={isChangingPassword} style={{ width: '100%', marginTop: '6px' }}>
+                                    {isChangingPassword ? t('saving') : t('change_password_btn')}
+                                </button>
                             </div>
-                            <div>
-                                <label htmlFor="newPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('new_password_label')}</label>
-                                <input
-                                    id="newPassword"
-                                    name="newPassword"
-                                    type="password"
-                                    value={passwordForm.newPassword}
-                                    onChange={handlePasswordFieldChange}
-                                    autoComplete="new-password"
-                                    style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="confirmPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('confirm_new_password_label')}</label>
-                                <input
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    type="password"
-                                    value={passwordForm.confirmPassword}
-                                    onChange={handlePasswordFieldChange}
-                                    autoComplete="new-password"
-                                    style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
-                                />
-                            </div>
-                            <button type="submit" className="btn" disabled={isChangingPassword} style={{ width: '100%', marginTop: '6px' }}>
-                                {isChangingPassword ? t('saving') : t('change_password_btn')}
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    )}
 
                     <div className="grid grid-2 mobile-col" style={{ gap: '15px' }}>
                         <button

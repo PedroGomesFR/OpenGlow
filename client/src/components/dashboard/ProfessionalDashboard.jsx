@@ -43,6 +43,7 @@ function ProfessionalDashboard({ user, setUser }) {
         confirmPassword: '',
     });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
     
     // Sync form data with user prop when it changes
     useEffect(() => {
@@ -440,45 +441,62 @@ function ProfessionalDashboard({ user, setUser }) {
                             <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
                                 <h3 style={{ margin: 0, fontSize: '18px' }}>{t('change_password_title')}</h3>
                             </div>
-                            <form onSubmit={handleChangePassword} style={{ padding: '24px' }}>
-                                <div className="grid grid-3" style={{ gap: '16px' }}>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label className="form-label">{t('current_password_label')}</label>
-                                        <input
-                                            className="form-input"
-                                            type="password"
-                                            autoComplete="current-password"
-                                            value={passwordForm.currentPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                                        />
+                            <div style={{ padding: '24px' }}>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowPasswordForm((prev) => !prev)}
+                                    style={{
+                                        background: '#F2F2F7',
+                                        color: '#1d1d1f',
+                                        border: '1px solid #E5E5EA',
+                                        width: '100%'
+                                    }}
+                                >
+                                    {showPasswordForm ? t('action_close') : t('change_password_title')}
+                                </button>
+                            </div>
+                            {showPasswordForm && (
+                                <form onSubmit={handleChangePassword} style={{ padding: '0 24px 24px 24px' }}>
+                                    <div className="grid grid-3" style={{ gap: '16px' }}>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label className="form-label">{t('current_password_label')}</label>
+                                            <input
+                                                className="form-input"
+                                                type="password"
+                                                autoComplete="current-password"
+                                                value={passwordForm.currentPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label className="form-label">{t('new_password_label')}</label>
+                                            <input
+                                                className="form-input"
+                                                type="password"
+                                                autoComplete="new-password"
+                                                value={passwordForm.newPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="form-group" style={{ marginBottom: 0 }}>
+                                            <label className="form-label">{t('confirm_new_password_label')}</label>
+                                            <input
+                                                className="form-input"
+                                                type="password"
+                                                autoComplete="new-password"
+                                                value={passwordForm.confirmPassword}
+                                                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label className="form-label">{t('new_password_label')}</label>
-                                        <input
-                                            className="form-input"
-                                            type="password"
-                                            autoComplete="new-password"
-                                            value={passwordForm.newPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                        />
+                                    <div style={{ display: 'flex', marginTop: '20px' }}>
+                                        <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
+                                            {isChangingPassword ? t('saving') : t('change_password_btn')}
+                                        </button>
                                     </div>
-                                    <div className="form-group" style={{ marginBottom: 0 }}>
-                                        <label className="form-label">{t('confirm_new_password_label')}</label>
-                                        <input
-                                            className="form-input"
-                                            type="password"
-                                            autoComplete="new-password"
-                                            value={passwordForm.confirmPassword}
-                                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                        />
-                                    </div>
-                                </div>
-                                <div style={{ display: 'flex', marginTop: '20px' }}>
-                                    <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
-                                        {isChangingPassword ? t('saving') : t('change_password_btn')}
-                                    </button>
-                                </div>
-                            </form>
+                                </form>
+                            )}
                         </div>
                     </div>
                 );
