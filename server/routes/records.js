@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { generateToken, verifyToken } from "../middleware/auth.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import rateLimit from 'express-rate-limit';
+import { createHash, randomInt } from 'crypto';
 
 const router = express.Router();
 
@@ -15,6 +16,22 @@ const loginLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'Trop de tentatives de connexion. Veuillez réessayer dans 15 minutes.' }
+});
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 8,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de demandes. Veuillez réessayer dans 15 minutes.' }
+});
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 12,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives. Veuillez réessayer dans 15 minutes.' }
 });
 
 // ─── Helper: verify reCAPTCHA token ──────────────────────────────────────────
@@ -76,6 +93,8 @@ const isPasswordStrong = (password) => {
   if (!/[^A-Za-z0-9]/.test(password)) return false;
   return true;
 };
+
+const hashResetCode = (code) => createHash('sha256').update(String(code)).digest('hex');
 
 // Register route
 router.post('/register', async (req, res) => {
@@ -306,6 +325,171 @@ router.post('/login', loginLimiter, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+// Ask for password reset code by email
+router.post('/forgot-password', forgotPasswordLimiter, async (req, res) => {
+  try {
+    const { email, captchaToken } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: 'Email requis.' });
+    }
+
+    const captchaOk = await verifyCaptcha(captchaToken, req);
+    if (!captchaOk) {
+      return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
+    }
+
+    const db = await connectDB();
+    const users = db.collection('users');
+    const user = await users.findOne({ email });
+
+    // Return success even if user does not exist to avoid account enumeration
+    if (!user) {
+      return res.status(200).json({ message: 'Si un compte existe, un code de réinitialisation a été envoyé.' });
+    }
+
+    const resetCode = String(randomInt(100000, 1000000));
+    const resetCodeHash = hashResetCode(resetCode);
+    const resetCodeExpires = new Date(Date.now() + 15 * 60 * 1000);
+
+    await users.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          passwordResetCodeHash: resetCodeHash,
+          passwordResetCodeExpires: resetCodeExpires,
+          updatedAt: new Date()
+        }
+      }
+    );
+
+    const emailHtml = `<h1>Bonjour ${user.prenom || ''},</h1>
+      <p>Vous avez demandé la réinitialisation de votre mot de passe OpenGlow.</p>
+      <p>Votre code est : <b><span style="font-size:24px; color:#1a5c6b;">${resetCode}</span></b></p>
+      <p>Ce code expire dans 15 minutes.</p>
+      <p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p>`;
+
+    sendEmail({
+      email,
+      subject: 'Réinitialisation de mot de passe OpenGlow',
+      html: emailHtml
+    });
+
+    return res.status(200).json({ message: 'Si un compte existe, un code de réinitialisation a été envoyé.' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Reset password with email + code
+router.post('/reset-password', resetPasswordLimiter, async (req, res) => {
+  try {
+    const { email, code, newPassword, captchaToken } = req.body;
+
+    if (!email || !code || !newPassword) {
+      return res.status(400).json({ error: 'Email, code et nouveau mot de passe requis.' });
+    }
+
+    const captchaOk = await verifyCaptcha(captchaToken, req);
+    if (!captchaOk) {
+      return res.status(400).json({ error: 'CAPTCHA invalide. Veuillez réessayer.' });
+    }
+
+    if (!isPasswordStrong(newPassword)) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' });
+    }
+
+    const db = await connectDB();
+    const users = db.collection('users');
+    const user = await users.findOne({ email });
+
+    if (!user || !user.passwordResetCodeHash || !user.passwordResetCodeExpires) {
+      return res.status(400).json({ error: 'Code invalide ou expiré.' });
+    }
+
+    if (new Date(user.passwordResetCodeExpires) < new Date()) {
+      return res.status(400).json({ error: 'Code invalide ou expiré.' });
+    }
+
+    const submittedHash = hashResetCode(code);
+    if (submittedHash !== user.passwordResetCodeHash) {
+      return res.status(400).json({ error: 'Code invalide ou expiré.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await users.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          password: hashedPassword,
+          updatedAt: new Date()
+        },
+        $unset: {
+          passwordResetCodeHash: '',
+          passwordResetCodeExpires: ''
+        }
+      }
+    );
+
+    return res.status(200).json({ message: 'Mot de passe réinitialisé avec succès.' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+// Change password for logged-in users (client and professional)
+router.put('/change-password', verifyToken, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: 'Mot de passe actuel et nouveau mot de passe requis.' });
+    }
+
+    if (!isPasswordStrong(newPassword)) {
+      return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' });
+    }
+
+    const db = await connectDB();
+    const users = db.collection('users');
+    const user = await users.findOne({ _id: new ObjectId(userId) });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+    }
+
+    const isCurrentValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentValid) {
+      return res.status(400).json({ error: 'Mot de passe actuel incorrect.' });
+    }
+
+    const isSamePassword = await bcrypt.compare(newPassword, user.password);
+    if (isSamePassword) {
+      return res.status(400).json({ error: 'Le nouveau mot de passe doit être différent de l\'ancien.' });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await users.updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: {
+          password: hashedPassword,
+          updatedAt: new Date()
+        },
+        $unset: {
+          passwordResetCodeHash: '',
+          passwordResetCodeExpires: ''
+        }
+      }
+    );
+
+    return res.status(200).json({ message: 'Mot de passe modifié avec succès.' });
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
   }
 });
 

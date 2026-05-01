@@ -37,6 +37,12 @@ function ProfessionalDashboard({ user, setUser }) {
         openingHours: user?.openingHours || '',
         companyName: user?.companyName || '',
     });
+    const [passwordForm, setPasswordForm] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+    });
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     
     // Sync form data with user prop when it changes
     useEffect(() => {
@@ -163,6 +169,50 @@ function ProfessionalDashboard({ user, setUser }) {
                     toast(t('pro_photos_added'), 'success');
                 }
             } catch (error) { console.error(error); }
+        }
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+
+        if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            toast(t('reset_required_fields'), 'warning');
+            return;
+        }
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast(t('passwords_mismatch'), 'warning');
+            return;
+        }
+
+        setIsChangingPassword(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(window.API_URL + '/records/change-password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    currentPassword: passwordForm.currentPassword,
+                    newPassword: passwordForm.newPassword,
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                toast(data.error || t('password_change_error'), 'error');
+                return;
+            }
+
+            toast(t('password_change_success'), 'success');
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            console.error('Error changing password:', error);
+            toast(t('network_error_retry'), 'error');
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -381,6 +431,51 @@ function ProfessionalDashboard({ user, setUser }) {
                                     </button>
                                     <button type="button" className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '15px' }} onClick={() => navigate(`/professional/${user._id || user.id}`)}>
                                         {t('public_preview')}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                            <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
+                                <h3 style={{ margin: 0, fontSize: '18px' }}>{t('change_password_title')}</h3>
+                            </div>
+                            <form onSubmit={handleChangePassword} style={{ padding: '24px' }}>
+                                <div className="grid grid-3" style={{ gap: '16px' }}>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label">{t('current_password_label')}</label>
+                                        <input
+                                            className="form-input"
+                                            type="password"
+                                            autoComplete="current-password"
+                                            value={passwordForm.currentPassword}
+                                            onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label">{t('new_password_label')}</label>
+                                        <input
+                                            className="form-input"
+                                            type="password"
+                                            autoComplete="new-password"
+                                            value={passwordForm.newPassword}
+                                            onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="form-group" style={{ marginBottom: 0 }}>
+                                        <label className="form-label">{t('confirm_new_password_label')}</label>
+                                        <input
+                                            className="form-input"
+                                            type="password"
+                                            autoComplete="new-password"
+                                            value={passwordForm.confirmPassword}
+                                            onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', marginTop: '20px' }}>
+                                    <button type="submit" className="btn btn-primary" disabled={isChangingPassword}>
+                                        {isChangingPassword ? t('saving') : t('change_password_btn')}
                                     </button>
                                 </div>
                             </form>

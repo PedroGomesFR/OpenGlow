@@ -15,11 +15,17 @@ function ProfilePage({ user, setUser }) {
     const confirm = useConfirm();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [profileForm, setProfileForm] = useState({
         prenom: user?.prenom || '',
         nom: user?.nom || '',
         phone: user?.phone || '',
         dateDeNaissance: user?.dateDeNaissance ? String(user.dateDeNaissance).slice(0, 10) : '',
+    });
+    const [passwordForm, setPasswordForm] = useState({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
     });
 
     useEffect(() => {
@@ -157,6 +163,55 @@ function ProfilePage({ user, setUser }) {
             }
         } catch {
             toast(t('network_error_retry'), 'error');
+        }
+    };
+
+    const handlePasswordFieldChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordForm((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+
+        if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+            toast(t('reset_required_fields'), 'warning');
+            return;
+        }
+
+        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+            toast(t('passwords_mismatch'), 'warning');
+            return;
+        }
+
+        setIsChangingPassword(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(window.API_URL + '/records/change-password', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    currentPassword: passwordForm.currentPassword,
+                    newPassword: passwordForm.newPassword,
+                }),
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                toast(data.error || t('password_change_error'), 'error');
+                return;
+            }
+
+            toast(t('password_change_success'), 'success');
+            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+        } catch (error) {
+            console.error('Error changing password:', error);
+            toast(t('network_error_retry'), 'error');
+        } finally {
+            setIsChangingPassword(false);
         }
     };
 
@@ -327,6 +382,61 @@ function ProfilePage({ user, setUser }) {
                             </div>
                         </form>
                     )}
+
+                    <form
+                        onSubmit={handleChangePassword}
+                        style={{
+                            textAlign: 'left',
+                            background: '#FAFAFA',
+                            border: '1px solid #E5E5EA',
+                            borderRadius: '12px',
+                            padding: '16px',
+                            marginBottom: '24px'
+                        }}
+                    >
+                        <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px' }}>{t('change_password_title')}</h3>
+                        <div style={{ display: 'grid', gap: '12px' }}>
+                            <div>
+                                <label htmlFor="currentPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('current_password_label')}</label>
+                                <input
+                                    id="currentPassword"
+                                    name="currentPassword"
+                                    type="password"
+                                    value={passwordForm.currentPassword}
+                                    onChange={handlePasswordFieldChange}
+                                    autoComplete="current-password"
+                                    style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="newPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('new_password_label')}</label>
+                                <input
+                                    id="newPassword"
+                                    name="newPassword"
+                                    type="password"
+                                    value={passwordForm.newPassword}
+                                    onChange={handlePasswordFieldChange}
+                                    autoComplete="new-password"
+                                    style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="confirmPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('confirm_new_password_label')}</label>
+                                <input
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    type="password"
+                                    value={passwordForm.confirmPassword}
+                                    onChange={handlePasswordFieldChange}
+                                    autoComplete="new-password"
+                                    style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
+                                />
+                            </div>
+                            <button type="submit" className="btn" disabled={isChangingPassword} style={{ width: '100%', marginTop: '6px' }}>
+                                {isChangingPassword ? t('saving') : t('change_password_btn')}
+                            </button>
+                        </div>
+                    </form>
 
                     <div className="grid grid-2 mobile-col" style={{ gap: '15px' }}>
                         <button
