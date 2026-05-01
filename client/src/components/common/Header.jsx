@@ -67,7 +67,7 @@ function Header({ user }) {
           {user?.isClient !== false && (
             <>
               <Link to="/recherche" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('find_pro')}</Link>
-              <Link to="/map" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('map') || 'Carte'}</Link>
+              <Link to="/map" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', opacity: 0.8 }}>{t('explore_map')}</Link>
             </>
           )}
           {user && (
