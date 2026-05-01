@@ -316,6 +316,13 @@ router.post('/login', loginLimiter, async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (user.isSuspended) {
+      return res.status(403).json({
+        suspended: true,
+        error: user.suspensionMessage || 'Votre compte est suspendu. Merci de contacter le support.',
+      });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -525,7 +532,7 @@ router.get('/professionals', async (req, res) => {
     const db = await connectDB();
     const { search, profession } = req.query;
 
-    let query = { isClient: false };
+    let query = { isClient: false, isAdmin: { $ne: true }, isSuspended: { $ne: true } };
 
     if (search) {
       query.$or = [
@@ -557,7 +564,7 @@ router.get('/professional/:id', async (req, res) => {
     const db = await connectDB();
 
     const professional = await db.collection('users').findOne(
-      { _id: new ObjectId(id), isClient: false },
+      { _id: new ObjectId(id), isClient: false, isAdmin: { $ne: true }, isSuspended: { $ne: true } },
       { projection: { password: 0 } }
     );
 
@@ -693,6 +700,110 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     );
 
     res.status(200).json({ message: 'Profile updated successfully', data: updateData });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/me/context', verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId) }, {
+      projection: {
+        password: 0,
+        passwordResetCodeHash: 0,
+        passwordResetCodeExpires: 0,
+      }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+    }
+
+    const now = new Date();
+    const notifications = await db.collection('internal_notifications').find({
+      isActive: true,
+      $and: [
+        {
+          $or: [
+            { startsAt: null },
+            { startsAt: { $exists: false } },
+            { startsAt: { $lte: now } },
+          ],
+        },
+        {
+          $or: [
+            { expiresAt: null },
+            { expiresAt: { $exists: false } },
+            { expiresAt: { $gte: now } },
+          ],
+        },
+        {
+          $or: [
+            { audience: 'all' },
+            { audience: 'clients' },
+            { audience: 'professionals' },
+            { audience: 'custom', targetUserIds: req.userId },
+          ],
+        },
+      ],
+    }).sort({ showBanner: -1, createdAt: -1, _id: -1 }).limit(25).toArray();
+
+    const filteredNotifications = notifications.filter((notification) => {
+      if ((notification.dismissedByUserIds || []).includes(req.userId)) return false;
+      if (notification.audience === 'clients') return user.isClient === true;
+      if (notification.audience === 'professionals') return user.isClient === false && user.isAdmin !== true;
+      if (notification.audience === 'custom') return (notification.targetUserIds || []).includes(req.userId);
+      return true;
+    });
+
+    res.status(200).json({ user, notifications: filteredNotifications });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.patch('/me/notifications/:id/read', verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Notification invalide.' });
+    }
+
+    await db.collection('internal_notifications').updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $addToSet: { readByUserIds: req.userId },
+        $set: { updatedAt: new Date() },
+      }
+    );
+
+    res.status(200).json({ message: 'Notification marquée comme lue.' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.patch('/me/notifications/:id/dismiss', verifyToken, async (req, res) => {
+  try {
+    const db = await connectDB();
+    const { id } = req.params;
+
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({ error: 'Notification invalide.' });
+    }
+
+    await db.collection('internal_notifications').updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $addToSet: { dismissedByUserIds: req.userId },
+        $set: { updatedAt: new Date() },
+      }
+    );
+
+    res.status(200).json({ message: 'Notification masquée.' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

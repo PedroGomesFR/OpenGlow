@@ -8,7 +8,7 @@ professionalRouter.get('/feature', async (req, res) => {
     try {
         const db = await connectDB();
         const professionals = await db.collection('users').find(
-            { isClient: false },
+            { isClient: false, isAdmin: { $ne: true }, isSuspended: { $ne: true } },
             { projection: { password: 0 } }
         ).sort({ averageRating: -1, totalReviews: -1 }).limit(6).toArray();
         res.json(professionals);

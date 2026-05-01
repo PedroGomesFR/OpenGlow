@@ -1,10 +1,10 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { IoSearch, IoPerson, IoLogIn, IoMenu, IoShieldCheckmark, IoGlobeOutline, IoCalendar, IoLanguage, IoLogOut, IoSettings } from 'react-icons/io5';
+import { IoSearch, IoPerson, IoLogIn, IoMenu, IoShieldCheckmark, IoGlobeOutline, IoCalendar, IoLanguage, IoLogOut, IoSettings, IoNotifications } from 'react-icons/io5';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 
-function Header({ user }) {
+function Header({ user, notificationCount = 0 }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
@@ -20,12 +20,6 @@ function Header({ user }) {
   const changeLanguage = (lng) => {
     i18n.changeLanguage(lng);
     document.documentElement.dir = lng === 'ar' ? 'rtl' : 'ltr';
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    window.location.href = '/login';
   };
 
   return (
@@ -79,6 +73,11 @@ function Header({ user }) {
             <Link to="/admin" style={{ color: 'var(--primary)', textDecoration: 'none', fontSize: '13px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
               <IoShieldCheckmark size={16} /> {t('admin')}
             </Link>
+          )}
+          {user && (
+            <span style={{ color: 'var(--primary)', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.85 }}>
+              <IoNotifications size={15} /> {notificationCount}
+            </span>
           )}
         </nav>
 
