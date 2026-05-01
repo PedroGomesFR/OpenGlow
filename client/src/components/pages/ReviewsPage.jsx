@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useEffectEvent } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     IoArrowBack,
     IoBusiness,
@@ -24,6 +24,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
     const { professionalId: paramProfessionalId } = useParams();
     const professionalId = propProfessionalId || paramProfessionalId;
     const navigate = useNavigate();
+    const location = useLocation();
     const toast = useToast();
     const { t } = useTranslation();
     const [reviews, setReviews] = useState([]);
@@ -31,24 +32,23 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
     const [professional, setProfessional] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingReview, setEditingReview] = useState(null);
+    const [reviewEligibility, setReviewEligibility] = useState({
+        loading: false,
+        canLeaveReview: false,
+        totalCompletedBookings: 0,
+        reviewedCompletedBookings: 0,
+        nextBooking: null,
+    });
     const [reviewData, setReviewData] = useState({
         rating: 5,
         comment: '',
-        serviceId: null
+        serviceId: null,
+        bookingId: null
     });
     const [services, setServices] = useState([]);
     const [hoveredStar, setHoveredStar] = useState(0);
 
-    useEffect(() => {
-        if (professionalId) {
-            loadProfessional();
-            loadReviews();
-            loadStats();
-            loadServices();
-        }
-    }, [professionalId]);
-
-    const loadProfessional = async () => {
+    async function loadProfessional() {
         try {
             const response = await fetch(`${window.API_URL}/records/professional/${professionalId}`);
             if (response.ok) {
@@ -58,9 +58,9 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         } catch (error) {
             console.error('Error loading professional:', error);
         }
-    };
+    }
 
-    const loadReviews = async () => {
+    async function loadReviews() {
         try {
             const response = await fetch(`${window.API_URL}/reviews/professional/${professionalId}`);
             if (response.ok) {
@@ -70,9 +70,9 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         } catch (error) {
             console.error('Error loading reviews:', error);
         }
-    };
+    }
 
-    const loadStats = async () => {
+    async function loadStats() {
         try {
             const response = await fetch(`${window.API_URL}/reviews/stats/${professionalId}`);
             if (response.ok) {
@@ -82,9 +82,9 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         } catch (error) {
             console.error('Error loading stats:', error);
         }
-    };
+    }
 
-    const loadServices = async () => {
+    async function loadServices() {
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(`${window.API_URL}/services/professional/${professionalId}`, {
@@ -97,7 +97,106 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
         } catch (error) {
             console.error('Error loading services:', error);
         }
-    };
+    }
+
+    async function loadReviewEligibility() {
+        if (!user || user.isClient === false) {
+            setReviewEligibility({
+                loading: false,
+                canLeaveReview: false,
+                totalCompletedBookings: 0,
+                reviewedCompletedBookings: 0,
+                nextBooking: null,
+            });
+            return;
+        }
+
+        try {
+            setReviewEligibility((prev) => ({ ...prev, loading: true }));
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${window.API_URL}/reviews/eligibility/${professionalId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                setReviewEligibility({
+                    loading: false,
+                    canLeaveReview: false,
+                    totalCompletedBookings: 0,
+                    reviewedCompletedBookings: 0,
+                    nextBooking: null,
+                });
+                return;
+            }
+
+            const data = await response.json();
+            setReviewEligibility({
+                loading: false,
+                canLeaveReview: Boolean(data.canLeaveReview),
+                totalCompletedBookings: data.totalCompletedBookings || 0,
+                reviewedCompletedBookings: data.reviewedCompletedBookings || 0,
+                nextBooking: data.nextBooking || null,
+            });
+        } catch (error) {
+            console.error('Error loading review eligibility:', error);
+            setReviewEligibility({
+                loading: false,
+                canLeaveReview: false,
+                totalCompletedBookings: 0,
+                reviewedCompletedBookings: 0,
+                nextBooking: null,
+            });
+        }
+    }
+
+    const loadPageData = useEffectEvent(() => {
+        loadProfessional();
+        loadReviews();
+        loadStats();
+        loadServices();
+        loadReviewEligibility();
+    });
+
+    const openReviewFromNavigation = useEffectEvent((reviewState) => {
+        setEditingReview(null);
+        setReviewData({
+            rating: 5,
+            comment: '',
+            serviceId: reviewState?.serviceId || null,
+            bookingId: reviewState?.bookingId || null,
+        });
+        setShowModal(true);
+    });
+
+    function openCreateReviewModal() {
+        if (!reviewEligibility.canLeaveReview) {
+            toast(t('reviews_eligible_after_completed'), 'warning');
+            return;
+        }
+
+        setEditingReview(null);
+        setReviewData({
+            rating: 5,
+            comment: '',
+            serviceId: reviewEligibility.nextBooking?.serviceId || null,
+            bookingId: reviewEligibility.nextBooking?.bookingId || null,
+        });
+        setShowModal(true);
+    }
+
+    useEffect(() => {
+        if (professionalId) {
+            loadPageData();
+        }
+    }, [professionalId, user]);
+
+    useEffect(() => {
+        if (!location.state?.openReviewModal) {
+            return;
+        }
+
+        openReviewFromNavigation(location.state);
+    }, [location.state]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -126,16 +225,22 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                 }),
             });
 
-            if (response.ok) {
-                setShowModal(false);
-                setEditingReview(null);
-                setReviewData({ rating: 5, comment: '', serviceId: null });
-                loadReviews();
-                loadStats();
-                loadProfessional();
+            const data = await response.json();
+
+            if (!response.ok) {
+                toast(data.message || t('network_error_retry'), 'error');
+                return;
             }
+
+            setShowModal(false);
+            setEditingReview(null);
+            setReviewData({ rating: 5, comment: '', serviceId: null, bookingId: null });
+            loadReviews();
+            loadStats();
+            loadProfessional();
         } catch (error) {
             console.error('Error saving review:', error);
+            toast(t('network_error_retry'), 'error');
         }
     };
 
@@ -244,20 +349,23 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                             </div>
                         )}
                     </div>
-                    {user && user.isClient !== false && (
+                    {user && user.isClient !== false && reviewEligibility.canLeaveReview && (
                         <button
                             className="btn btn-primary btn-lg"
-                            onClick={() => {
-                                setEditingReview(null);
-                                setReviewData({ rating: 5, comment: '', serviceId: null });
-                                setShowModal(true);
-                            }}
+                            onClick={() => openCreateReviewModal()}
                             style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
                         >
                             <IoCreate /> {t('reviews_leave')}
                         </button>
                     )}
                 </div>
+
+                {user && user.isClient !== false && !reviewEligibility.loading && !reviewEligibility.canLeaveReview && (
+                    <div className="card" style={{ marginBottom: '24px', background: '#FFF7ED', border: '1px solid #F6AD55' }}>
+                        <strong style={{ display: 'block', marginBottom: '6px' }}>{t('reviews_locked_title')}</strong>
+                        <span className="text-secondary">{t('reviews_eligible_after_completed')}</span>
+                    </div>
+                )}
 
                 {/* Statistics */}
                 {stats && stats.total > 0 && (
@@ -324,7 +432,8 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                                                     setReviewData({
                                                         rating: review.rating,
                                                         comment: review.comment || '',
-                                                        serviceId: review.serviceId
+                                                        serviceId: review.serviceId,
+                                                        bookingId: review.bookingId || null,
                                                     });
                                                     setShowModal(true);
                                                 }}
@@ -351,10 +460,10 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                             </div>
                             <h3>{t('reviews_none_title')}</h3>
                             <p>{t('reviews_none_desc')}</p>
-                            {user && user.isClient !== false && (
+                            {user && user.isClient !== false && reviewEligibility.canLeaveReview && (
                                 <button
                                     className="btn btn-primary"
-                                    onClick={() => setShowModal(true)}
+                                    onClick={() => openCreateReviewModal()}
                                     style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px' }}
                                 >
                                     <IoCreate /> {t('reviews_leave')}
@@ -390,7 +499,7 @@ function ReviewsPage({ user, professionalId: propProfessionalId }) {
                                 </div>
                             </div>
 
-                            {services.length > 0 && (
+                            {services.length > 0 && !reviewData.bookingId && (
                                 <div className="form-group">
                                     <label className="form-label">{t('reviews_service_optional')}</label>
                                     <select

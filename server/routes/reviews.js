@@ -8,7 +8,11 @@ const router = express.Router();
 // Ajouter un avis
 router.post('/add', verifyToken, async (req, res) => {
     try {
-        const { professionalId, rating, comment, serviceId } = req.body;
+        const { professionalId, rating, comment, serviceId, bookingId } = req.body;
+
+        if (!professionalId) {
+            return res.status(400).json({ message: 'Professionnel requis' });
+        }
 
         if (!rating || rating < 1 || rating > 5) {
             return res.status(400).json({ message: 'Note invalide (1-5)' });
@@ -17,6 +21,7 @@ router.post('/add', verifyToken, async (req, res) => {
         const database = await connectDB();
         const reviews = database.collection('reviews');
         const users = database.collection('users');
+        const bookings = database.collection('bookings');
 
         // Vérifier que le pro existe
         const professional = await users.findOne({ _id: new ObjectId(professionalId) });
@@ -24,12 +29,66 @@ router.post('/add', verifyToken, async (req, res) => {
             return res.status(404).json({ message: 'Professionnel non trouvé' });
         }
 
+        let eligibleBooking = null;
+
+        if (bookingId) {
+            eligibleBooking = await bookings.findOne({
+                _id: new ObjectId(bookingId),
+                clientId: req.userId,
+                professionalId,
+                status: 'completed'
+            });
+
+            if (!eligibleBooking) {
+                return res.status(403).json({ message: 'Aucune prestation terminée éligible pour cet avis' });
+            }
+
+            const existingReview = await reviews.findOne({
+                bookingId: new ObjectId(bookingId),
+                clientId: new ObjectId(req.userId)
+            });
+
+            if (existingReview) {
+                return res.status(409).json({ message: 'Un avis existe déjà pour cette prestation' });
+            }
+        } else {
+            const bookingFilter = {
+                clientId: req.userId,
+                professionalId,
+                status: 'completed'
+            };
+
+            if (serviceId) {
+                bookingFilter.serviceId = serviceId;
+            }
+
+            eligibleBooking = await bookings.findOne(bookingFilter, {
+                sort: { updatedAt: -1, date: -1, time: -1 }
+            });
+
+            if (!eligibleBooking) {
+                return res.status(403).json({ message: 'Vous devez terminer une prestation avec ce salon avant de laisser un avis' });
+            }
+
+            const existingReview = await reviews.findOne({
+                bookingId: new ObjectId(eligibleBooking._id),
+                clientId: new ObjectId(req.userId)
+            });
+
+            if (existingReview) {
+                return res.status(409).json({ message: 'Un avis existe déjà pour cette prestation' });
+            }
+        }
+
+        const effectiveServiceId = eligibleBooking?.serviceId || serviceId || null;
+
         const review = {
             professionalId: new ObjectId(professionalId),
             clientId: new ObjectId(req.userId),
             rating: parseInt(rating),
             comment: comment || '',
-            serviceId: serviceId ? new ObjectId(serviceId) : null,
+            serviceId: effectiveServiceId ? new ObjectId(effectiveServiceId) : null,
+            bookingId: eligibleBooking?._id ? new ObjectId(eligibleBooking._id) : null,
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -77,6 +136,10 @@ router.get('/professional/:id', async (req, res) => {
             { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
             {
                 $project: {
+                    _id: 1,
+                    clientId: 1,
+                    serviceId: 1,
+                    bookingId: 1,
                     rating: 1,
                     comment: 1,
                     createdAt: 1,
@@ -124,6 +187,10 @@ router.get('/my-reviews', verifyToken, async (req, res) => {
             { $unwind: { path: '$service', preserveNullAndEmptyArrays: true } },
             {
                 $project: {
+                    _id: 1,
+                    professionalId: 1,
+                    serviceId: 1,
+                    bookingId: 1,
                     rating: 1,
                     comment: 1,
                     createdAt: 1,
@@ -140,6 +207,66 @@ router.get('/my-reviews', verifyToken, async (req, res) => {
         res.json(myReviews);
     } catch (error) {
         console.error('Error fetching my reviews:', error);
+        res.status(500).json({ message: 'Erreur serveur' });
+    }
+});
+
+// Vérifier si un client peut laisser un avis pour un professionnel
+router.get('/eligibility/:professionalId', verifyToken, async (req, res) => {
+    try {
+        const { professionalId } = req.params;
+
+        if (!ObjectId.isValid(professionalId)) {
+            return res.status(400).json({ message: 'Professionnel invalide' });
+        }
+
+        const database = await connectDB();
+        const bookings = database.collection('bookings');
+        const reviews = database.collection('reviews');
+
+        const completedBookings = await bookings.find({
+            clientId: req.userId,
+            professionalId,
+            status: 'completed'
+        }).sort({ updatedAt: -1, date: -1, time: -1 }).toArray();
+
+        const bookingIds = completedBookings.map((booking) => booking._id);
+        const existingReviews = bookingIds.length > 0
+            ? await reviews.find({
+                clientId: new ObjectId(req.userId),
+                professionalId: new ObjectId(professionalId),
+                bookingId: { $in: bookingIds }
+            }).project({ bookingId: 1 }).toArray()
+            : [];
+
+        const reviewedBookingIds = new Set(
+            existingReviews
+                .map((review) => review.bookingId?.toString())
+                .filter(Boolean)
+        );
+
+        const eligibleBookings = completedBookings.filter(
+            (booking) => !reviewedBookingIds.has(booking._id.toString())
+        );
+
+        const nextBooking = eligibleBookings[0]
+            ? {
+                bookingId: eligibleBookings[0]._id.toString(),
+                serviceId: eligibleBookings[0].serviceId || null,
+                serviceName: eligibleBookings[0].serviceName || null,
+                date: eligibleBookings[0].date,
+                time: eligibleBookings[0].time,
+            }
+            : null;
+
+        res.json({
+            canLeaveReview: eligibleBookings.length > 0,
+            totalCompletedBookings: completedBookings.length,
+            reviewedCompletedBookings: completedBookings.length - eligibleBookings.length,
+            nextBooking,
+        });
+    } catch (error) {
+        console.error('Error checking review eligibility:', error);
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });

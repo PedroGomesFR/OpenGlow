@@ -3,15 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IoCalendar, IoMail, IoCall } from 'react-icons/io5';
 import '../css/AppleDesign.css';
-import { useToast } from '../common/ToastContext';
 import { useConfirm } from '../common/ConfirmContext';
 
 function BookingsPage() {
     const navigate = useNavigate();
     const { t } = useTranslation();
-    const toast = useToast();
     const confirm = useConfirm();
     const [bookings, setBookings] = useState([]);
+    const [reviewedBookingIds, setReviewedBookingIds] = useState(new Set());
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('all');
@@ -29,6 +28,9 @@ function BookingsPage() {
         setUser(parsedUser);
 
         loadBookings();
+        if (parsedUser.isClient) {
+            loadReviewedBookings();
+        }
         if (!parsedUser.isClient) {
             loadStats();
         }
@@ -49,6 +51,22 @@ function BookingsPage() {
             console.error('Error loading bookings:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const loadReviewedBookings = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${window.API_URL}/reviews/my-reviews`, {
+                headers: { 'Authorization': `Bearer ${token}` },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setReviewedBookingIds(new Set(data.map((review) => review.bookingId).filter(Boolean)));
+            }
+        } catch (error) {
+            console.error('Error loading reviewed bookings:', error);
         }
     };
 
@@ -203,6 +221,25 @@ function BookingsPage() {
                                 )}
 
                                 <div className="booking-actions" style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+                                    {user.isClient && booking.status === 'completed' && !reviewedBookingIds.has(booking._id) && (
+                                        <button
+                                            className="btn btn-primary btn-sm"
+                                            onClick={() => navigate(`/reviews/${booking.professionalId}`, {
+                                                state: {
+                                                    openReviewModal: true,
+                                                    bookingId: booking._id,
+                                                    serviceId: booking.serviceId || null,
+                                                },
+                                            })}
+                                        >
+                                            {t('reviews_leave')}
+                                        </button>
+                                    )}
+                                    {user.isClient && booking.status === 'completed' && reviewedBookingIds.has(booking._id) && (
+                                        <span className="badge badge-primary">
+                                            {t('reviews_already_left')}
+                                        </span>
+                                    )}
                                     {!user.isClient && booking.status === 'pending' && (
                                         <button className="btn btn-primary btn-sm" onClick={async () => {
                                             const ok = await confirm({ title: t('confirm_booking_title'), message: t('confirm_accept_booking'), confirmLabel: t('action_confirm') });
