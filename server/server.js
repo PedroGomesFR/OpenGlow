@@ -27,6 +27,7 @@ const app = express();
 // Origines autorisées (CORS whitelist)
 const ALLOWED_ORIGINS = [
   'https://openglow.alwaysdata.net',
+  'https://openglow.netlify.app',
   'http://localhost:5173',
   'http://localhost:4173',
   'http://127.0.0.1:5173',
