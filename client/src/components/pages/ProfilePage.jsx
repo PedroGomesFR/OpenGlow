@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson } from 'react-icons/io5';
+import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoTrash } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/ProfilePageNew.css';
@@ -242,11 +242,8 @@ function ProfilePage({ user, setUser }) {
                             onMouseOver={(e) => { e.currentTarget.style.background = '#fff0ef'; }}
                             onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
                         >
-                            🗑 Supprimer mon compte
+                            <IoTrash size={18} /> Supprimer mon compte
                         </button>
-                        <p style={{ fontSize: '11px', color: '#86868b', textAlign: 'center', marginTop: '6px' }}>
-                            Droit à l'effacement — RGPD art. 17
-                        </p>
                     </div>
                 </div>
             </div>
