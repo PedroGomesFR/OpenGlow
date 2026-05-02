@@ -1,5 +1,4 @@
 import express from 'express';
-import archiver from 'archiver';
 import connectDB from '../db/connection.js';
 import { ObjectId } from 'mongodb';
 import { verifyToken } from "../middleware/auth.js";
@@ -351,7 +350,6 @@ router.post('/notifications', verifyToken, verifyAdmin, async (req, res) => {
             }
         }
 
-        const db = await connectDB();
         const notification = {
             title: title.trim(),
             message: message.trim(),
@@ -724,6 +722,7 @@ router.get('/users/:id/export', verifyToken, verifyAdmin, async (req, res) => {
 
 router.get('/users/:id/export-zip', verifyToken, verifyAdmin, async (req, res) => {
     try {
+        const archiver = (await import('archiver')).default;
         const { id } = req.params;
 
         if (!ObjectId.isValid(id)) {
