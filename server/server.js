@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
 import express from "express";
-import cors from "cors";
 import path from "path";
 import { fileURLToPath } from 'url';
 import router from "./routes/records.js";
@@ -28,11 +27,27 @@ const app = express();
 const ALLOWED_ORIGINS = [
   'https://openglow.alwaysdata.net',
   'https://openglow.netlify.app',
+  'https://openglow.onrender.com',
   'http://localhost:5173',
   'http://localhost:4173',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:4173',
 ];
+
+const EXTRA_ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const ALL_ALLOWED_ORIGINS = [...new Set([...ALLOWED_ORIGINS, ...EXTRA_ALLOWED_ORIGINS])];
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return false;
+  if (ALL_ALLOWED_ORIGINS.includes(origin)) return true;
+
+  // Optional preview/staging domains
+  return /\.onrender\.com$/i.test(origin) || /\.netlify\.app$/i.test(origin);
+};
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -47,10 +62,11 @@ app.use((req, res, next) => {
   }
 
   // CORS — whitelist only
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (isOriginAllowed(origin)) {
     res.header('Access-Control-Allow-Origin', origin);
     res.header('Access-Control-Allow-Credentials', 'true');
   }
+  res.header('Vary', 'Origin');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
 
