@@ -1,13 +1,15 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { IoSearch, IoPerson, IoLogIn, IoMenu, IoShieldCheckmark, IoGlobeOutline, IoCalendar, IoLanguage, IoLogOut, IoSettings, IoNotifications } from 'react-icons/io5';
+import { IoPerson, IoLogIn, IoMenu, IoClose, IoShieldCheckmark, IoGlobeOutline, IoCalendar, IoNotifications } from 'react-icons/io5';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
+import '../css/Header.css';
 
 function Header({ user, notificationCount = 0 }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,6 +17,17 @@ function Header({ user, notificationCount = 0 }) {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 900) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const changeLanguage = (lng) => {
@@ -33,9 +46,9 @@ function Header({ user, notificationCount = 0 }) {
       background: scrolled ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
       backdropFilter: scrolled ? 'blur(20px)' : 'none',
       borderBottom: scrolled ? '1px solid rgba(0,0,0,0.1)' : 'none',
-      padding: '15px 0'
+      padding: '12px 0'
     }}>
-      <div className="container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div className="container app-header-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
 
         {/* Brand Logo */}
         <div
@@ -112,7 +125,10 @@ function Header({ user, notificationCount = 0 }) {
 
           {user ? (
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => {
+                navigate('/profile');
+                setMobileMenuOpen(false);
+              }}
               className="btn btn-primary"
               style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
@@ -121,7 +137,10 @@ function Header({ user, notificationCount = 0 }) {
             </button>
           ) : (
             <button
-              onClick={() => navigate('/login')}
+              onClick={() => {
+                navigate('/login');
+                setMobileMenuOpen(false);
+              }}
               className="btn btn-primary"
               style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
@@ -129,9 +148,32 @@ function Header({ user, notificationCount = 0 }) {
               {t('login')}
             </button>
           )}
+
+          <button
+            type="button"
+            className="headerMobileToggle"
+            aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+            onClick={() => setMobileMenuOpen((current) => !current)}
+          >
+            {mobileMenuOpen ? <IoClose size={22} /> : <IoMenu size={22} />}
+          </button>
         </div>
 
       </div>
+
+      {mobileMenuOpen && (
+        <div className="headerMobileMenu container">
+          <Link to="/" onClick={() => setMobileMenuOpen(false)}>{t('home')}</Link>
+          {user?.isClient !== false && (
+            <>
+              <Link to="/recherche" onClick={() => setMobileMenuOpen(false)}>{t('find_pro')}</Link>
+              <Link to="/map" onClick={() => setMobileMenuOpen(false)}>{t('explore_map')}</Link>
+            </>
+          )}
+          {user && <Link to="/bookings" onClick={() => setMobileMenuOpen(false)}>{t('my_bookings') || 'Mes RDV'}</Link>}
+          {user?.isAdmin && <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>{t('admin')}</Link>}
+        </div>
+      )}
     </header>
   );
 }

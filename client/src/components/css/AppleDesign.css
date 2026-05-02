@@ -102,6 +102,7 @@ html {
   font-size: 16px;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 body {
@@ -109,6 +110,14 @@ body {
   color: var(--text-primary);
   background: var(--bg-secondary);
   line-height: 1.5;
+  overflow-x: hidden;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 /* ========================================
@@ -495,6 +504,7 @@ p {
    ======================================== */
 
 .container {
+  width: min(1200px, 100%);
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--space-lg);
@@ -727,6 +737,14 @@ p {
 
   h2 {
     font-size: 1.5rem;
+  }
+
+  .btn {
+    white-space: normal;
+  }
+
+  .card {
+    padding: var(--space-md);
   }
 
   /* Header Responsive */

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
+import '../css/MainPage.css';
 import { IoArrowForward, IoBusiness, IoCalendar, IoLocation, IoSearch, IoSparkles, IoStar } from 'react-icons/io5';
 
 const salonImage = new URL('../assets/hero_beauty_salon.png', import.meta.url).href;
@@ -32,7 +33,7 @@ function MainPage() {
     <div className="page-container">
 
       {/* Hero Section - No Image Variant */}
-      <div style={{
+      <div className="main-hero" style={{
         position: 'relative',
         minHeight: '80vh',
         width: '100%',
@@ -57,9 +58,8 @@ function MainPage() {
         }} />
 
         {/* Content */}
-        <div className="container" style={{ position: 'relative', zIndex: 1, maxWidth: '900px', padding: '0 20px' }}>
-          <h2 style={{
-            fontSize: '14px',
+        <div className="container main-hero-content" style={{ position: 'relative', zIndex: 1, maxWidth: '900px', padding: '0 20px' }}>
+          <h2 className="main-hero-eyebrow" style={{
             fontWeight: '600',
             textTransform: 'uppercase',
             letterSpacing: '2px',
@@ -69,8 +69,7 @@ function MainPage() {
             {t('hero_welcome')}
           </h2>
 
-          <h1 style={{
-            fontSize: '56px',
+          <h1 className="main-hero-title" style={{
             fontWeight: '700',
             letterSpacing: '-1.5px',
             lineHeight: '1.05',
@@ -81,8 +80,7 @@ function MainPage() {
             {t('hero_slogan')}
           </h1>
 
-          <p style={{
-            fontSize: '21px',
+          <p className="main-hero-desc" style={{
             lineHeight: '1.5',
             color: '#ffffff',
             maxWidth: '600px',
@@ -91,11 +89,11 @@ function MainPage() {
           }}>
             {t('hero_desc')}
           </p>
-          <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div className="main-hero-actions" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
               className="btn btn-primary"
               onClick={() => navigate('/recherche')}
-              style={{ padding: '15px 35px', fontSize: '17px', borderRadius: '30px', display: 'flex', alignItems: 'center' }}
+              style={{ padding: '15px 35px', borderRadius: '30px', display: 'flex', alignItems: 'center' }}
             >
               <IoSearch size={20} style={{ marginRight: '8px' }} />
               {t('find_pro') || "Trouver un professionnel"}
@@ -105,7 +103,6 @@ function MainPage() {
               onClick={() => navigate('/register')}
               style={{
                 padding: '15px 35px',
-                fontSize: '17px',
                 borderRadius: '30px',
                 background: '#FFFFFF',
                 color: '#1d1d1f',
@@ -124,7 +121,7 @@ function MainPage() {
 
       <div className="container">
         {/* Features Grid */}
-        <div className="grid grid-3" style={{ marginBottom: '100px', gap: '30px' }}>
+        <div className="grid grid-3 main-feature-grid" style={{ marginBottom: '100px', gap: '30px' }}>
           <div className="card text-center" style={{
             padding: '40px 24px',
             background: 'rgba(255, 255, 255, 0.8)',
@@ -188,9 +185,9 @@ function MainPage() {
 
         {/* Featured Pros Section */}
         {featuredPros.length > 0 && (
-          <div style={{ marginBottom: '100px' }}>
+          <div className="main-featured-section" style={{ marginBottom: '100px' }}>
             <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-              <h2 style={{ fontSize: '2.5rem', marginBottom: '16px' }}>{t('featured_pros_title')}</h2>
+              <h2 className="main-featured-title" style={{ marginBottom: '16px' }}>{t('featured_pros_title')}</h2>
               <p className="text-secondary" style={{ fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
                 {t('featured_pros_desc')}
               </p>

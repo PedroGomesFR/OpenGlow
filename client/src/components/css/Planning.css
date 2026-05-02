@@ -1,0 +1,46 @@
+.planning-page {
+  padding: clamp(12px, 2.8vw, 20px) !important;
+}
+
+.planning-tabs {
+  flex-wrap: wrap;
+}
+
+.planning-grid-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.planning-calendar-grid {
+  min-width: 900px;
+}
+
+.planning-two-col {
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 768px) {
+  .planning-page {
+    min-height: auto !important;
+  }
+
+  .planning-tabs {
+    width: 100%;
+  }
+
+  .planning-tabs .btn {
+    flex: 1;
+    min-width: 130px;
+    justify-content: center;
+  }
+
+  .calendar-header-new {
+    padding: 14px !important;
+    gap: 12px !important;
+  }
+
+  .planning-two-col {
+    grid-template-columns: 1fr;
+  }
+}

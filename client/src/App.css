@@ -1,0 +1,19 @@
+html,
+body,
+#root {
+	width: 100%;
+	max-width: 100%;
+	overflow-x: hidden;
+}
+
+.app-content {
+	padding-top: 88px;
+	min-height: calc(100vh - 88px);
+}
+
+@media (max-width: 768px) {
+	.app-content {
+		padding-top: 74px;
+		min-height: calc(100vh - 74px);
+	}
+}

@@ -256,16 +256,53 @@
 }
 
 @media (max-width: 768px) {
+  .RecherchePage {
+    padding: 24px 14px;
+  }
+
+  .search-header {
+    margin-bottom: 36px;
+  }
+
   .search-header h1 {
     font-size: 1.8rem;
   }
 
+  .search-bar {
+    display: block;
+    border-radius: 18px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+  }
+
   .search-bar input {
-    padding-right: 20px;
-    /* Button moves below on mobile? No, let's auto-scale */
+    height: 54px;
+    padding: 0 16px 0 48px;
+    border-radius: 0;
+    border: none;
+    font-size: 1rem;
+  }
+
+  .search-bar .search-icon-marker {
+    left: 16px;
+    font-size: 1.2rem;
+  }
+
+  .search-bar .search-btn {
+    position: static;
+    width: 100%;
+    border-radius: 0;
+    height: 46px;
+    padding: 0 16px;
   }
 
   .professionals-grid {
     grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .card-image,
+  .card-image-placeholder {
+    height: 180px;
   }
 }

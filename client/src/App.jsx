@@ -151,7 +151,7 @@ function AppShell() {
           />
         )}
 
-        <div className="container" style={{ paddingTop: '80px' }}>
+        <main className="app-content container">
           <Routes>
 
             <Route path="/" element={user && user.isClient === false ? <Navigate to="/profile" /> : <MainPage />} />
@@ -184,7 +184,7 @@ function AppShell() {
             <Route path="*" element={<NotFoundPage />} />
 
           </Routes>
-        </div>
+        </main>
         <Footer />
         <CookieBanner />
       </Router>

@@ -4,6 +4,7 @@ import 'dayjs/locale/fr';
 import { useNavigate } from "react-router-dom";
 import { IoCalendar, IoSettings, IoSave, IoClipboardOutline, IoAdd, IoClose, IoPerson, IoMail, IoCall, IoTime, IoCut } from 'react-icons/io5';
 import '../css/AppleDesign.css'; // Ensure this path is correct based on file structure
+import '../css/Planning.css';
 import { useToast } from './ToastContext';
 
 dayjs.locale('fr');
@@ -215,12 +216,12 @@ function Planning() {
       <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
         {/* Header with Tabs */}
-        <div className="header-card card" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="header-card card" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <h1 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0 }}><IoClipboardOutline color="var(--primary)" /> Mon Planning</h1>
             <p className="text-secondary">Gérez votre emploi du temps et vos disponibilités</p>
           </div>
-          <div className="tabs" style={{ display: 'flex', gap: '10px' }}>
+          <div className="tabs planning-tabs" style={{ display: 'flex', gap: '10px' }}>
             <button
               className={`btn ${activeTab === 'agenda' ? 'btn-primary' : 'btn-secondary'}`}
               onClick={() => setActiveTab('agenda')}
@@ -265,13 +266,13 @@ function Planning() {
               </button>
             </div>
 
-            <div className="calendar-grid" style={{ 
-              display: 'grid', 
-              gridTemplateColumns: '70px repeat(7, 1fr)', 
-              gap: '0', 
-              background: 'white',
-              overflow: 'hidden'
-            }}>
+            <div className="planning-grid-scroll">
+              <div className="calendar-grid planning-calendar-grid" style={{ 
+                display: 'grid', 
+                gridTemplateColumns: '70px repeat(7, 1fr)', 
+                gap: '0', 
+                background: 'white'
+              }}>
               {/* Header Row */}
               <div style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E7' }}></div>
               {weekDays.map((day, index) => {
@@ -367,6 +368,7 @@ function Planning() {
                   })}
                 </React.Fragment>
               ))}
+              </div>
             </div>
           </div>
         )}
@@ -395,7 +397,7 @@ function Planning() {
                 </div>
               </div>
 
-              <div className="grid grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
+              <div className="grid grid-2 planning-two-col" style={{ display: 'grid', gap: '20px', marginBottom: '25px' }}>
                 <div className="form-group">
                   <label className="form-label">Heure de début</label>
                   <input
@@ -416,7 +418,7 @@ function Planning() {
                 </div>
               </div>
 
-              <div className="grid grid-2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '25px' }}>
+              <div className="grid grid-2 planning-two-col" style={{ display: 'grid', gap: '20px', marginBottom: '25px' }}>
                 <div className="form-group">
                   <label className="form-label">Début pause</label>
                   <input
