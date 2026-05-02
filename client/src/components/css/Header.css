@@ -11,6 +11,12 @@
   opacity: 1 !important;
 }
 
+/* On non-home pages the header is white: ensure links are always readable */
+.header-scrolled .headerNav a,
+.header-scrolled .headerNav span {
+  opacity: 1 !important;
+}
+
 .headerMobileToggle {
   display: none;
   width: 38px;

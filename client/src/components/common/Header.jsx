@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { IoPerson, IoLogIn, IoMenu, IoClose, IoShieldCheckmark, IoGlobeOutline, IoCalendar, IoNotifications } from 'react-icons/io5';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,9 +7,14 @@ import '../css/Header.css';
 
 function Header({ user, notificationCount = 0 }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Transparent header only on home page
+  const isHomePage = location.pathname === '/' || location.pathname === '/home';
+  const isTransparent = isHomePage && !scrolled;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,16 +41,16 @@ function Header({ user, notificationCount = 0 }) {
   };
 
   return (
-    <header className={scrolled ? 'header-scrolled' : ''} style={{
+    <header className={!isTransparent ? 'header-scrolled' : ''} style={{
       position: 'fixed',
       top: 0,
       left: 0,
       right: 0,
       zIndex: 1000,
       transition: 'all 0.3s ease',
-      background: scrolled ? 'rgba(255, 255, 255, 0.9)' : 'transparent',
-      backdropFilter: scrolled ? 'blur(20px)' : 'none',
-      borderBottom: scrolled ? '1px solid rgba(0,0,0,0.1)' : 'none',
+      background: isTransparent ? 'transparent' : 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: isTransparent ? 'none' : 'blur(20px)',
+      borderBottom: isTransparent ? 'none' : '1px solid rgba(0,0,0,0.1)',
       padding: '12px 0'
     }}>
       <div className="container app-header-inner" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
