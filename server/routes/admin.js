@@ -1,4 +1,5 @@
 import express from 'express';
+import archiver from 'archiver';
 import connectDB from '../db/connection.js';
 import { ObjectId } from 'mongodb';
 import { verifyToken } from "../middleware/auth.js";
@@ -45,6 +46,35 @@ const chunk = (items, size) => {
         batches.push(items.slice(index, index + size));
     }
     return batches;
+};
+
+const toCsvRow = (row) => Object.values(row).map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',');
+
+const arrayToCsv = (rows) => {
+    if (!rows.length) return '';
+    const headers = Object.keys(rows[0]);
+    return [headers.map((h) => `"${h}"`).join(','), ...rows.map(toCsvRow)].join('\n');
+};
+
+const buildSegmentFilter = (segment = {}) => {
+    const filter = {};
+    if (Array.isArray(segment.cities) && segment.cities.length) {
+        const sanitized = segment.cities.map((c) => String(c).trim()).filter(Boolean);
+        if (sanitized.length) {
+            filter.city = { $in: sanitized.map((c) => new RegExp(`^${c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) };
+        }
+    }
+    if (Array.isArray(segment.serviceCategories) && segment.serviceCategories.length) {
+        const sanitized = segment.serviceCategories.map((s) => String(s).trim()).filter(Boolean);
+        if (sanitized.length) {
+            filter.profession = { $in: sanitized.map((s) => new RegExp(`^${s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i')) };
+        }
+    }
+    if (segment.minSeniority && Number.isFinite(Number(segment.minSeniority))) {
+        const days = Math.max(0, Number(segment.minSeniority));
+        filter.createdAt = { $lte: new Date(Date.now() - days * 24 * 60 * 60 * 1000) };
+    }
+    return filter;
 };
 
 const buildRecipientFilter = ({ audience, recipientIds }) => {
@@ -286,22 +316,39 @@ router.post('/notifications', verifyToken, verifyAdmin, async (req, res) => {
             startsAt = null,
             expiresAt = null,
             recipientIds = [],
+            segment = {},
         } = req.body;
 
         if (!title || !message) {
             return res.status(400).json({ error: 'Title and message are required.' });
         }
 
-        if (!['all', 'clients', 'professionals', 'custom'].includes(audience)) {
+        if (!['all', 'clients', 'professionals', 'custom', 'segment'].includes(audience)) {
             return res.status(400).json({ error: 'Invalid audience.' });
         }
 
-        const targetUserIds = audience === 'custom'
-            ? (Array.isArray(recipientIds) ? recipientIds : []).filter((id) => ObjectId.isValid(id))
-            : [];
+        const db = await connectDB();
 
-        if (audience === 'custom' && !targetUserIds.length) {
-            return res.status(400).json({ error: 'At least one recipient is required for a custom notification.' });
+        let targetUserIds = [];
+
+        if (audience === 'custom') {
+            targetUserIds = (Array.isArray(recipientIds) ? recipientIds : []).filter((id) => ObjectId.isValid(id));
+            if (!targetUserIds.length) {
+                return res.status(400).json({ error: 'At least one recipient is required for a custom notification.' });
+            }
+        } else if (audience === 'segment') {
+            const segmentFilter = buildSegmentFilter(segment);
+            const audienceBaseFilter = segment.role === 'clients'
+                ? { isClient: true }
+                : segment.role === 'professionals'
+                    ? { isClient: false, isAdmin: { $ne: true } }
+                    : {};
+            const combinedFilter = { ...audienceBaseFilter, ...segmentFilter };
+            const matchedUsers = await db.collection('users').find(combinedFilter, { projection: { _id: 1 } }).toArray();
+            targetUserIds = matchedUsers.map((u) => String(u._id));
+            if (!targetUserIds.length) {
+                return res.status(400).json({ error: 'Aucun utilisateur ne correspond aux critères de segmentation.' });
+            }
         }
 
         const db = await connectDB();
@@ -313,6 +360,7 @@ router.post('/notifications', verifyToken, verifyAdmin, async (req, res) => {
             showBanner: Boolean(showBanner),
             isActive: true,
             targetUserIds,
+            segment: audience === 'segment' ? segment : null,
             startsAt: startsAt ? new Date(startsAt) : null,
             expiresAt: expiresAt ? new Date(expiresAt) : null,
             readByUserIds: [],
@@ -496,7 +544,7 @@ router.delete('/users/:id', verifyToken, verifyAdmin, async (req, res) => {
 router.patch('/users/:id/status', verifyToken, verifyAdmin, async (req, res) => {
     try {
         const { id } = req.params;
-        const { isSuspended, reason = '', message = '' } = req.body;
+        const { isSuspended, reason = '', message = '', suspensionLiftAt = null } = req.body;
 
         if (!ObjectId.isValid(id)) {
             return res.status(400).json({ error: 'Invalid user id.' });
@@ -514,12 +562,14 @@ router.patch('/users/:id/status', verifyToken, verifyAdmin, async (req, res) => 
         }
 
         const suspensionMessage = message?.trim() || (isSuspended ? 'Votre compte a été suspendu temporairement. Contactez le support.' : 'Votre compte a été réactivé.');
+        const parsedLiftAt = isSuspended && suspensionLiftAt ? new Date(suspensionLiftAt) : null;
         const update = isSuspended
             ? {
                 isSuspended: true,
                 suspendedAt: new Date(),
                 suspendedReason: reason?.trim() || 'Suspension administrative',
                 suspensionMessage,
+                suspensionLiftAt: parsedLiftAt,
                 suspendedBy: req.userId,
                 updatedAt: new Date(),
             }
@@ -528,6 +578,7 @@ router.patch('/users/:id/status', verifyToken, verifyAdmin, async (req, res) => 
                 suspendedAt: null,
                 suspendedReason: null,
                 suspensionMessage,
+                suspensionLiftAt: null,
                 suspendedBy: null,
                 updatedAt: new Date(),
             };
@@ -668,6 +719,123 @@ router.get('/users/:id/export', verifyToken, verifyAdmin, async (req, res) => {
         res.status(200).json(toSerializable(exportPayload));
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+router.get('/users/:id/export-zip', verifyToken, verifyAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: 'Invalid user id.' });
+        }
+
+        const db = await connectDB();
+        const targetId = new ObjectId(id);
+        const targetUser = await db.collection('users').findOne({ _id: targetId }, { projection: USER_PROJECTION });
+
+        if (!targetUser) {
+            return res.status(404).json({ error: 'User not found.' });
+        }
+
+        const [bookings, reviews, services, announcements, notifications, auditLogs] = await Promise.all([
+            db.collection('bookings').find({
+                $or: [{ clientId: id }, { professionalId: id }, { clientId: targetId }, { professionalId: targetId }],
+            }).sort({ createdAt: -1, _id: -1 }).toArray(),
+            db.collection('reviews').find({
+                $or: [{ clientId: targetId }, { professionalId: targetId }, { clientId: id }, { professionalId: id }],
+            }).sort({ createdAt: -1, _id: -1 }).toArray(),
+            db.collection('services').find({
+                $or: [{ professionalId: id }, { professionalId: targetId }],
+            }).sort({ createdAt: -1, _id: -1 }).toArray(),
+            db.collection('announcements').find({
+                $or: [{ professionalId: targetId }, { professionalId: id }],
+            }).sort({ createdAt: -1, _id: -1 }).toArray(),
+            db.collection('internal_notifications').find({
+                $or: [{ targetUserIds: id }, { readByUserIds: id }, { dismissedByUserIds: id }],
+            }).sort({ createdAt: -1, _id: -1 }).toArray(),
+            db.collection('admin_audit_logs').find({
+                $or: [
+                    { targetUserId: targetId },
+                    { recipientUserIds: targetId },
+                    { targetEmail: targetUser.email },
+                ],
+            }).sort({ createdAt: -1, _id: -1 }).toArray(),
+        ]);
+
+        const serialize = (arr) => toSerializable(arr);
+
+        const metaJson = JSON.stringify({
+            exportedAt: new Date().toISOString(),
+            exportedBy: { id: req.userId, name: getAdminDisplayName(req.adminUser) },
+            summary: {
+                bookings: bookings.length,
+                reviews: reviews.length,
+                services: services.length,
+                announcements: announcements.length,
+                notifications: notifications.length,
+                auditLogs: auditLogs.length,
+            },
+        }, null, 2);
+
+        const bookingsCsv = arrayToCsv(serialize(bookings).map((b) => ({
+            client: b.clientName || '',
+            email_client: b.clientEmail || '',
+            professionnel: b.professionalName || '',
+            prestation: b.serviceName || '',
+            date: b.date || '',
+            heure: b.time || '',
+            statut: b.status || '',
+            montant: b.servicePrice || '',
+            notes: b.notes || '',
+            cree_le: b.createdAt || '',
+        })));
+
+        const reviewsCsv = arrayToCsv(serialize(reviews).map((r) => ({
+            auteur: r.clientName || '',
+            destinataire: r.professionalName || '',
+            note: r.rating ?? '',
+            commentaire: r.comment || '',
+            date: r.createdAt || '',
+        })));
+
+        const auditCsv = arrayToCsv(serialize(auditLogs).map((a) => ({
+            type: a.type || '',
+            sujet: a.targetEmail || a.subject || '',
+            expediteur: a.senderName || '',
+            date: a.createdAt || '',
+        })));
+
+        const safeEmail = (targetUser.email || id).replace(/[^a-z0-9._@-]/gi, '_');
+        const filename = `rgpd-${safeEmail}-${new Date().toISOString().slice(0, 10)}.zip`;
+
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+
+        const archive = archiver('zip', { zlib: { level: 6 } });
+        archive.on('error', (err) => { if (!res.headersSent) res.status(500).json({ error: err.message }); });
+        archive.pipe(res);
+
+        archive.append(JSON.stringify(toSerializable(targetUser), null, 2), { name: 'utilisateur.json' });
+        archive.append(metaJson, { name: 'meta.json' });
+        archive.append(bookingsCsv, { name: 'reservations.csv' });
+        archive.append(reviewsCsv, { name: 'avis.csv' });
+        archive.append(JSON.stringify(serialize(services), null, 2), { name: 'services.json' });
+        archive.append(JSON.stringify(serialize(announcements), null, 2), { name: 'annonces.json' });
+        archive.append(JSON.stringify(serialize(notifications), null, 2), { name: 'notifications.json' });
+        archive.append(auditCsv, { name: 'audit.csv' });
+
+        await archive.finalize();
+
+        await createAuditLog(db, {
+            type: 'gdpr_export_zip',
+            targetUserId: targetUser._id,
+            targetEmail: targetUser.email,
+            senderId: new ObjectId(req.userId),
+            senderName: getAdminDisplayName(req.adminUser),
+        });
+    } catch (error) {
+        if (!res.headersSent) res.status(500).json({ error: error.message });
     }
 });
 

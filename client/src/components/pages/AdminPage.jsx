@@ -142,6 +142,7 @@ function AdminPage() {
     const [accountActionForm, setAccountActionForm] = useState({
         reason: '',
         message: '',
+        suspensionLiftAt: '',
     });
     const [notificationForm, setNotificationForm] = useState({
         audience: 'all',
@@ -150,6 +151,7 @@ function AdminPage() {
         message: '',
         showBanner: true,
         expiresAt: '',
+        segment: { role: 'all', cities: '', serviceCategories: '', minSeniority: '' },
     });
 
     const deferredUserSearch = useDeferredValue(userSearch);
@@ -450,6 +452,9 @@ function AdminPage() {
                     isSuspended: shouldSuspend,
                     reason: accountActionForm.reason.trim(),
                     message: accountActionForm.message.trim(),
+                    suspensionLiftAt: shouldSuspend && accountActionForm.suspensionLiftAt
+                        ? accountActionForm.suspensionLiftAt
+                        : null,
                 }),
             });
 
@@ -460,12 +465,47 @@ function AdminPage() {
                 'success'
             );
 
-            setAccountActionForm({ reason: '', message: '' });
+            setAccountActionForm({ reason: '', message: '', suspensionLiftAt: '' });
             await loadAdminData({ silent: true });
         } catch (error) {
             toast(error.message || tx('admin_status_error', 'Impossible de mettre à jour le statut du compte.'), 'error');
         } finally {
             setProcessingStatus(false);
+        }
+    };
+
+    const handleExportGdprZip = async () => {
+        if (!selectedPrimaryUser) {
+            toast(tx('admin_select_one_user_export', 'Sélectionnez un seul utilisateur pour exporter sa fiche RGPD.'), 'warning');
+            return;
+        }
+
+        try {
+            setExportingUserId(String(selectedPrimaryUser._id));
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${window.API_URL}/admin/users/${selectedPrimaryUser._id}/export-zip`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err?.error || 'Erreur export ZIP');
+            }
+
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `rgpd-${selectedPrimaryUser.email || selectedPrimaryUser._id}.zip`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            URL.revokeObjectURL(url);
+            toast(tx('admin_gdpr_zip_success', 'Archive ZIP RGPD générée avec succès.'), 'success');
+        } catch (error) {
+            toast(error.message || tx('admin_gdpr_zip_error', 'Impossible de générer l\'archive ZIP.'), 'error');
+        } finally {
+            setExportingUserId(null);
         }
     };
 
@@ -503,6 +543,21 @@ function AdminPage() {
             return;
         }
 
+        const segmentPayload = notificationForm.audience === 'segment'
+            ? {
+                role: notificationForm.segment.role,
+                cities: notificationForm.segment.cities
+                    ? notificationForm.segment.cities.split(',').map((c) => c.trim()).filter(Boolean)
+                    : [],
+                serviceCategories: notificationForm.segment.serviceCategories
+                    ? notificationForm.segment.serviceCategories.split(',').map((s) => s.trim()).filter(Boolean)
+                    : [],
+                minSeniority: notificationForm.segment.minSeniority
+                    ? Number(notificationForm.segment.minSeniority)
+                    : null,
+            }
+            : {};
+
         try {
             setSendingNotification(true);
             await adminFetch('/notifications', {
@@ -515,6 +570,7 @@ function AdminPage() {
                     showBanner: notificationForm.showBanner,
                     expiresAt: notificationForm.expiresAt || null,
                     recipientIds: customRecipients.map((user) => String(user._id)),
+                    segment: segmentPayload,
                 }),
             });
 
@@ -526,6 +582,7 @@ function AdminPage() {
                 message: '',
                 showBanner: true,
                 expiresAt: '',
+                segment: { role: 'all', cities: '', serviceCategories: '', minSeniority: '' },
             });
             await loadAdminData({ silent: true });
         } catch (error) {
@@ -751,6 +808,11 @@ function AdminPage() {
                                                         {user.isSuspended && user.suspendedReason && (
                                                             <span>{user.suspendedReason}</span>
                                                         )}
+                                                        {user.isSuspended && user.suspensionLiftAt && (
+                                                            <span style={{ fontSize: '0.75rem', color: 'var(--color-secondary)' }}>
+                                                                Levée : {formatDate(user.suspensionLiftAt, { withTime: true })}
+                                                            </span>
+                                                        )}
                                                     </div>
                                                 </td>
                                                 <td>{user.companyName || 'Non renseignée'}</td>
@@ -770,6 +832,9 @@ function AdminPage() {
                                                                 setAccountActionForm({
                                                                     reason: user.suspendedReason || '',
                                                                     message: user.suspensionMessage || '',
+                                                                    suspensionLiftAt: user.suspensionLiftAt
+                                                                        ? new Date(user.suspensionLiftAt).toISOString().slice(0, 16)
+                                                                        : '',
                                                                 });
                                                             }}
                                                             className="admin-icon-button admin-icon-button--neutral"
@@ -830,6 +895,15 @@ function AdminPage() {
                                     />
                                 </label>
 
+                                <label>
+                                    <span>{tx('admin_suspension_lift_at', 'Levée automatique de la suspension (optionnel)')}</span>
+                                    <input
+                                        type="datetime-local"
+                                        value={accountActionForm.suspensionLiftAt}
+                                        onChange={(event) => handleAccountActionFieldChange('suspensionLiftAt', event.target.value)}
+                                    />
+                                </label>
+
                                 <div className="admin-form__actions admin-form__actions--split">
                                     <button type="button" className="btn btn-danger" onClick={() => handleToggleSuspension(true)} disabled={processingStatus || selectedPrimaryUser.isAdmin}>
                                         <IoLockClosed /> Suspendre
@@ -837,8 +911,11 @@ function AdminPage() {
                                     <button type="button" className="btn btn-secondary" onClick={() => handleToggleSuspension(false)} disabled={processingStatus}>
                                         <IoLockOpen /> Réactiver
                                     </button>
-                                    <button type="button" className="btn btn-outline" onClick={handleExportGdpr} disabled={exportingUserId === String(selectedPrimaryUser._id)}>
-                                        <IoDocumentText /> {exportingUserId === String(selectedPrimaryUser._id) ? 'Export...' : 'Export RGPD'}
+                                    <button type="button" className="btn btn-outline" onClick={handleExportGdpr} disabled={!!exportingUserId}>
+                                        <IoDocumentText /> {exportingUserId ? 'Export...' : 'Export JSON'}
+                                    </button>
+                                    <button type="button" className="btn btn-outline" onClick={handleExportGdprZip} disabled={!!exportingUserId}>
+                                        <IoDownload /> {exportingUserId ? 'Export...' : 'Export ZIP'}
                                     </button>
                                 </div>
                                 {selectedPrimaryUser.isAdmin && (
@@ -858,7 +935,7 @@ function AdminPage() {
                             </div>
                         </div>
                         <div className="admin-mini-list">
-                            {['Profil utilisateur', 'Réservations', 'Avis liés', 'Prestations', 'Annonces', 'Notifications internes', 'Traces d’audit'].map((item) => (
+                            {['Profil utilisateur (JSON)', 'Réservations (CSV)', 'Avis liés (CSV)', 'Prestations (JSON)', 'Annonces (JSON)', 'Notifications internes (JSON)', 'Traces d’audit (CSV)'].map((item) => (
                                 <div key={item} className="admin-mini-list__item">
                                     <div>
                                         <strong>{item}</strong>
@@ -1105,6 +1182,7 @@ function AdminPage() {
                                         <option value="clients">Clients</option>
                                         <option value="professionals">Professionnels</option>
                                         <option value="custom">Sélection personnalisée</option>
+                                        <option value="segment">Segment avancé</option>
                                     </select>
                                 </label>
                                 <label>
@@ -1166,6 +1244,56 @@ function AdminPage() {
                                     )) : (
                                         <span className="admin-empty-inline">Sélectionnez des utilisateurs dans le tableau ci-dessus.</span>
                                     )}
+                                </div>
+                            )}
+
+                            {notificationForm.audience === 'segment' && (
+                                <div className="admin-segment-builder">
+                                    <div className="admin-form-grid">
+                                        <label>
+                                            <span>Rôle ciblé</span>
+                                            <select
+                                                value={notificationForm.segment.role}
+                                                onChange={(event) => handleNotificationFieldChange('segment', { ...notificationForm.segment, role: event.target.value })}
+                                            >
+                                                <option value="all">Tous les rôles</option>
+                                                <option value="clients">Clients uniquement</option>
+                                                <option value="professionals">Professionnels uniquement</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            <span>Ancienneté minimale (jours)</span>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={notificationForm.segment.minSeniority}
+                                                onChange={(event) => handleNotificationFieldChange('segment', { ...notificationForm.segment, minSeniority: event.target.value })}
+                                                placeholder="Ex: 30 (inscrits depuis ≥ 30 jours)"
+                                            />
+                                        </label>
+                                    </div>
+                                    <label>
+                                        <span>Villes (séparées par des virgules)</span>
+                                        <input
+                                            type="text"
+                                            value={notificationForm.segment.cities}
+                                            onChange={(event) => handleNotificationFieldChange('segment', { ...notificationForm.segment, cities: event.target.value })}
+                                            placeholder="Ex: Paris, Lyon, Marseille"
+                                        />
+                                    </label>
+                                    <label>
+                                        <span>Professions / catégories de service (séparées par des virgules)</span>
+                                        <input
+                                            type="text"
+                                            value={notificationForm.segment.serviceCategories}
+                                            onChange={(event) => handleNotificationFieldChange('segment', { ...notificationForm.segment, serviceCategories: event.target.value })}
+                                            placeholder="Ex: Coiffeur, Esthéticienne, Nail artist"
+                                        />
+                                    </label>
+                                    <div className="admin-notice admin-notice--info" style={{ marginTop: 0 }}>
+                                        <IoInformationCircle />
+                                        <p>Le segment sera résolu côté serveur. Seuls les utilisateurs correspondant à <strong>tous</strong> les critères renseignés recevront la notification.</p>
+                                    </div>
                                 </div>
                             )}
 

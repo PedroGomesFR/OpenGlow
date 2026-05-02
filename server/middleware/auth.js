@@ -38,10 +38,19 @@ const verifyToken = async (req, res, next) => {
     }
 
     if (user.isSuspended) {
-      return res.status(403).json({
-        error: user.suspensionMessage || "Votre compte a été suspendu. Contactez le support.",
-        suspended: true,
-      });
+      // Auto-lift if the scheduled lift date has passed
+      if (user.suspensionLiftAt && new Date(user.suspensionLiftAt) <= new Date()) {
+        await db.collection('users').updateOne(
+          { _id: new ObjectId(decoded.id) },
+          { $set: { isSuspended: false, suspensionLiftAt: null, suspendedReason: null, suspensionMessage: null, updatedAt: new Date() } }
+        );
+      } else {
+        return res.status(403).json({
+          error: user.suspensionMessage || "Votre compte a été suspendu. Contactez le support.",
+          suspended: true,
+          suspensionLiftAt: user.suspensionLiftAt || null,
+        });
+      }
     }
 
     req.userId = decoded.id;
