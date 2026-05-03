@@ -11,7 +11,7 @@ const MentionsLegales = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>1. Édition du site</h2>
                         <p className="text-secondary">
-                            Le site <strong>OpenGlow Beauty</strong> est un projet personnel à but non lucratif développé à des fins de démonstration et d'apprentissage.
+                            Le site <strong>OpenGlow Beauty</strong> est un service en ligne accessible au public, destiné à la mise en relation entre utilisateurs et professionnels de la beauté.
                         </p>
                         <p className="text-secondary">
                             <strong>Propriétaire :</strong> Pedro Gomes<br />
@@ -22,7 +22,7 @@ const MentionsLegales = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>2. Hébergement</h2>
                         <p className="text-secondary">
-                            Ce site est actuellement hébergé localement ou sur une infrastructure de développement temporaire.
+                            Ce site est hébergé sur une infrastructure de production permettant son accès en ligne au public.
                         </p>
                     </section>
 
@@ -36,7 +36,7 @@ const MentionsLegales = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>4. Données personnelles</h2>
                         <p className="text-secondary">
-                            Ce site ne collecte aucune donnée à des fins commerciales. Les comptes utilisateurs et les données enregistrées le sont uniquement pour le fonctionnement de la démonstration technique. Aucune donnée n'est revendue ou partagée avec des tiers.
+                            Ce site collecte les données strictement nécessaires au fonctionnement du service (création de compte, gestion des réservations et du profil utilisateur). Aucune donnée n'est revendue ou partagée avec des tiers en dehors des obligations légales et techniques.
                         </p>
                     </section>
 
