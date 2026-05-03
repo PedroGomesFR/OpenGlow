@@ -1,28 +1,54 @@
+/* =====================
+   SITE HEADER — static
+   ===================== */
+.site-header {
+  width: 100%;
+  background: #ffffff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  position: relative;
+  z-index: 100;
+}
+
 .app-header-inner {
-  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 64px;
   gap: 12px;
 }
 
-/* Transparent state (home page only) */
-.header-transparent .headerNav a,
-.header-transparent .headerNav span {
-  color: rgba(255, 255, 255, 0.92) !important;
+.header-brand {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-.header-transparent .headerNav a:hover,
-.header-transparent .headerNav span:hover {
-  color: #ffffff !important;
+.headerNav {
+  display: flex;
+  gap: 24px;
+  align-items: center;
 }
 
-/* Opaque state (all other pages) */
-.header-solid .headerNav a,
-.header-solid .headerNav span {
-  color: var(--primary) !important;
-  opacity: 1 !important;
+.headerNav a {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: opacity 0.2s;
 }
 
-.header-solid .headerNav a:hover {
-  opacity: 0.7 !important;
+.headerNav a:hover {
+  opacity: 1;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .headerMobileToggle {
