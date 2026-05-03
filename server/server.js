@@ -28,6 +28,8 @@ const ALLOWED_ORIGINS = [
   'https://openglow.alwaysdata.net',
   'https://openglow.netlify.app',
   'https://openglow.onrender.com',
+  'https://openglow.fr',
+  'https://www.openglow.fr',
   'http://localhost:5173',
   'http://localhost:4173',
   'http://127.0.0.1:5173',
