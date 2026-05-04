@@ -83,6 +83,15 @@ function FlyToView({ center }) {
     return null;
 }
 
+// Force Leaflet to recalculate size after the container becomes visible
+function InvalidateSize({ trigger }) {
+    const map = useMap();
+    useEffect(() => {
+        setTimeout(() => map.invalidateSize(), 50);
+    }, [trigger, map]);
+    return null;
+}
+
 function MapView() {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -271,6 +280,7 @@ function MapView() {
                     />
 
                     <FlyToView center={selectedPro ? [selectedPro.latitude, selectedPro.longitude] : [userLocation.lat, userLocation.lng]} />
+                    <InvalidateSize trigger={mobileTab} />
 
                     {/* User Marker */}
                     <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
