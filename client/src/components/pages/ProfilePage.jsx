@@ -76,7 +76,8 @@ function ProfilePage({ user, setUser }) {
     const deconnection = () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        window.location.href = '/home';
+        setUser(null);
+        navigate('/', { replace: true });
     };
 
     const handleFieldChange = (e) => {
@@ -158,7 +159,8 @@ function ProfilePage({ user, setUser }) {
             if (res.ok) {
                 localStorage.removeItem('user');
                 localStorage.removeItem('token');
-                window.location.href = '/home';
+                setUser(null);
+                navigate('/', { replace: true });
             } else {
                 const data = await res.json();
                 toast(data.error || t('delete_account_error'), 'error');

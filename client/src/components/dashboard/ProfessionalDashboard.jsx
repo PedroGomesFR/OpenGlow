@@ -71,7 +71,8 @@ function ProfessionalDashboard({ user, setUser }) {
     const deconnection = () => {
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        window.location.href = '/home';
+        setUser(null);
+        navigate('/', { replace: true });
     };
 
     const handleProfileUpdate = async (e) => {

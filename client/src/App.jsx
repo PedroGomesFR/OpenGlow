@@ -166,7 +166,7 @@ function AppShell() {
 
             <Route path="/" element={user && user.isClient === false ? <Navigate to="/profile" /> : <MainPage />} />
 
-            <Route path="/home" element={user && user.isClient === false ? <Navigate to="/profile" /> : <MainPage />} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
 
             <Route path="/login" element={<LoginPage user={user} setUser={setUser} />} />
 
