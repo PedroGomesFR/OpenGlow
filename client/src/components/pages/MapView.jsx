@@ -90,6 +90,7 @@ function MapView() {
     const [selectedPro, setSelectedPro] = useState(null);
     const [userLocation, setUserLocation] = useState({ lat: 48.8566, lng: 2.3522 }); // Default Paris
     const [filterCategory, setFilterCategory] = useState('all');
+    const [mobileTab, setMobileTab] = useState('list'); // 'list' | 'map'
 
     useEffect(() => {
         loadProfessionals();
@@ -157,8 +158,24 @@ function MapView() {
 
     return (
         <div className="map-view-page">
+            {/* Mobile tab switcher */}
+            <div className="mobile-tab-switcher">
+                <button
+                    className={`mobile-tab-btn ${mobileTab === 'list' ? 'active' : ''}`}
+                    onClick={() => setMobileTab('list')}
+                >
+                    ☰ Liste ({filteredProfessionals.length})
+                </button>
+                <button
+                    className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
+                    onClick={() => setMobileTab('map')}
+                >
+                    🗺 Carte
+                </button>
+            </div>
+
             {/* Sidebar */}
-            <div className="map-sidebar">
+            <div className={`map-sidebar ${mobileTab === 'map' ? 'mobile-hidden' : ''}`}>
                 <div className="sidebar-header">
                     <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoLocation color="var(--primary)" /> {t('map_title')}</h2>
                     <p className="text-secondary">
@@ -242,7 +259,7 @@ function MapView() {
             </div>
 
             {/* Map */}
-            <div className="map-container">
+            <div className={`map-container ${mobileTab === 'list' ? 'mobile-hidden' : ''}`}>
                 <MapContainer
                     center={[userLocation.lat, userLocation.lng]}
                     zoom={13}

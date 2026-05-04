@@ -1,3 +1,27 @@
+/* Mobile Tab Switcher - hidden on desktop */
+.mobile-tab-switcher {
+    display: none;
+}
+
+.mobile-tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.mobile-tab-btn.active {
+    color: var(--primary);
+    border-bottom-color: var(--primary);
+    background: var(--bg-primary);
+}
+
 .map-view-page {
     display: flex;
     min-height: calc(100dvh - 88px);
@@ -307,32 +331,47 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
+    .mobile-tab-switcher {
+        display: flex;
+        border-bottom: 1px solid var(--gray-200);
+        background: var(--bg-primary);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .mobile-hidden {
+        display: none !important;
+    }
+
     .map-view-page {
         flex-direction: column;
-        min-height: auto;
+        min-height: 0;
+        height: calc(100dvh - 88px);
     }
 
     .map-sidebar {
         width: 100%;
-        max-height: 56dvh;
+        height: calc(100dvh - 88px - 45px);
+        max-height: none;
         border-right: none;
-        border-bottom: 1px solid var(--gray-200);
+        border-bottom: none;
+        overflow-y: auto;
     }
 
     .map-container {
-        min-height: 44dvh;
+        width: 100%;
+        height: calc(100dvh - 88px - 45px);
+        min-height: 0;
+        flex: none;
+    }
+
+    .map-container .leaflet-container {
+        height: 100% !important;
     }
 }
 
 @media (max-width: 768px) {
-    .map-sidebar {
-        max-height: 52dvh;
-    }
-
-    .map-container {
-        min-height: 48dvh;
-    }
-
     .sidebar-header {
         padding: var(--space-lg);
     }
@@ -342,12 +381,14 @@
     }
 
     .pro-card {
-        flex-direction: column;
+        flex-direction: row;
+        align-items: center;
     }
 
     .pro-photo {
-        width: 100%;
-        height: 160px;
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
     }
 
     .selected-actions {

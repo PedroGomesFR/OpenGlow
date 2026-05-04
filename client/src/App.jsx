@@ -36,6 +36,7 @@ import PolitiqueConfidentialite from './components/pages/PolitiqueConfidentialit
 import AdminPage from './components/pages/AdminPage.jsx';
 import Footer from './components/common/Footer.jsx';
 import MentionsLegales from './components/pages/MentionsLegales.jsx';
+import CGU from './components/pages/CGU.jsx';
 import CookieBanner from './components/common/CookieBanner.jsx';
 import { ToastProvider } from './components/common/ToastContext.jsx';
 import { ConfirmProvider } from './components/common/ConfirmContext.jsx';
@@ -187,6 +188,7 @@ function AppShell() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
             <Route path="/cgp" element={<CGP />} />
+            <Route path="/cgu" element={<CGU />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
 
