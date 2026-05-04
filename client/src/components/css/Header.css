@@ -23,6 +23,11 @@
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 0;
+}
+
+.header-brand-text {
+  white-space: nowrap;
 }
 
 .headerNav {
@@ -120,6 +125,48 @@
 
   .headerActions .btn {
     padding: 7px 10px !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .app-header-inner {
+    gap: 8px;
+  }
+
+  .header-brand-logo {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .header-brand-text {
+    font-size: 17px !important;
+  }
+
+  .headerActions {
+    gap: 8px !important;
+  }
+
+  .header-language {
+    gap: 2px !important;
+  }
+
+  .headerActions .btn.header-account-btn {
+    padding: 7px 9px !important;
+    min-width: 40px;
+  }
+
+  .header-account-text {
+    display: none;
+  }
+}
+
+@media (max-width: 390px) {
+  .header-brand-text {
+    display: none;
+  }
+
+  .headerActions select {
+    max-width: 52px !important;
   }
 }
 

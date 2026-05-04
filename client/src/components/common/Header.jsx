@@ -39,9 +39,10 @@ function Header({ user, notificationCount = 0 }) {
           <img
             src={new URL('../../assets/logo-new.png', import.meta.url).href}
             alt="OpenGlow Logo"
+            className="header-brand-logo"
             style={{ width: '38px', height: '38px', objectFit: 'contain' }}
           />
-          <span style={{ fontSize: '20px', fontWeight: '600', letterSpacing: '-0.5px', color: 'var(--primary)' }}>OpenGlow</span>
+          <span className="header-brand-text" style={{ fontSize: '20px', fontWeight: '600', letterSpacing: '-0.5px', color: 'var(--primary)' }}>OpenGlow</span>
         </div>
 
         {/* Navigation */}
@@ -72,7 +73,7 @@ function Header({ user, notificationCount = 0 }) {
 
         {/* Actions */}
         <div className="headerActions">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <div className="header-language" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
             <IoGlobeOutline size={15} color="var(--primary)" />
             <select
               value={i18n.language}
@@ -92,20 +93,20 @@ function Header({ user, notificationCount = 0 }) {
           {user ? (
             <button
               onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }}
-              className="btn btn-primary"
+              className="btn btn-primary header-account-btn"
               style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <IoPerson size={16} />
-              {t('my_space')}
+              <span className="header-account-text">{t('my_space')}</span>
             </button>
           ) : (
             <button
               onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
-              className="btn btn-primary"
+              className="btn btn-primary header-account-btn"
               style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <IoLogIn size={16} />
-              {t('login')}
+              <span className="header-account-text">{t('login')}</span>
             </button>
           )}
 

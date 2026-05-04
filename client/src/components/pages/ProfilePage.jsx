@@ -4,6 +4,7 @@ import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoTrash } from 'react-
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/ProfilePageNew.css';
+import '../css/ProfilePageResponsive.css';
 import ProfessionalDashboard from '../dashboard/ProfessionalDashboard';
 import { useToast } from '../common/ToastContext';
 import { useConfirm } from '../common/ConfirmContext';
@@ -217,10 +218,10 @@ function ProfilePage({ user, setUser }) {
     };
 
     return (
-        <div style={{ background: '#F5F5F7', minHeight: '100vh', padding: '40px 20px' }}>
-            <div className="container" style={{ maxWidth: '600px', margin: '0 auto' }}>
-                <div className="card" style={{ textAlign: 'center', padding: '40px', position: 'relative', overflow: 'hidden' }}>
-                    <div style={{
+        <div className="profile-page-shell" style={{ background: '#F5F5F7', minHeight: '100vh', padding: '40px 20px' }}>
+            <div className="container profile-page-container" style={{ maxWidth: '600px', margin: '0 auto' }}>
+                <div className="card profile-page-card" style={{ textAlign: 'center', padding: '40px', position: 'relative', overflow: 'hidden' }}>
+                    <div className="profile-space-badge" style={{
                         position: 'absolute',
                         top: '20px',
                         right: '20px',
@@ -235,11 +236,12 @@ function ProfilePage({ user, setUser }) {
                         {t('client_space')}
                     </div>
 
-                    <div style={{ position: 'relative', display: 'inline-block', marginBottom: '20px' }}>
+                    <div className="profile-avatar-wrap" style={{ position: 'relative', display: 'inline-block', marginBottom: '20px' }}>
                         {user?.profilePhoto ? (
                             <img
                                 src={`${window.BASE_URL}${user.profilePhoto}`}
                                 alt="Profile"
+                                className="profile-avatar-img"
                                 style={{
                                     width: '120px',
                                     height: '120px',
@@ -250,7 +252,7 @@ function ProfilePage({ user, setUser }) {
                                 }}
                             />
                         ) : (
-                            <div style={{
+                            <div className="profile-avatar-placeholder" style={{
                                 width: '120px',
                                 height: '120px',
                                 borderRadius: '50%',
@@ -265,6 +267,7 @@ function ProfilePage({ user, setUser }) {
                             </div>
                         )}
                         <label
+                            className="profile-avatar-upload"
                             style={{
                                 position: 'absolute',
                                 bottom: '0',
@@ -288,10 +291,10 @@ function ProfilePage({ user, setUser }) {
                         </label>
                     </div>
 
-                    <h1 style={{ fontSize: '24px', fontWeight: '700', marginBottom: '5px' }}>
+                    <h1 className="profile-page-name" style={{ fontSize: '24px', fontWeight: '700', marginBottom: '5px' }}>
                         {user ? `${user.prenom} ${user.nom}` : t('not_available')}
                     </h1>
-                    <p style={{ color: '#86868b', fontSize: '15px', marginBottom: '30px' }}>{user?.email}</p>
+                    <p className="profile-page-email" style={{ color: '#86868b', fontSize: '15px', marginBottom: '30px' }}>{user?.email}</p>
 
                     <div style={{ marginBottom: '24px' }}>
                         <button
@@ -310,6 +313,7 @@ function ProfilePage({ user, setUser }) {
 
                     {isEditing && (
                         <form
+                            className="profile-inline-form"
                             onSubmit={handleSaveProfile}
                             style={{
                                 textAlign: 'left',
@@ -401,6 +405,7 @@ function ProfilePage({ user, setUser }) {
 
                     {showPasswordForm && (
                         <form
+                            className="profile-inline-form"
                             onSubmit={handleChangePassword}
                             style={{
                                 textAlign: 'left',
@@ -456,7 +461,7 @@ function ProfilePage({ user, setUser }) {
                         </form>
                     )}
 
-                    <div className="grid grid-2 mobile-col" style={{ gap: '15px' }}>
+                    <div className="grid grid-2 mobile-col profile-action-grid" style={{ gap: '15px' }}>
                         <button
                             className="btn btn-secondary"
                             onClick={() => navigate('/bookings')}
