@@ -4,7 +4,15 @@ import {
   Route,
   Routes,
   Navigate,
+  useLocation,
 } from "react-router-dom";
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -141,6 +149,7 @@ function AppShell() {
   return (
     <>
       <Router>
+        <ScrollToTop />
         <Header user={user} notificationCount={notifications.filter((notification) => !(notification.readByUserIds || []).includes(currentUserId)).length} />
         {user && (
           <UserNotifications

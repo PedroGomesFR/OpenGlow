@@ -44,7 +44,7 @@ const CookieBanner = () => {
             boxShadow: '0 -4px 20px rgba(0,0,0,0.2)',
             backdropFilter: 'blur(8px)'
         }}>
-            <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.6', flex: 1, minWidth: '200px' }}>
+            <p style={{ margin: 0, fontSize: '13px', lineHeight: '1.6', flex: 1, minWidth: '200px', color: 'white' }}>
                 {t('cookie_banner_text')} <strong>{t('cookie_recaptcha')}</strong> {t('cookie_banner_recaptcha_suffix')}
                 {' '}
                 <span
