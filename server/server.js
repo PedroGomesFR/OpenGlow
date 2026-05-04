@@ -22,6 +22,7 @@ const __dirname = path.dirname(__filename);
 const port = process.env.PORT || 5001;
 const bindHost = process.env.HOST || process.env.IP || "::";
 const app = express();
+const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.openglow.fr').replace(/\/$/, '');
 
 // Origines autorisées (CORS whitelist)
 const ALLOWED_ORIGINS = [
@@ -91,6 +92,16 @@ app.use("/api/admin", adminRouter);
 app.use("/api/professionals", professionalRouter);
 app.use("/api/products", productRouter);
 app.use("/api/announcements", announcementRouter);
+
+// SPA fallback: redirect non-API browser routes to the frontend app.
+app.get(/^\/(?!api).*/, (req, res) => {
+  const acceptsHtml = req.headers.accept?.includes('text/html');
+  if (!acceptsHtml) {
+    return res.status(404).send('Not Found');
+  }
+
+  return res.redirect(302, `${FRONTEND_URL}${req.originalUrl}`);
+});
 
 app.use("/api/keepAlive/Health", async (req, res) => {
   try {
