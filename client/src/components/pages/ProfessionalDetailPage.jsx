@@ -181,35 +181,51 @@ function ProfessionalDetailPage() {
                     </div>
 
                     {/* Contact & Horaires */}
-                    {(professional.phone || professional.openingHours) && (
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                            {professional.phone && (
-                                <a
-                                    href={`tel:${professional.phone}`}
-                                    style={{
-                                        display: 'flex', alignItems: 'center', gap: '8px',
-                                        background: 'var(--primary)', color: '#fff',
-                                        padding: '10px 20px', borderRadius: '20px',
-                                        fontWeight: '600', fontSize: '15px',
-                                        textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
-                                    }}
-                                >
-                                    <IoCall size={18} /> {professional.phone}
-                                </a>
-                            )}
-                            {professional.openingHours && (
-                                <span style={{
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                        {professional.phone ? (
+                            <a
+                                href={`tel:${professional.phone}`}
+                                style={{
                                     display: 'flex', alignItems: 'center', gap: '8px',
-                                    background: '#F0FFF4', color: '#1B6B3A',
+                                    background: 'var(--primary)', color: '#fff',
                                     padding: '10px 20px', borderRadius: '20px',
                                     fontWeight: '600', fontSize: '15px',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                                }}>
-                                    <IoTime size={18} color="#1B6B3A" /> {professional.openingHours}
-                                </span>
-                            )}
-                        </div>
-                    )}
+                                    textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
+                                }}
+                            >
+                                <IoCall size={18} /> {professional.phone}
+                            </a>
+                        ) : (
+                            <span style={{
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                background: '#F5F5F7', color: '#86868b',
+                                padding: '10px 20px', borderRadius: '20px',
+                                fontSize: '15px',
+                            }}>
+                                <IoCall size={18} /> {t('phone_not_provided') || 'Téléphone non renseigné'}
+                            </span>
+                        )}
+                        {professional.openingHours ? (
+                            <span style={{
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                background: '#F0FFF4', color: '#1B6B3A',
+                                padding: '10px 20px', borderRadius: '20px',
+                                fontWeight: '600', fontSize: '15px',
+                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                            }}>
+                                <IoTime size={18} color="#1B6B3A" /> {professional.openingHours}
+                            </span>
+                        ) : (
+                            <span style={{
+                                display: 'flex', alignItems: 'center', gap: '8px',
+                                background: '#F5F5F7', color: '#86868b',
+                                padding: '10px 20px', borderRadius: '20px',
+                                fontSize: '15px',
+                            }}>
+                                <IoTime size={18} /> {t('hours_not_provided') || 'Horaires non renseignés'}
+                            </span>
+                        )}
+                    </div>
 
                     {professional.totalReviews > 0 && (
                         <button
