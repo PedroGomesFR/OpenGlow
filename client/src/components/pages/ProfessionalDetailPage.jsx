@@ -167,7 +167,7 @@ function ProfessionalDetailPage() {
             <div className="container" style={{ marginTop: '-60px', position: 'relative', zIndex: 10 }}>
 
                 {/* ── Header card ── */}
-                <div className="card" style={{ marginBottom: '30px', padding: 0, overflow: 'hidden' }}>
+                <div className="card" style={{ marginBottom: '30px', padding: 0 }}>
 
                     {/* ── Identity row ── */}
                     <div style={{ padding: '0 28px 24px 28px', display: 'flex', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
