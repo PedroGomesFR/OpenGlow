@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoSearch, IoBusiness, IoLocation, IoCall, IoTime, IoStar } from 'react-icons/io5';
+import { IoSearch, IoBusiness, IoLocation, IoCall, IoStar } from 'react-icons/io5';
 import '../css/RecherchePage.css';
 
 function RecherchePage() {
@@ -153,11 +153,7 @@ function RecherchePage() {
                                                 <IoCall /> {pro.phone}
                                             </div>
                                         )}
-                                        {pro.openingHours && (
-                                            <div className="card-info-item">
-                                                <IoTime /> {pro.openingHours}
-                                            </div>
-                                        )}
+
                                     </div>
 
                                     <div className="card-footer">

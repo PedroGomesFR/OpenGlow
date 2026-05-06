@@ -215,7 +215,7 @@ function ProfessionalDetailPage() {
                     </div>
 
                     {/* ── Phone + Hours row ── */}
-                    <div style={{ borderTop: '1px solid #F0F0F0', display: 'grid', gridTemplateColumns: 'auto 1fr', flexWrap: 'wrap' }}>
+                    <div style={{ borderTop: '1px solid #F0F0F0', display: 'flex', flexWrap: 'wrap' }}>
 
                         {/* Phone block */}
                         <div style={{ padding: '20px 28px', borderRight: '1px solid #F0F0F0', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '6px', minWidth: '200px' }}>
