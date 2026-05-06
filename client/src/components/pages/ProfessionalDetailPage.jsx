@@ -166,95 +166,128 @@ function ProfessionalDetailPage() {
 
             <div className="container" style={{ marginTop: '-60px', position: 'relative', zIndex: 10 }}>
                 {/* Header Info */}
-                <div className="card" style={{ marginBottom: '30px', textAlign: 'center' }}>
-                    <div style={{ marginTop: '-80px', marginBottom: '20px' }}>
-                        <div style={{
-                            width: '120px',
-                            height: '120px',
-                            borderRadius: '50%',
-                            background: `url(${window.BASE_URL}${professional.profilePhoto || ''}) center/cover, #eee`,
-                            border: '4px solid white',
-                            margin: '0 auto',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                        }}></div>
+                <div className="card" style={{ marginBottom: '30px', padding: 0, overflow: 'hidden' }}>
+
+                    {/* Top row: avatar + identity + contact */}
+                    <div style={{ padding: '0 32px 28px 32px', display: 'flex', alignItems: 'flex-start', gap: '28px', flexWrap: 'wrap' }}>
+
+                        {/* Avatar */}
+                        <div style={{ marginTop: '-52px', flexShrink: 0 }}>
+                            <div style={{
+                                width: '110px',
+                                height: '110px',
+                                borderRadius: '50%',
+                                background: `url(${window.BASE_URL}${professional.profilePhoto || ''}) center/cover, #e5e5e5`,
+                                border: '4px solid white',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                            }} />
+                        </div>
+
+                        {/* Identity */}
+                        <div style={{ flex: 1, minWidth: '200px', paddingTop: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                                <h1 style={{ margin: 0, fontSize: '1.7rem', fontWeight: '700', lineHeight: 1.2 }}>
+                                    {professional.companyName || `${professional.prenom} ${professional.nom}`}
+                                </h1>
+                                <span className="badge badge-primary" style={{ fontSize: '13px', padding: '4px 12px' }}>
+                                    {professional.profession || 'Professionnel'}
+                                </span>
+                            </div>
+
+                            {professional.address && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#86868b', fontSize: '14px', marginBottom: '10px' }}>
+                                    <IoLocation size={15} /> {professional.address}
+                                </div>
+                            )}
+
+                            {professional.description && (
+                                <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6', maxWidth: '560px' }}>
+                                    {professional.description}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Rating + CTA */}
+                        <div style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', flexShrink: 0 }}>
+                            {professional.averageRating > 0 && (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFF9E6', color: '#92600A', padding: '8px 14px', borderRadius: '12px', fontWeight: '700', fontSize: '15px' }}>
+                                    <IoStar color="#F5A623" size={18} />
+                                    {professional.averageRating.toFixed(1)}
+                                    <span style={{ fontWeight: '400', fontSize: '13px', color: '#B8860B' }}>/ 5 ({professional.totalReviews})</span>
+                                </div>
+                            )}
+                            {professional.totalReviews > 0 && (
+                                <button
+                                    className="btn btn-outline btn-sm"
+                                    onClick={() => navigate(`/reviews/${id}`)}
+                                    style={{ whiteSpace: 'nowrap' }}
+                                >
+                                    {t('view_reviews')}
+                                </button>
+                            )}
+                        </div>
                     </div>
 
-                    <h1 style={{ margin: '0 0 10px 0' }}>{professional.companyName || `${professional.prenom} ${professional.nom}`}</h1>
-                    <div className="badge badge-primary" style={{ marginBottom: '15px' }}>{professional.profession || 'Professionnel'}</div>
+                    {/* Bottom row: phone + hours */}
+                    <div style={{ borderTop: '1px solid #F0F0F0', display: 'flex', flexWrap: 'wrap' }}>
+                        {/* Phone */}
+                        <div style={{ flex: 1, minWidth: '200px', padding: '18px 28px', display: 'flex', alignItems: 'center', gap: '14px', borderRight: '1px solid #F0F0F0' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: professional.phone ? 'var(--primary)' : '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                                <IoCall size={20} color={professional.phone ? '#fff' : '#aaa'} />
+                            </div>
+                            <div>
+                                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86868b', marginBottom: '2px' }}>Téléphone</div>
+                                {professional.phone ? (
+                                    <a href={`tel:${professional.phone}`} style={{ fontWeight: '600', fontSize: '15px', color: 'var(--primary)', textDecoration: 'none' }}>
+                                        {professional.phone}
+                                    </a>
+                                ) : (
+                                    <span style={{ fontSize: '14px', color: '#aaa', fontStyle: 'italic' }}>Non renseigné</span>
+                                )}
+                            </div>
+                        </div>
 
-                    <p className="text-secondary" style={{ maxWidth: '600px', margin: '0 auto 20px' }}>
-                        {professional.description || t('default_pro_desc')}
-                    </p>
-
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', fontSize: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                        {professional.address && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F5F5F7', padding: '8px 14px', borderRadius: '20px', fontWeight: '500' }}>
-                                <IoLocation color="var(--primary)" /> {professional.address}
-                            </span>
-                        )}
-                        {professional.averageRating > 0 && (
-                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFF9E6', padding: '8px 14px', borderRadius: '20px', fontWeight: '500', color: '#B8860B' }}>
-                                <IoStar color="#F5A623" /> {professional.averageRating.toFixed(1)}/5 ({professional.totalReviews} {t('reviews_count')})
-                            </span>
-                        )}
+                        {/* Hours */}
+                        <div style={{ flex: 2, minWidth: '260px', padding: '18px 28px', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: professional.openingHours ? '#F0FFF4' : '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                                <IoTime size={20} color={professional.openingHours ? '#1B6B3A' : '#aaa'} />
+                            </div>
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86868b', marginBottom: '4px' }}>Horaires</div>
+                                {professional.openingHours ? (
+                                    <div style={{ fontSize: '13px', color: '#1d1d1f', lineHeight: '1.7' }}>
+                                        {(() => {
+                                            try {
+                                                const data = JSON.parse(professional.openingHours);
+                                                if (data && 'lun' in data) {
+                                                    const DAYS = { lun: 'Lundi', mar: 'Mardi', mer: 'Mercredi', jeu: 'Jeudi', ven: 'Vendredi', sam: 'Samedi', dim: 'Dimanche' };
+                                                    return Object.entries(DAYS).map(([key, label]) => {
+                                                        const d = data[key];
+                                                        if (!d?.open) return (
+                                                            <div key={key} style={{ display: 'flex', gap: '8px' }}>
+                                                                <span style={{ minWidth: '90px', fontWeight: '500', color: '#86868b' }}>{label}</span>
+                                                                <span style={{ color: '#aaa', fontStyle: 'italic' }}>Fermé</span>
+                                                            </div>
+                                                        );
+                                                        return (
+                                                            <div key={key} style={{ display: 'flex', gap: '8px' }}>
+                                                                <span style={{ minWidth: '90px', fontWeight: '500' }}>{label}</span>
+                                                                <span style={{ color: '#1B6B3A', fontWeight: '600' }}>{d.from} – {d.to}</span>
+                                                                {d.break && <span style={{ color: '#86868b', fontSize: '12px' }}>(pause {d.breakFrom}–{d.breakTo})</span>}
+                                                            </div>
+                                                        );
+                                                    });
+                                                }
+                                            } catch {}
+                                            return <span>{professional.openingHours}</span>;
+                                        })()}
+                                    </div>
+                                ) : (
+                                    <span style={{ fontSize: '14px', color: '#aaa', fontStyle: 'italic' }}>Non renseignés</span>
+                                )}
+                            </div>
+                        </div>
                     </div>
-
-                    {/* Contact & Horaires */}
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                        {professional.phone ? (
-                            <a
-                                href={`tel:${professional.phone}`}
-                                style={{
-                                    display: 'flex', alignItems: 'center', gap: '8px',
-                                    background: 'var(--primary)', color: '#fff',
-                                    padding: '10px 20px', borderRadius: '20px',
-                                    fontWeight: '600', fontSize: '15px',
-                                    textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
-                                }}
-                            >
-                                <IoCall size={18} /> {professional.phone}
-                            </a>
-                        ) : (
-                            <span style={{
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                background: '#F5F5F7', color: '#86868b',
-                                padding: '10px 20px', borderRadius: '20px',
-                                fontSize: '15px',
-                            }}>
-                                <IoCall size={18} /> {t('phone_not_provided') || 'Téléphone non renseigné'}
-                            </span>
-                        )}
-                        {professional.openingHours ? (
-                            <span style={{
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                background: '#F0FFF4', color: '#1B6B3A',
-                                padding: '10px 20px', borderRadius: '20px',
-                                fontWeight: '600', fontSize: '15px',
-                                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-                            }}>
-                                <IoTime size={18} color="#1B6B3A" /> {formatOpeningHours(professional.openingHours)}
-                            </span>
-                        ) : (
-                            <span style={{
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                background: '#F5F5F7', color: '#86868b',
-                                padding: '10px 20px', borderRadius: '20px',
-                                fontSize: '15px',
-                            }}>
-                                <IoTime size={18} /> {t('hours_not_provided') || 'Horaires non renseignés'}
-                            </span>
-                        )}
-                    </div>
-
-                    {professional.totalReviews > 0 && (
-                        <button
-                            className="btn btn-outline btn-sm"
-                            onClick={() => navigate(`/reviews/${id}`)}
-                            style={{ marginTop: '15px' }}
-                        >
-                            {t('view_reviews')}
-                        </button>
-                    )}
                 </div>
 
                 <div className="grid grid-2" style={{ alignItems: 'start' }}>
