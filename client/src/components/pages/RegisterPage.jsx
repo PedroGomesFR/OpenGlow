@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import ReCAPTCHA from "react-google-recaptcha";
 import { useToast } from '../common/ToastContext';
+import { IoEye, IoEyeOff } from 'react-icons/io5';
 
 function RegisterPage({ setUser }) {
   const { t } = useTranslation();
@@ -18,6 +19,7 @@ function RegisterPage({ setUser }) {
   });
   const [errorMessages, setErrorMessages] = useState({});
   const [consentChecked, setConsentChecked] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
 
   const passwordRules = [
     { label: '12 caractères minimum', test: (p) => p.length >= 12 },
@@ -335,7 +337,12 @@ function RegisterPage({ setUser }) {
               </div>
               <div className="form-group" style={{ marginBottom: '20px' }}>
                 <label className="form-label">{t('password_label')}</label>
-                <input className="form-input" type="password" name="password" required onChange={handleChange} value={formData.password} />
+                <div style={{ position: 'relative' }}>
+                  <input className="form-input" type={showPwd ? 'text' : 'password'} name="password" required onChange={handleChange} value={formData.password} style={{ paddingRight: '44px' }} />
+                  <button type="button" onClick={() => setShowPwd(p => !p)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                    {showPwd ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                  </button>
+                </div>
                 {formData.password.length > 0 && (
                   <ul style={{ listStyle: 'none', padding: '8px 0 0 0', margin: 0, fontSize: '12px' }}>
                     {passwordRules.map((rule, i) => {

@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../common/ToastContext';
+import { IoEye, IoEyeOff } from 'react-icons/io5';
 
 function LoginPage({ setUser }) {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ function LoginPage({ setUser }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const recaptchaRef = useRef(null);
   const [captchaToken, setCaptchaToken] = useState(null);
+  const [showPwd, setShowPwd] = useState({ login: false, new: false, confirm: false });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -178,15 +180,20 @@ function LoginPage({ setUser }) {
             </div>
             <div className="form-group" style={{ marginBottom: '10px' }}>
               <label className="form-label" style={{ display: 'block', marginBottom: '8px' }}>{t('password_label')}</label>
-              <input
-                className="form-input"
-                type="password"
-                name="password"
-                required
-                onChange={handleChange}
-                value={formData.password}
-                style={{ width: '100%' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="form-input"
+                  type={showPwd.login ? 'text' : 'password'}
+                  name="password"
+                  required
+                  onChange={handleChange}
+                  value={formData.password}
+                  style={{ width: '100%', paddingRight: '44px' }}
+                />
+                <button type="button" onClick={() => setShowPwd(p => ({ ...p, login: !p.login }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                  {showPwd.login ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                </button>
+              </div>
             </div>
 
             <div style={{ marginBottom: '20px', textAlign: 'right' }}>
@@ -287,25 +294,35 @@ function LoginPage({ setUser }) {
             </div>
             <div className="form-group" style={{ marginBottom: '15px' }}>
               <label className="form-label" style={{ display: 'block', marginBottom: '8px' }}>{t('new_password_label')}</label>
-              <input
-                className="form-input"
-                type="password"
-                required
-                value={resetData.newPassword}
-                onChange={(e) => setResetData((prev) => ({ ...prev, newPassword: e.target.value }))}
-                style={{ width: '100%' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="form-input"
+                  type={showPwd.new ? 'text' : 'password'}
+                  required
+                  value={resetData.newPassword}
+                  onChange={(e) => setResetData((prev) => ({ ...prev, newPassword: e.target.value }))}
+                  style={{ width: '100%', paddingRight: '44px' }}
+                />
+                <button type="button" onClick={() => setShowPwd(p => ({ ...p, new: !p.new }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                  {showPwd.new ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                </button>
+              </div>
             </div>
             <div className="form-group" style={{ marginBottom: '20px' }}>
               <label className="form-label" style={{ display: 'block', marginBottom: '8px' }}>{t('confirm_new_password_label')}</label>
-              <input
-                className="form-input"
-                type="password"
-                required
-                value={resetData.confirmPassword}
-                onChange={(e) => setResetData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
-                style={{ width: '100%' }}
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  className="form-input"
+                  type={showPwd.confirm ? 'text' : 'password'}
+                  required
+                  value={resetData.confirmPassword}
+                  onChange={(e) => setResetData((prev) => ({ ...prev, confirmPassword: e.target.value }))}
+                  style={{ width: '100%', paddingRight: '44px' }}
+                />
+                <button type="button" onClick={() => setShowPwd(p => ({ ...p, confirm: !p.confirm }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                  {showPwd.confirm ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                </button>
+              </div>
             </div>
 
             <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>

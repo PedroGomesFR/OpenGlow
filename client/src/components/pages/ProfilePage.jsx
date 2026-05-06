@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoTrash } from 'react-icons/io5';
+import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoTrash, IoEye, IoEyeOff } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/ProfilePageNew.css';
@@ -18,6 +18,7 @@ function ProfilePage({ user, setUser }) {
     const [isSaving, setIsSaving] = useState(false);
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [showPwds, setShowPwds] = useState({ current: false, new: false, confirm: false });
     const [profileForm, setProfileForm] = useState({
         prenom: user?.prenom || '',
         nom: user?.nom || '',
@@ -422,39 +423,54 @@ function ProfilePage({ user, setUser }) {
                             <div style={{ display: 'grid', gap: '12px' }}>
                                 <div>
                                     <label htmlFor="currentPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('current_password_label')}</label>
-                                    <input
-                                        id="currentPassword"
-                                        name="currentPassword"
-                                        type="password"
-                                        value={passwordForm.currentPassword}
-                                        onChange={handlePasswordFieldChange}
-                                        autoComplete="current-password"
-                                        style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
-                                    />
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            id="currentPassword"
+                                            name="currentPassword"
+                                            type={showPwds.current ? 'text' : 'password'}
+                                            value={passwordForm.currentPassword}
+                                            onChange={handlePasswordFieldChange}
+                                            autoComplete="current-password"
+                                            style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 44px 10px 12px' }}
+                                        />
+                                        <button type="button" onClick={() => setShowPwds(p => ({ ...p, current: !p.current }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                                            {showPwds.current ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label htmlFor="newPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('new_password_label')}</label>
-                                    <input
-                                        id="newPassword"
-                                        name="newPassword"
-                                        type="password"
-                                        value={passwordForm.newPassword}
-                                        onChange={handlePasswordFieldChange}
-                                        autoComplete="new-password"
-                                        style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
-                                    />
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            id="newPassword"
+                                            name="newPassword"
+                                            type={showPwds.new ? 'text' : 'password'}
+                                            value={passwordForm.newPassword}
+                                            onChange={handlePasswordFieldChange}
+                                            autoComplete="new-password"
+                                            style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 44px 10px 12px' }}
+                                        />
+                                        <button type="button" onClick={() => setShowPwds(p => ({ ...p, new: !p.new }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                                            {showPwds.new ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div>
                                     <label htmlFor="confirmPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('confirm_new_password_label')}</label>
-                                    <input
-                                        id="confirmPassword"
-                                        name="confirmPassword"
-                                        type="password"
-                                        value={passwordForm.confirmPassword}
-                                        onChange={handlePasswordFieldChange}
-                                        autoComplete="new-password"
-                                        style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 12px' }}
-                                    />
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            id="confirmPassword"
+                                            name="confirmPassword"
+                                            type={showPwds.confirm ? 'text' : 'password'}
+                                            value={passwordForm.confirmPassword}
+                                            onChange={handlePasswordFieldChange}
+                                            autoComplete="new-password"
+                                            style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 44px 10px 12px' }}
+                                        />
+                                        <button type="button" onClick={() => setShowPwds(p => ({ ...p, confirm: !p.confirm }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                                            {showPwds.confirm ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                                        </button>
+                                    </div>
                                 </div>
                                 <button type="submit" className="btn" disabled={isChangingPassword} style={{ width: '100%', marginTop: '6px' }}>
                                     {isChangingPassword ? t('saving') : t('change_password_btn')}

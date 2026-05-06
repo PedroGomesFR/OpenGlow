@@ -13,7 +13,9 @@ import {
     IoLocation,
     IoTime,
     IoCamera,
-    IoMegaphone
+    IoMegaphone,
+    IoEye,
+    IoEyeOff
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import DashboardOverview from './DashboardOverview';
@@ -44,6 +46,7 @@ function ProfessionalDashboard({ user, setUser }) {
     });
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
+    const [showPwds, setShowPwds] = useState({ current: false, new: false, confirm: false });
     
     // Sync form data with user prop when it changes
     useEffect(() => {
@@ -462,33 +465,51 @@ function ProfessionalDashboard({ user, setUser }) {
                                     <div className="grid grid-3" style={{ gap: '16px' }}>
                                         <div className="form-group" style={{ marginBottom: 0 }}>
                                             <label className="form-label">{t('current_password_label')}</label>
-                                            <input
-                                                className="form-input"
-                                                type="password"
-                                                autoComplete="current-password"
-                                                value={passwordForm.currentPassword}
-                                                onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
-                                            />
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    className="form-input"
+                                                    type={showPwds.current ? 'text' : 'password'}
+                                                    autoComplete="current-password"
+                                                    value={passwordForm.currentPassword}
+                                                    onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                                                    style={{ paddingRight: '44px' }}
+                                                />
+                                                <button type="button" onClick={() => setShowPwds(p => ({ ...p, current: !p.current }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                                                    {showPwds.current ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="form-group" style={{ marginBottom: 0 }}>
                                             <label className="form-label">{t('new_password_label')}</label>
-                                            <input
-                                                className="form-input"
-                                                type="password"
-                                                autoComplete="new-password"
-                                                value={passwordForm.newPassword}
-                                                onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
-                                            />
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    className="form-input"
+                                                    type={showPwds.new ? 'text' : 'password'}
+                                                    autoComplete="new-password"
+                                                    value={passwordForm.newPassword}
+                                                    onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                                                    style={{ paddingRight: '44px' }}
+                                                />
+                                                <button type="button" onClick={() => setShowPwds(p => ({ ...p, new: !p.new }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                                                    {showPwds.new ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                                                </button>
+                                            </div>
                                         </div>
                                         <div className="form-group" style={{ marginBottom: 0 }}>
                                             <label className="form-label">{t('confirm_new_password_label')}</label>
-                                            <input
-                                                className="form-input"
-                                                type="password"
-                                                autoComplete="new-password"
-                                                value={passwordForm.confirmPassword}
-                                                onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
-                                            />
+                                            <div style={{ position: 'relative' }}>
+                                                <input
+                                                    className="form-input"
+                                                    type={showPwds.confirm ? 'text' : 'password'}
+                                                    autoComplete="new-password"
+                                                    value={passwordForm.confirmPassword}
+                                                    onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                                                    style={{ paddingRight: '44px' }}
+                                                />
+                                                <button type="button" onClick={() => setShowPwds(p => ({ ...p, confirm: !p.confirm }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
+                                                    {showPwds.confirm ? <IoEyeOff size={20} /> : <IoEye size={20} />}
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ display: 'flex', marginTop: '20px' }}>
