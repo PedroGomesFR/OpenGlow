@@ -165,127 +165,124 @@ function ProfessionalDetailPage() {
             </div>
 
             <div className="container" style={{ marginTop: '-60px', position: 'relative', zIndex: 10 }}>
-                {/* Header Info */}
+
+                {/* ── Header card ── */}
                 <div className="card" style={{ marginBottom: '30px', padding: 0, overflow: 'hidden' }}>
 
-                    {/* Top row: avatar + identity + contact */}
-                    <div style={{ padding: '0 32px 28px 32px', display: 'flex', alignItems: 'flex-start', gap: '28px', flexWrap: 'wrap' }}>
-
-                        {/* Avatar */}
-                        <div style={{ marginTop: '-52px', flexShrink: 0 }}>
+                    {/* ── Identity row ── */}
+                    <div style={{ padding: '0 28px 24px 28px', display: 'flex', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
+                        <div style={{ marginTop: '-50px', flexShrink: 0 }}>
                             <div style={{
-                                width: '110px',
-                                height: '110px',
-                                borderRadius: '50%',
+                                width: '100px', height: '100px', borderRadius: '50%',
                                 background: `url(${window.BASE_URL}${professional.profilePhoto || ''}) center/cover, #e5e5e5`,
-                                border: '4px solid white',
-                                boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
+                                border: '4px solid white', boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
                             }} />
                         </div>
-
-                        {/* Identity */}
-                        <div style={{ flex: 1, minWidth: '200px', paddingTop: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginBottom: '6px' }}>
-                                <h1 style={{ margin: 0, fontSize: '1.7rem', fontWeight: '700', lineHeight: 1.2 }}>
+                        <div style={{ flex: 1, minWidth: '200px', paddingTop: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                                <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '700', lineHeight: 1.2 }}>
                                     {professional.companyName || `${professional.prenom} ${professional.nom}`}
                                 </h1>
-                                <span className="badge badge-primary" style={{ fontSize: '13px', padding: '4px 12px' }}>
+                                <span className="badge badge-primary" style={{ fontSize: '12px', padding: '4px 11px' }}>
                                     {professional.profession || 'Professionnel'}
                                 </span>
                             </div>
-
                             {professional.address && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#86868b', fontSize: '14px', marginBottom: '10px' }}>
-                                    <IoLocation size={15} /> {professional.address}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#86868b', fontSize: '13px', marginBottom: '8px' }}>
+                                    <IoLocation size={14} /> {professional.address}
                                 </div>
                             )}
-
                             {professional.description && (
-                                <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6', maxWidth: '560px' }}>
+                                <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6', maxWidth: '540px' }}>
                                     {professional.description}
                                 </p>
                             )}
                         </div>
-
-                        {/* Rating + CTA */}
-                        <div style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '10px', flexShrink: 0 }}>
+                        <div style={{ paddingTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
                             {professional.averageRating > 0 && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFF9E6', color: '#92600A', padding: '8px 14px', borderRadius: '12px', fontWeight: '700', fontSize: '15px' }}>
-                                    <IoStar color="#F5A623" size={18} />
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFF9E6', color: '#92600A', padding: '7px 13px', borderRadius: '10px', fontWeight: '700', fontSize: '15px' }}>
+                                    <IoStar color="#F5A623" size={16} />
                                     {professional.averageRating.toFixed(1)}
-                                    <span style={{ fontWeight: '400', fontSize: '13px', color: '#B8860B' }}>/ 5 ({professional.totalReviews})</span>
+                                    <span style={{ fontWeight: '400', fontSize: '12px', color: '#B8860B' }}>/ 5 ({professional.totalReviews})</span>
                                 </div>
                             )}
                             {professional.totalReviews > 0 && (
-                                <button
-                                    className="btn btn-outline btn-sm"
-                                    onClick={() => navigate(`/reviews/${id}`)}
-                                    style={{ whiteSpace: 'nowrap' }}
-                                >
+                                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/reviews/${id}`)} style={{ whiteSpace: 'nowrap' }}>
                                     {t('view_reviews')}
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    {/* Bottom row: phone + hours */}
-                    <div style={{ borderTop: '1px solid #F0F0F0', display: 'flex', flexWrap: 'wrap' }}>
-                        {/* Phone */}
-                        <div style={{ flex: 1, minWidth: '200px', padding: '18px 28px', display: 'flex', alignItems: 'center', gap: '14px', borderRight: '1px solid #F0F0F0' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: professional.phone ? 'var(--primary)' : '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                <IoCall size={20} color={professional.phone ? '#fff' : '#aaa'} />
+                    {/* ── Phone + Hours row ── */}
+                    <div style={{ borderTop: '1px solid #F0F0F0', display: 'grid', gridTemplateColumns: 'auto 1fr', flexWrap: 'wrap' }}>
+
+                        {/* Phone block */}
+                        <div style={{ padding: '20px 28px', borderRight: '1px solid #F0F0F0', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '6px', minWidth: '200px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#86868b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.6px' }}>
+                                <IoCall size={13} /> Téléphone
                             </div>
-                            <div>
-                                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86868b', marginBottom: '2px' }}>Téléphone</div>
-                                {professional.phone ? (
-                                    <a href={`tel:${professional.phone}`} style={{ fontWeight: '600', fontSize: '15px', color: 'var(--primary)', textDecoration: 'none' }}>
-                                        {professional.phone}
-                                    </a>
-                                ) : (
-                                    <span style={{ fontSize: '14px', color: '#aaa', fontStyle: 'italic' }}>Non renseigné</span>
-                                )}
-                            </div>
+                            {professional.phone ? (
+                                <a href={`tel:${professional.phone}`} style={{ fontWeight: '700', fontSize: '18px', color: 'var(--primary)', textDecoration: 'none', letterSpacing: '0.3px' }}>
+                                    {professional.phone}
+                                </a>
+                            ) : (
+                                <span style={{ fontSize: '14px', color: '#bbb', fontStyle: 'italic' }}>Non renseigné</span>
+                            )}
                         </div>
 
-                        {/* Hours */}
-                        <div style={{ flex: 2, minWidth: '260px', padding: '18px 28px', display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                            <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: professional.openingHours ? '#F0FFF4' : '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
-                                <IoTime size={20} color={professional.openingHours ? '#1B6B3A' : '#aaa'} />
+                        {/* Hours block */}
+                        <div style={{ padding: '20px 28px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#86868b', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: '14px' }}>
+                                <IoTime size={13} /> Horaires d'ouverture
                             </div>
-                            <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#86868b', marginBottom: '4px' }}>Horaires</div>
-                                {professional.openingHours ? (
-                                    <div style={{ fontSize: '13px', color: '#1d1d1f', lineHeight: '1.7' }}>
-                                        {(() => {
-                                            try {
-                                                const data = JSON.parse(professional.openingHours);
-                                                if (data && 'lun' in data) {
-                                                    const DAYS = { lun: 'Lundi', mar: 'Mardi', mer: 'Mercredi', jeu: 'Jeudi', ven: 'Vendredi', sam: 'Samedi', dim: 'Dimanche' };
-                                                    return Object.entries(DAYS).map(([key, label]) => {
-                                                        const d = data[key];
-                                                        if (!d?.open) return (
-                                                            <div key={key} style={{ display: 'flex', gap: '8px' }}>
-                                                                <span style={{ minWidth: '90px', fontWeight: '500', color: '#86868b' }}>{label}</span>
-                                                                <span style={{ color: '#aaa', fontStyle: 'italic' }}>Fermé</span>
-                                                            </div>
-                                                        );
-                                                        return (
-                                                            <div key={key} style={{ display: 'flex', gap: '8px' }}>
-                                                                <span style={{ minWidth: '90px', fontWeight: '500' }}>{label}</span>
-                                                                <span style={{ color: '#1B6B3A', fontWeight: '600' }}>{d.from} – {d.to}</span>
-                                                                {d.break && <span style={{ color: '#86868b', fontSize: '12px' }}>(pause {d.breakFrom}–{d.breakTo})</span>}
-                                                            </div>
-                                                        );
-                                                    });
-                                                }
-                                            } catch {}
-                                            return <span>{professional.openingHours}</span>;
-                                        })()}
-                                    </div>
-                                ) : (
-                                    <span style={{ fontSize: '14px', color: '#aaa', fontStyle: 'italic' }}>Non renseignés</span>
-                                )}
-                            </div>
+                            {professional.openingHours ? (() => {
+                                try {
+                                    const data = JSON.parse(professional.openingHours);
+                                    if (data && 'lun' in data) {
+                                        const DAYS = [
+                                            { key: 'lun', short: 'Lun' }, { key: 'mar', short: 'Mar' },
+                                            { key: 'mer', short: 'Mer' }, { key: 'jeu', short: 'Jeu' },
+                                            { key: 'ven', short: 'Ven' }, { key: 'sam', short: 'Sam' },
+                                            { key: 'dim', short: 'Dim' },
+                                        ];
+                                        return (
+                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                {DAYS.map(({ key, short }) => {
+                                                    const d = data[key];
+                                                    const isOpen = d?.open;
+                                                    return (
+                                                        <div key={key} style={{
+                                                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                                            padding: '10px 12px', borderRadius: '12px', minWidth: '64px',
+                                                            background: isOpen ? '#F0FFF4' : '#F8F8F8',
+                                                            border: `1px solid ${isOpen ? '#C6F6D5' : '#EBEBEB'}`,
+                                                            gap: '4px'
+                                                        }}>
+                                                            <span style={{ fontWeight: '700', fontSize: '12px', color: isOpen ? '#1B6B3A' : '#bbb', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{short}</span>
+                                                            {isOpen ? (
+                                                                <>
+                                                                    <span style={{ fontWeight: '600', fontSize: '12px', color: '#1d1d1f', whiteSpace: 'nowrap' }}>{d.from} – {d.to}</span>
+                                                                    {d.break && (
+                                                                        <span style={{ fontSize: '10px', color: '#86868b', whiteSpace: 'nowrap', marginTop: '2px' }}>
+                                                                            pause {d.breakFrom}–{d.breakTo}
+                                                                        </span>
+                                                                    )}
+                                                                </>
+                                                            ) : (
+                                                                <span style={{ fontSize: '11px', color: '#bbb', fontStyle: 'italic' }}>Fermé</span>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        );
+                                    }
+                                } catch {}
+                                return <span style={{ fontSize: '14px', color: '#555' }}>{professional.openingHours}</span>;
+                            })() : (
+                                <span style={{ fontSize: '14px', color: '#bbb', fontStyle: 'italic' }}>Non renseignés</span>
+                            )}
                         </div>
                     </div>
                 </div>
