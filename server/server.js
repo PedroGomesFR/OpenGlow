@@ -60,8 +60,10 @@ app.use((req, res, next) => {
   res.header('X-Frame-Options', 'DENY');
   res.header('X-XSS-Protection', '1; mode=block');
   res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.header('Content-Security-Policy', "default-src 'self'; connect-src 'self' https://api.openglow.fr https://openglow.onrender.com; img-src 'self' data: blob: https:; font-src 'self' https:; style-src 'self' 'unsafe-inline'; script-src 'self'");
   if (req.secure || req.headers['x-forwarded-proto'] === 'https') {
-    res.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    res.header('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   }
 
   // CORS — whitelist only
