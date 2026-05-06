@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IoSearch, IoBusiness, IoLocation, IoCall, IoTime, IoStar } from 'react-icons/io5';
 import '../css/RecherchePage.css';
@@ -7,7 +7,8 @@ import '../css/RecherchePage.css';
 function RecherchePage() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchParams] = useSearchParams();
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || "");
     const [professionals, setProfessionals] = useState([]);
     const [filteredProfessionals, setFilteredProfessionals] = useState([]);
     const [loading, setLoading] = useState(true);

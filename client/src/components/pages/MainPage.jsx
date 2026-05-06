@@ -12,6 +12,13 @@ function MainPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [featuredPros, setFeaturedPros] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const q = searchQuery.trim();
+    navigate(q ? `/recherche?q=${encodeURIComponent(q)}` : '/recherche');
+  };
 
   useEffect(() => {
     loadFeaturedPros();
@@ -89,33 +96,38 @@ function MainPage() {
           }}>
             {t('hero_desc')}
           </p>
-          <div className="main-hero-actions" style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button
-              className="btn btn-primary"
-              onClick={() => navigate('/recherche')}
-              style={{ padding: '15px 35px', borderRadius: '30px', display: 'flex', alignItems: 'center' }}
-            >
-              <IoSearch size={20} style={{ marginRight: '8px' }} />
-              {t('find_pro') || "Trouver un professionnel"}
-            </button>
-            <button
-              className="btn btn-secondary"
-              onClick={() => navigate('/register')}
+          <form
+            onSubmit={handleSearch}
+            className="main-hero-actions"
+            style={{ display: 'flex', gap: '0', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '580px', margin: '0 auto' }}
+          >
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t('search_placeholder') || 'Coiffeur, esthéticienne, barbier…'}
               style={{
-                padding: '15px 35px',
-                borderRadius: '30px',
-                background: '#FFFFFF',
+                flex: 1,
+                minWidth: '200px',
+                padding: '15px 22px',
+                borderRadius: '30px 0 0 30px',
+                border: 'none',
+                fontSize: '16px',
+                outline: 'none',
+                background: 'rgba(255,255,255,0.97)',
                 color: '#1d1d1f',
-                border: '1px solid rgba(0,0,0,0.1)',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                display: 'flex', alignItems: 'center',
-                fontWeight: '500'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
               }}
+            />
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ padding: '15px 28px', borderRadius: '0 30px 30px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}
             >
-              <IoBusiness size={20} style={{ marginRight: '8px' }} />
-              {t('i_am_pro')}
+              <IoSearch size={20} />
+              {t('search_btn') || 'Rechercher'}
             </button>
-          </div>
+          </form>
         </div>
       </div>
 

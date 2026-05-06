@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone } from 'react-icons/io5';
+import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone, IoCall } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import { useToast } from '../common/ToastContext';
 
@@ -167,12 +167,49 @@ function ProfessionalDetailPage() {
                         {professional.description || t('default_pro_desc')}
                     </p>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', fontSize: '14px', flexWrap: 'wrap' }}>
-                        {professional.address && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoLocation /> {professional.address}</span>}
-                        {professional.phone && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>📞 {professional.phone}</span>}
-                        {professional.openingHours && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoTime /> {professional.openingHours}</span>}
-                        {professional.averageRating > 0 && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoStar /> {professional.averageRating.toFixed(1)}/5 ({professional.totalReviews} {t('reviews_count')})</span>}
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', fontSize: '14px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                        {professional.address && (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#F5F5F7', padding: '8px 14px', borderRadius: '20px', fontWeight: '500' }}>
+                                <IoLocation color="var(--primary)" /> {professional.address}
+                            </span>
+                        )}
+                        {professional.averageRating > 0 && (
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFF9E6', padding: '8px 14px', borderRadius: '20px', fontWeight: '500', color: '#B8860B' }}>
+                                <IoStar color="#F5A623" /> {professional.averageRating.toFixed(1)}/5 ({professional.totalReviews} {t('reviews_count')})
+                            </span>
+                        )}
                     </div>
+
+                    {/* Contact & Horaires */}
+                    {(professional.phone || professional.openingHours) && (
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' }}>
+                            {professional.phone && (
+                                <a
+                                    href={`tel:${professional.phone}`}
+                                    style={{
+                                        display: 'flex', alignItems: 'center', gap: '8px',
+                                        background: 'var(--primary)', color: '#fff',
+                                        padding: '10px 20px', borderRadius: '20px',
+                                        fontWeight: '600', fontSize: '15px',
+                                        textDecoration: 'none', boxShadow: '0 2px 8px rgba(0,0,0,0.12)'
+                                    }}
+                                >
+                                    <IoCall size={18} /> {professional.phone}
+                                </a>
+                            )}
+                            {professional.openingHours && (
+                                <span style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px',
+                                    background: '#F0FFF4', color: '#1B6B3A',
+                                    padding: '10px 20px', borderRadius: '20px',
+                                    fontWeight: '600', fontSize: '15px',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                                }}>
+                                    <IoTime size={18} color="#1B6B3A" /> {professional.openingHours}
+                                </span>
+                            )}
+                        </div>
+                    )}
 
                     {professional.totalReviews > 0 && (
                         <button
