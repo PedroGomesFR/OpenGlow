@@ -507,7 +507,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                                     {/* Ligne pause midi */}
                                                     {day.open && day.break && (
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 10px 134px', borderTop: '1px dashed #C6F6D5', background: '#E6FFED' }}>
-                                                            <span style={{ fontSize: '13px', color: '#2D6A4F', fontWeight: '500', whiteSpace: 'nowrap' }}>☕ Pause :</span>
+                                                            <span style={{ fontSize: '13px', color: '#2D6A4F', fontWeight: '500', whiteSpace: 'nowrap' }}>Pause :</span>
                                                             <select
                                                                 className="form-input"
                                                                 value={day.breakFrom || '12:00'}
