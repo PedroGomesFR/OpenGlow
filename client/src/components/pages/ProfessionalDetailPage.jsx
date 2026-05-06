@@ -13,7 +13,11 @@ const formatOpeningHours = (str) => {
         if (data && typeof data === 'object' && 'lun' in data) {
             const open = Object.entries(DAYS_LABELS)
                 .filter(([key]) => data[key]?.open)
-                .map(([key, label]) => `${label} ${data[key].from}–${data[key].to}`);
+                .map(([key, label]) => {
+                    const d = data[key];
+                    const base = `${label} ${d.from}–${d.to}`;
+                    return d.break ? `${base} (pause ${d.breakFrom || '12:00'}–${d.breakTo || '14:00'})` : base;
+                });
             return open.length ? open.join(' · ') : 'Fermé';
         }
     } catch {}

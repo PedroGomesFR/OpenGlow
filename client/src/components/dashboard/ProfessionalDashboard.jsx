@@ -45,13 +45,13 @@ const TIME_SLOTS = Array.from({ length: 35 }, (_, i) => {
 });
 
 const DEFAULT_HOURS = {
-    lun: { open: true, from: '09:00', to: '19:00' },
-    mar: { open: true, from: '09:00', to: '19:00' },
-    mer: { open: true, from: '09:00', to: '19:00' },
-    jeu: { open: true, from: '09:00', to: '19:00' },
-    ven: { open: true, from: '09:00', to: '19:00' },
-    sam: { open: true, from: '10:00', to: '18:00' },
-    dim: { open: false, from: '10:00', to: '18:00' },
+    lun: { open: true,  from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
+    mar: { open: true,  from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
+    mer: { open: true,  from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
+    jeu: { open: true,  from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
+    ven: { open: true,  from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
+    sam: { open: true,  from: '10:00', to: '18:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
+    dim: { open: false, from: '10:00', to: '18:00', break: false, breakFrom: '12:00', breakTo: '14:00' },
 };
 
 const parseHoursData = (str) => {
@@ -452,29 +452,66 @@ function ProfessionalDashboard({ user, setUser }) {
                                     </label>
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         {DAYS_FR.map(({ key, label }) => {
-                                            const day = hoursData[key] || { open: false, from: '09:00', to: '19:00' };
+                                            const day = hoursData[key] || { open: false, from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' };
                                             return (
                                                 <div key={key} style={{
-                                                    display: 'flex', alignItems: 'center', gap: '12px',
-                                                    padding: '10px 14px', borderRadius: '10px',
+                                                    borderRadius: '10px',
+                                                    border: `1px solid ${day.open ? '#C6F6D5' : '#E5E5EA'}`,
                                                     background: day.open ? '#F0FFF4' : '#F5F5F7',
-                                                    border: `1px solid ${day.open ? '#C6F6D5' : '#E5E5EA'}`
+                                                    overflow: 'hidden',
                                                 }}>
-                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '110px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={day.open}
-                                                            onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], open: e.target.checked } }))}
-                                                            style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
-                                                        />
-                                                        {label}
-                                                    </label>
-                                                    {day.open ? (
-                                                        <>
+                                                    {/* Ligne principale */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px' }}>
+                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '110px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={day.open}
+                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], open: e.target.checked } }))}
+                                                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                                            />
+                                                            {label}
+                                                        </label>
+                                                        {day.open ? (
+                                                            <>
+                                                                <select
+                                                                    className="form-input"
+                                                                    value={day.from}
+                                                                    onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], from: e.target.value } }))}
+                                                                    style={{ padding: '6px 10px', fontSize: '14px', flex: 1 }}
+                                                                >
+                                                                    {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+                                                                </select>
+                                                                <span style={{ color: '#86868b', fontWeight: '600' }}>→</span>
+                                                                <select
+                                                                    className="form-input"
+                                                                    value={day.to}
+                                                                    onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], to: e.target.value } }))}
+                                                                    style={{ padding: '6px 10px', fontSize: '14px', flex: 1 }}
+                                                                >
+                                                                    {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+                                                                </select>
+                                                                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', color: '#555', cursor: 'pointer', whiteSpace: 'nowrap', marginLeft: '4px' }}>
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={!!day.break}
+                                                                        onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], break: e.target.checked } }))}
+                                                                        style={{ width: '14px', height: '14px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                                                    />
+                                                                    Pause midi
+                                                                </label>
+                                                            </>
+                                                        ) : (
+                                                            <span style={{ color: '#86868b', fontSize: '14px', fontStyle: 'italic' }}>Fermé</span>
+                                                        )}
+                                                    </div>
+                                                    {/* Ligne pause midi */}
+                                                    {day.open && day.break && (
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 10px 134px', borderTop: '1px dashed #C6F6D5', background: '#E6FFED' }}>
+                                                            <span style={{ fontSize: '13px', color: '#2D6A4F', fontWeight: '500', whiteSpace: 'nowrap' }}>☕ Pause :</span>
                                                             <select
                                                                 className="form-input"
-                                                                value={day.from}
-                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], from: e.target.value } }))}
+                                                                value={day.breakFrom || '12:00'}
+                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], breakFrom: e.target.value } }))}
                                                                 style={{ padding: '6px 10px', fontSize: '14px', flex: 1 }}
                                                             >
                                                                 {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
@@ -482,15 +519,13 @@ function ProfessionalDashboard({ user, setUser }) {
                                                             <span style={{ color: '#86868b', fontWeight: '600' }}>→</span>
                                                             <select
                                                                 className="form-input"
-                                                                value={day.to}
-                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], to: e.target.value } }))}
+                                                                value={day.breakTo || '14:00'}
+                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], breakTo: e.target.value } }))}
                                                                 style={{ padding: '6px 10px', fontSize: '14px', flex: 1 }}
                                                             >
                                                                 {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
                                                             </select>
-                                                        </>
-                                                    ) : (
-                                                        <span style={{ color: '#86868b', fontSize: '14px', fontStyle: 'italic' }}>Fermé</span>
+                                                        </div>
                                                     )}
                                                 </div>
                                             );
