@@ -94,9 +94,17 @@ function Header({ user, notificationCount = 0 }) {
             <button
               onClick={() => { navigate('/profile'); setMobileMenuOpen(false); }}
               className="btn btn-primary header-account-btn"
-              style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}
+              style={{ padding: user.profilePhoto ? '4px 12px 4px 4px' : '8px 16px', fontSize: '13px', borderRadius: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              <IoPerson size={16} />
+              {user.profilePhoto ? (
+                <img
+                  src={`${window.BASE_URL}${user.profilePhoto}`}
+                  alt="Photo de profil"
+                  style={{ width: '28px', height: '28px', borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+                />
+              ) : (
+                <IoPerson size={16} />
+              )}
               <span className="header-account-text">{t('my_space')}</span>
             </button>
           ) : (
