@@ -5,6 +5,21 @@ import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, I
 import '../css/AppleDesign.css';
 import { useToast } from '../common/ToastContext';
 
+const DAYS_LABELS = { lun: 'Lun', mar: 'Mar', mer: 'Mer', jeu: 'Jeu', ven: 'Ven', sam: 'Sam', dim: 'Dim' };
+
+const formatOpeningHours = (str) => {
+    try {
+        const data = JSON.parse(str);
+        if (data && typeof data === 'object' && 'lun' in data) {
+            const open = Object.entries(DAYS_LABELS)
+                .filter(([key]) => data[key]?.open)
+                .map(([key, label]) => `${label} ${data[key].from}–${data[key].to}`);
+            return open.length ? open.join(' · ') : 'Fermé';
+        }
+    } catch {}
+    return str;
+};
+
 function ProfessionalDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -213,7 +228,7 @@ function ProfessionalDetailPage() {
                                 fontWeight: '600', fontSize: '15px',
                                 boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
                             }}>
-                                <IoTime size={18} color="#1B6B3A" /> {professional.openingHours}
+                                <IoTime size={18} color="#1B6B3A" /> {formatOpeningHours(professional.openingHours)}
                             </span>
                         ) : (
                             <span style={{

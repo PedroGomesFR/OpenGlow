@@ -27,6 +27,41 @@ import Announcements from './Announcements';
 import { useToast } from '../common/ToastContext';
 import { useTranslation } from 'react-i18next';
 
+const DAYS_FR = [
+    { key: 'lun', label: 'Lundi' },
+    { key: 'mar', label: 'Mardi' },
+    { key: 'mer', label: 'Mercredi' },
+    { key: 'jeu', label: 'Jeudi' },
+    { key: 'ven', label: 'Vendredi' },
+    { key: 'sam', label: 'Samedi' },
+    { key: 'dim', label: 'Dimanche' },
+];
+
+const TIME_SLOTS = Array.from({ length: 35 }, (_, i) => {
+    const totalMin = 360 + i * 30;
+    const h = Math.floor(totalMin / 60);
+    const m = totalMin % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+});
+
+const DEFAULT_HOURS = {
+    lun: { open: true, from: '09:00', to: '19:00' },
+    mar: { open: true, from: '09:00', to: '19:00' },
+    mer: { open: true, from: '09:00', to: '19:00' },
+    jeu: { open: true, from: '09:00', to: '19:00' },
+    ven: { open: true, from: '09:00', to: '19:00' },
+    sam: { open: true, from: '10:00', to: '18:00' },
+    dim: { open: false, from: '10:00', to: '18:00' },
+};
+
+const parseHoursData = (str) => {
+    try {
+        const parsed = JSON.parse(str);
+        if (parsed && typeof parsed === 'object' && 'lun' in parsed) return parsed;
+    } catch {}
+    return { ...DEFAULT_HOURS };
+};
+
 function ProfessionalDashboard({ user, setUser }) {
     const navigate = useNavigate();
     const toast = useToast();
@@ -47,6 +82,7 @@ function ProfessionalDashboard({ user, setUser }) {
     const [isChangingPassword, setIsChangingPassword] = useState(false);
     const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [showPwds, setShowPwds] = useState({ current: false, new: false, confirm: false });
+    const [hoursData, setHoursData] = useState(() => parseHoursData(user?.openingHours));
     
     // Sync form data with user prop when it changes
     useEffect(() => {
@@ -58,6 +94,7 @@ function ProfessionalDashboard({ user, setUser }) {
                 openingHours: user.openingHours || '',
                 companyName: user.companyName || '',
             });
+            setHoursData(parseHoursData(user.openingHours));
         }
     }, [user]);
 
@@ -99,8 +136,10 @@ function ProfessionalDashboard({ user, setUser }) {
             }
 
             const token = localStorage.getItem('token');
+            const serializedHours = JSON.stringify(hoursData);
             const bodyData = {
                 ...profileData,
+                openingHours: serializedHours,
                 latitude: lat,
                 longitude: lon
             };
@@ -122,6 +161,7 @@ function ProfessionalDashboard({ user, setUser }) {
                 const updatedUser = {
                     ...user,
                     ...profileData,
+                    openingHours: serializedHours,
                     latitude: lat || user.latitude,
                     longitude: lon || user.longitude
                 };
@@ -407,16 +447,55 @@ function ProfessionalDashboard({ user, setUser }) {
                                 </div>
                                 
                                 <div className="form-group" style={{ marginBottom: '24px' }}>
-                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                                         <IoTime /> {t('pro_opening_hours')}
                                     </label>
-                                    <input
-                                        className="form-input"
-                                        type="text"
-                                        value={profileData.openingHours}
-                                        onChange={(e) => setProfileData({ ...profileData, openingHours: e.target.value })}
-                                        placeholder={t('pro_opening_hours_placeholder')}
-                                    />
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                        {DAYS_FR.map(({ key, label }) => {
+                                            const day = hoursData[key] || { open: false, from: '09:00', to: '19:00' };
+                                            return (
+                                                <div key={key} style={{
+                                                    display: 'flex', alignItems: 'center', gap: '12px',
+                                                    padding: '10px 14px', borderRadius: '10px',
+                                                    background: day.open ? '#F0FFF4' : '#F5F5F7',
+                                                    border: `1px solid ${day.open ? '#C6F6D5' : '#E5E5EA'}`
+                                                }}>
+                                                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '110px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
+                                                        <input
+                                                            type="checkbox"
+                                                            checked={day.open}
+                                                            onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], open: e.target.checked } }))}
+                                                            style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: 'var(--primary)' }}
+                                                        />
+                                                        {label}
+                                                    </label>
+                                                    {day.open ? (
+                                                        <>
+                                                            <select
+                                                                className="form-input"
+                                                                value={day.from}
+                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], from: e.target.value } }))}
+                                                                style={{ padding: '6px 10px', fontSize: '14px', flex: 1 }}
+                                                            >
+                                                                {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+                                                            </select>
+                                                            <span style={{ color: '#86868b', fontWeight: '600' }}>→</span>
+                                                            <select
+                                                                className="form-input"
+                                                                value={day.to}
+                                                                onChange={(e) => setHoursData(prev => ({ ...prev, [key]: { ...prev[key], to: e.target.value } }))}
+                                                                style={{ padding: '6px 10px', fontSize: '14px', flex: 1 }}
+                                                            >
+                                                                {TIME_SLOTS.map(slot => <option key={slot} value={slot}>{slot}</option>)}
+                                                            </select>
+                                                        </>
+                                                    ) : (
+                                                        <span style={{ color: '#86868b', fontSize: '14px', fontStyle: 'italic' }}>Fermé</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                                 
                                 <div className="form-group" style={{ marginBottom: 0 }}>
