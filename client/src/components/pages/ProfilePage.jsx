@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoSettingsOutline } from 'react-icons/io5';
+import { IoCamera, IoCalendar, IoHelpCircle, IoMap, IoLogOut, IoPerson, IoSettingsOutline } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/ProfilePageNew.css';
@@ -364,6 +364,27 @@ function ProfilePage({ user, setUser }) {
                         >
                             <IoMap size={24} />
                             <span style={{ fontWeight: '600' }}>{t('explore_map')}</span>
+                        </button>
+
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => navigate('/help')}
+                            style={{
+                                background: '#F2F2F7',
+                                color: '#1d1d1f',
+                                border: 'none',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '20px',
+                                height: 'auto',
+                                width: '100%',
+                                gap: '10px'
+                            }}
+                        >
+                            <IoHelpCircle size={24} />
+                            <span style={{ fontWeight: '600' }}>{t('quick_guide_title')}</span>
                         </button>
                     </div>
 

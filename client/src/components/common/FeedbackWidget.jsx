@@ -3,6 +3,8 @@ import { io as socketIO } from 'socket.io-client';
 import { IoClose, IoChatbubbleEllipses, IoSend, IoCamera, IoImage, IoTrash } from 'react-icons/io5';
 import '../css/FeedbackWidget.css';
 
+const OPEN_SUPPORT_CHAT_EVENT = 'openglow:open-support-chat';
+
 export default function FeedbackWidget({ user }) {
     const [open, setOpen] = useState(false);
     const [type] = useState('chat');
@@ -146,6 +148,17 @@ export default function FeedbackWidget({ user }) {
             textareaRef.current.focus();
         }
     }, [open]);
+
+    useEffect(() => {
+        const handleOpenSupportChat = () => {
+            setError('');
+            setOpen(true);
+            setUnreadCount(0);
+        };
+
+        window.addEventListener(OPEN_SUPPORT_CHAT_EVENT, handleOpenSupportChat);
+        return () => window.removeEventListener(OPEN_SUPPORT_CHAT_EVENT, handleOpenSupportChat);
+    }, []);
 
     // Close on outside click
     useEffect(() => {

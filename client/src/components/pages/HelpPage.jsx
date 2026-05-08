@@ -4,6 +4,8 @@ import { IoArrowBack, IoSearch, IoCut, IoCalendar, IoCard, IoSettings, IoChatbub
 import '../css/AppleDesign.css';
 import { useTranslation } from 'react-i18next';
 
+const OPEN_SUPPORT_CHAT_EVENT = 'openglow:open-support-chat';
+
 function HelpPage() {
     const navigate = useNavigate();
     const { t } = useTranslation();
@@ -293,7 +295,11 @@ function HelpPage() {
                             ? t('help_contact_desc')
                             : tx('help_contact_client_desc', 'Notre équipe peut vous aider par e-mail si vous rencontrez un blocage avec votre compte ou une réservation.')}
                     </p>
-                    <button className="btn" style={{ background: 'white', color: 'var(--primary)', fontWeight: '600' }}>
+                    <button
+                        className="btn"
+                        style={{ background: 'white', color: 'var(--primary)', fontWeight: '600' }}
+                        onClick={() => window.dispatchEvent(new CustomEvent(OPEN_SUPPORT_CHAT_EVENT))}
+                    >
                         {t('help_contact_cta')}
                     </button>
                 </div>
