@@ -14,6 +14,8 @@ function MainPage() {
   const [featuredPros, setFeaturedPros] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
+  const getProfessionalPath = (pro) => (pro?.slug ? `/pro/${pro.slug}` : `/professional/${pro?._id}`);
+
   const handleSearch = (e) => {
     e.preventDefault();
     const q = searchQuery.trim();
@@ -210,7 +212,7 @@ function MainPage() {
                 <div
                   key={pro._id}
                   className="card pro-card-hover"
-                  onClick={() => navigate(`/professional/${pro._id}`)}
+                  onClick={() => navigate(getProfessionalPath(pro))}
                   style={{
                     cursor: 'pointer',
                     overflow: 'hidden',

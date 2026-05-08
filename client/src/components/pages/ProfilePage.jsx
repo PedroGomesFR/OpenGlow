@@ -1,34 +1,24 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoTrash, IoEye, IoEyeOff } from 'react-icons/io5';
+import { IoCamera, IoCalendar, IoMap, IoLogOut, IoPerson, IoSettingsOutline } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/ProfilePageNew.css';
 import '../css/ProfilePageResponsive.css';
 import ProfessionalDashboard from '../dashboard/ProfessionalDashboard';
 import { useToast } from '../common/ToastContext';
-import { useConfirm } from '../common/ConfirmContext';
 
 function ProfilePage({ user, setUser }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const toast = useToast();
-    const confirm = useConfirm();
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [isChangingPassword, setIsChangingPassword] = useState(false);
-    const [showPasswordForm, setShowPasswordForm] = useState(false);
-    const [showPwds, setShowPwds] = useState({ current: false, new: false, confirm: false });
     const [profileForm, setProfileForm] = useState({
         prenom: user?.prenom || '',
         nom: user?.nom || '',
         phone: user?.phone || '',
         dateDeNaissance: user?.dateDeNaissance ? String(user.dateDeNaissance).slice(0, 10) : '',
-    });
-    const [passwordForm, setPasswordForm] = useState({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
     });
 
     useEffect(() => {
@@ -138,85 +128,6 @@ function ProfilePage({ user, setUser }) {
             toast(t('network_error_retry'), 'error');
         } finally {
             setIsSaving(false);
-        }
-    };
-
-    const handleDeleteAccount = async () => {
-        const confirmed = await confirm({
-            title: t('delete_account_title'),
-            message: t('delete_account_message'),
-            confirmLabel: t('delete_account_confirm'),
-            cancelLabel: t('action_cancel'),
-            danger: true,
-        });
-        if (!confirmed) return;
-
-        const token = localStorage.getItem('token');
-        try {
-            const res = await fetch(window.API_URL + '/records/delete-account', {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (res.ok) {
-                localStorage.removeItem('user');
-                localStorage.removeItem('token');
-                setUser(null);
-                navigate('/', { replace: true });
-            } else {
-                const data = await res.json();
-                toast(data.error || t('delete_account_error'), 'error');
-            }
-        } catch {
-            toast(t('network_error_retry'), 'error');
-        }
-    };
-
-    const handlePasswordFieldChange = (e) => {
-        const { name, value } = e.target;
-        setPasswordForm((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleChangePassword = async (e) => {
-        e.preventDefault();
-
-        if (!passwordForm.currentPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
-            toast(t('reset_required_fields'), 'warning');
-            return;
-        }
-
-        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            toast(t('passwords_mismatch'), 'warning');
-            return;
-        }
-
-        setIsChangingPassword(true);
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(window.API_URL + '/records/change-password', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    currentPassword: passwordForm.currentPassword,
-                    newPassword: passwordForm.newPassword,
-                }),
-            });
-
-            const data = await response.json();
-            if (!response.ok) {
-                toast(data.error || t('password_change_error'), 'error');
-                return;
-            }
-
-            toast(t('password_change_success'), 'success');
-            setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-        } catch (error) {
-            console.error('Error changing password:', error);
-            toast(t('network_error_retry'), 'error');
-        } finally {
-            setIsChangingPassword(false);
         }
     };
 
@@ -391,94 +302,6 @@ function ProfilePage({ user, setUser }) {
                         </form>
                     )}
 
-                    <div style={{ marginBottom: '24px' }}>
-                        <button
-                            className="btn btn-secondary"
-                            onClick={() => setShowPasswordForm((prev) => !prev)}
-                            style={{
-                                background: '#F2F2F7',
-                                color: '#1d1d1f',
-                                border: '1px solid #E5E5EA',
-                                width: '100%'
-                            }}
-                        >
-                            {showPasswordForm ? t('action_close') : t('change_password_title')}
-                        </button>
-                    </div>
-
-                    {showPasswordForm && (
-                        <form
-                            className="profile-inline-form"
-                            onSubmit={handleChangePassword}
-                            style={{
-                                textAlign: 'left',
-                                background: '#FAFAFA',
-                                border: '1px solid #E5E5EA',
-                                borderRadius: '12px',
-                                padding: '16px',
-                                marginBottom: '24px'
-                            }}
-                        >
-                            <h3 style={{ marginTop: 0, marginBottom: '12px', fontSize: '16px' }}>{t('change_password_title')}</h3>
-                            <div style={{ display: 'grid', gap: '12px' }}>
-                                <div>
-                                    <label htmlFor="currentPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('current_password_label')}</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            id="currentPassword"
-                                            name="currentPassword"
-                                            type={showPwds.current ? 'text' : 'password'}
-                                            value={passwordForm.currentPassword}
-                                            onChange={handlePasswordFieldChange}
-                                            autoComplete="current-password"
-                                            style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 44px 10px 12px' }}
-                                        />
-                                        <button type="button" onClick={() => setShowPwds(p => ({ ...p, current: !p.current }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
-                                            {showPwds.current ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="newPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('new_password_label')}</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            id="newPassword"
-                                            name="newPassword"
-                                            type={showPwds.new ? 'text' : 'password'}
-                                            value={passwordForm.newPassword}
-                                            onChange={handlePasswordFieldChange}
-                                            autoComplete="new-password"
-                                            style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 44px 10px 12px' }}
-                                        />
-                                        <button type="button" onClick={() => setShowPwds(p => ({ ...p, new: !p.new }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
-                                            {showPwds.new ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-                                        </button>
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="confirmPassword" style={{ display: 'block', fontWeight: '600', marginBottom: '6px' }}>{t('confirm_new_password_label')}</label>
-                                    <div style={{ position: 'relative' }}>
-                                        <input
-                                            id="confirmPassword"
-                                            name="confirmPassword"
-                                            type={showPwds.confirm ? 'text' : 'password'}
-                                            value={passwordForm.confirmPassword}
-                                            onChange={handlePasswordFieldChange}
-                                            autoComplete="new-password"
-                                            style={{ width: '100%', border: '1px solid #D2D2D7', borderRadius: '8px', padding: '10px 44px 10px 12px' }}
-                                        />
-                                        <button type="button" onClick={() => setShowPwds(p => ({ ...p, confirm: !p.confirm }))} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#86868b', padding: 0 }}>
-                                            {showPwds.confirm ? <IoEyeOff size={20} /> : <IoEye size={20} />}
-                                        </button>
-                                    </div>
-                                </div>
-                                <button type="submit" className="btn" disabled={isChangingPassword} style={{ width: '100%', marginTop: '6px' }}>
-                                    {isChangingPassword ? t('saving') : t('change_password_btn')}
-                                </button>
-                            </div>
-                        </form>
-                    )}
-
                     <div className="grid grid-2 mobile-col profile-action-grid" style={{ gap: '15px' }}>
                         <button
                             className="btn btn-secondary"
@@ -499,6 +322,27 @@ function ProfilePage({ user, setUser }) {
                         >
                             <IoCalendar size={24} />
                             <span style={{ fontWeight: '600' }}>{t('my_bookings')}</span>
+                        </button>
+
+                        <button
+                            className="btn btn-secondary"
+                            onClick={() => navigate('/settings')}
+                            style={{
+                                background: '#F2F2F7',
+                                color: '#1d1d1f',
+                                border: 'none',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '20px',
+                                height: 'auto',
+                                width: '100%',
+                                gap: '10px'
+                            }}
+                        >
+                            <IoSettingsOutline size={24} />
+                            <span style={{ fontWeight: '600' }}>{t('settings_title', { defaultValue: 'Paramètres' })}</span>
                         </button>
 
                         <button
@@ -539,30 +383,6 @@ function ProfilePage({ user, setUser }) {
                             }}
                         >
                             <IoLogOut size={18} /> {t('logout')}
-                        </button>
-                        <button
-                            onClick={handleDeleteAccount}
-                            style={{
-                                marginTop: '12px',
-                                background: 'transparent',
-                                color: '#FF3B30',
-                                border: '1px solid #FF3B30',
-                                borderRadius: '10px',
-                                width: '100%',
-                                padding: '12px',
-                                fontWeight: '600',
-                                fontSize: '15px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                transition: 'background 0.2s'
-                            }}
-                            onMouseOver={(e) => { e.currentTarget.style.background = '#fff0ef'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
-                        >
-                            <IoTrash size={18} /> {t('delete_my_account')}
                         </button>
                     </div>
                 </div>

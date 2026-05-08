@@ -8,6 +8,8 @@ import itJSON from './locales/it.json';
 import ptJSON from './locales/pt.json';
 import arJSON from './locales/ar.json';
 
+const savedLng = localStorage.getItem("i18n_language") || "fr";
+
 i18n
     .use(initReactI18next)
     .init({
@@ -20,11 +22,16 @@ i18n
             pt: { ...ptJSON },
             ar: { ...arJSON },
         },
-        lng: "fr", // Default language
+        lng: savedLng,
         fallbackLng: "fr",
         interpolation: {
             escapeValue: false,
         },
+    }).then(() => {
+        // Save only after init is complete, to avoid overwriting with the fallback language
+        i18n.on("languageChanged", (lng) => {
+            localStorage.setItem("i18n_language", lng);
+        });
     });
 
 export default i18n;

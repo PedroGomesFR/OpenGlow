@@ -133,6 +133,26 @@ const toSerializable = (value) => {
 
 const getAdminDisplayName = (adminUser) => adminUser?.companyName || `${adminUser?.prenom || ''} ${adminUser?.nom || ''}`.trim() || 'Administration OpenGlow';
 
+const startOfDay = (date = new Date()) => {
+    const copy = new Date(date);
+    copy.setHours(0, 0, 0, 0);
+    return copy;
+};
+
+const build7DaySeries = (startDate, rawCounts = [], labelFormatter = (date) => date.toLocaleDateString('fr-FR', { weekday: 'short' })) => {
+    const map = new Map(rawCounts.map((entry) => [entry._id, entry.count]));
+    return Array.from({ length: 7 }, (_, index) => {
+        const day = new Date(startDate);
+        day.setDate(startDate.getDate() + index);
+        const key = day.toISOString().slice(0, 10);
+        return {
+            key,
+            label: labelFormatter(day),
+            count: map.get(key) || 0,
+        };
+    });
+};
+
 // Middleware to check if user is admin
 const verifyAdmin = async (req, res, next) => {
     try {
@@ -160,6 +180,11 @@ router.get('/dashboard', verifyToken, verifyAdmin, async (req, res) => {
         const logsCollection = db.collection('admin_audit_logs');
         const now = new Date();
         const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const todayStart = startOfDay(now);
+        const last7DaysStart = new Date(todayStart);
+        last7DaysStart.setDate(last7DaysStart.getDate() - 6);
+        const prev7DaysStart = new Date(last7DaysStart);
+        prev7DaysStart.setDate(prev7DaysStart.getDate() - 7);
 
         const [
             totalUsers,
@@ -174,10 +199,19 @@ router.get('/dashboard', verifyToken, verifyAdmin, async (req, res) => {
             cancelledBookings,
             activeAnnouncements,
             emailsSentLast30Days,
+            usersCreatedLast7Days,
+            usersCreatedPrev7Days,
+            bookingsCreatedLast7Days,
+            bookingsCreatedPrev7Days,
+            bookingsCreatedLast30Days,
+            completedBookingsLast30Days,
+            cancelledBookingsLast30Days,
             recentUsers,
             recentBookings,
             recentPendingRegistrations,
             recentCommunications,
+            bookingTrafficRaw,
+            userTrafficRaw,
         ] = await Promise.all([
             usersCollection.countDocuments(),
             usersCollection.countDocuments({ isClient: true }),
@@ -198,6 +232,13 @@ router.get('/dashboard', verifyToken, verifyAdmin, async (req, res) => {
                 ],
             }),
             logsCollection.countDocuments({ type: 'email_campaign', createdAt: { $gte: monthAgo } }),
+            usersCollection.countDocuments({ createdAt: { $gte: last7DaysStart } }),
+            usersCollection.countDocuments({ createdAt: { $gte: prev7DaysStart, $lt: last7DaysStart } }),
+            bookingsCollection.countDocuments({ createdAt: { $gte: last7DaysStart } }),
+            bookingsCollection.countDocuments({ createdAt: { $gte: prev7DaysStart, $lt: last7DaysStart } }),
+            bookingsCollection.countDocuments({ createdAt: { $gte: monthAgo } }),
+            bookingsCollection.countDocuments({ status: 'completed', createdAt: { $gte: monthAgo } }),
+            bookingsCollection.countDocuments({ status: 'cancelled', createdAt: { $gte: monthAgo } }),
             usersCollection.find({}, { projection: USER_PROJECTION }).sort({ createdAt: -1, _id: -1 }).limit(8).toArray(),
             bookingsCollection.find({}).sort({ createdAt: -1, _id: -1 }).limit(10).toArray(),
             pendingCollection.find({}, {
@@ -208,7 +249,46 @@ router.get('/dashboard', verifyToken, verifyAdmin, async (req, res) => {
                 },
             }).sort({ createdAt: -1, _id: -1 }).limit(8).toArray(),
             logsCollection.find({}).sort({ createdAt: -1, _id: -1 }).limit(10).toArray(),
+            bookingsCollection.aggregate([
+                { $match: { createdAt: { $gte: last7DaysStart } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { _id: 1 } },
+            ]).toArray(),
+            usersCollection.aggregate([
+                { $match: { createdAt: { $gte: last7DaysStart } } },
+                {
+                    $group: {
+                        _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                        count: { $sum: 1 },
+                    },
+                },
+                { $sort: { _id: 1 } },
+            ]).toArray(),
         ]);
+
+        const bookingsTrend7dPct = bookingsCreatedPrev7Days
+            ? Math.round(((bookingsCreatedLast7Days - bookingsCreatedPrev7Days) / bookingsCreatedPrev7Days) * 100)
+            : (bookingsCreatedLast7Days > 0 ? 100 : 0);
+
+        const usersTrend7dPct = usersCreatedPrev7Days
+            ? Math.round(((usersCreatedLast7Days - usersCreatedPrev7Days) / usersCreatedPrev7Days) * 100)
+            : (usersCreatedLast7Days > 0 ? 100 : 0);
+
+        const bookingsConversionRate30d = bookingsCreatedLast30Days
+            ? Math.round((completedBookingsLast30Days / bookingsCreatedLast30Days) * 100)
+            : 0;
+
+        const bookingsCancellationRate30d = bookingsCreatedLast30Days
+            ? Math.round((cancelledBookingsLast30Days / bookingsCreatedLast30Days) * 100)
+            : 0;
+
+        const bookingsLast7Days = build7DaySeries(last7DaysStart, bookingTrafficRaw);
+        const usersLast7Days = build7DaySeries(last7DaysStart, userTrafficRaw);
 
         res.json({
             summary: {
@@ -224,11 +304,23 @@ router.get('/dashboard', verifyToken, verifyAdmin, async (req, res) => {
                 cancelledBookings,
                 activeAnnouncements,
                 emailsSentLast30Days,
+                usersCreatedLast7Days,
+                usersCreatedPrev7Days,
+                usersTrend7dPct,
+                bookingsCreatedLast7Days,
+                bookingsCreatedPrev7Days,
+                bookingsTrend7dPct,
+                bookingsConversionRate30d,
+                bookingsCancellationRate30d,
             },
             recentUsers,
             recentBookings,
             recentPendingRegistrations,
             recentCommunications,
+            traffic: {
+                bookingsLast7Days,
+                usersLast7Days,
+            },
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

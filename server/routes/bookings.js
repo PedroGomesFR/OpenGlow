@@ -302,6 +302,58 @@ bookingRouter.get('/stats', async (req, res) => {
     }
 
     const bookings = await db.collection('bookings').find({ professionalId: userId }).toArray();
+
+    const today = new Date();
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const startOfToday = new Date(today);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const startOfLast7Days = new Date(startOfToday);
+    startOfLast7Days.setDate(startOfLast7Days.getDate() - 6);
+
+    const startOfPrev7Days = new Date(startOfLast7Days);
+    startOfPrev7Days.setDate(startOfPrev7Days.getDate() - 7);
+
+    const startOfLast30Days = new Date(startOfToday);
+    startOfLast30Days.setDate(startOfLast30Days.getDate() - 29);
+
+    const bookingsLast7Days = bookings.filter((b) => b.createdAt && new Date(b.createdAt) >= startOfLast7Days).length;
+    const bookingsPrev7Days = bookings.filter((b) => b.createdAt && new Date(b.createdAt) >= startOfPrev7Days && new Date(b.createdAt) < startOfLast7Days).length;
+
+    const bookingsLast30Days = bookings.filter((b) => b.createdAt && new Date(b.createdAt) >= startOfLast30Days);
+    const completedLast30Days = bookingsLast30Days.filter((b) => b.status === 'completed').length;
+    const cancelledLast30Days = bookingsLast30Days.filter((b) => b.status === 'cancelled').length;
+
+    const conversionRateLast30Days = bookingsLast30Days.length
+      ? Math.round((completedLast30Days / bookingsLast30Days.length) * 100)
+      : 0;
+    const cancellationRateLast30Days = bookingsLast30Days.length
+      ? Math.round((cancelledLast30Days / bookingsLast30Days.length) * 100)
+      : 0;
+
+    const trendVsPrev7DaysPct = bookingsPrev7Days
+      ? Math.round(((bookingsLast7Days - bookingsPrev7Days) / bookingsPrev7Days) * 100)
+      : (bookingsLast7Days > 0 ? 100 : 0);
+
+    const dailyBookingsLast7Days = Array.from({ length: 7 }, (_, index) => {
+      const day = new Date(startOfLast7Days);
+      day.setDate(startOfLast7Days.getDate() + index);
+      const key = day.toISOString().slice(0, 10);
+      return { key, label: day.toLocaleDateString('fr-FR', { weekday: 'short' }), count: 0 };
+    });
+
+    bookings.forEach((booking) => {
+      if (!booking.createdAt) return;
+      const createdAt = new Date(booking.createdAt);
+      if (Number.isNaN(createdAt.getTime())) return;
+      if (createdAt < startOfLast7Days || createdAt > endOfToday) return;
+
+      const key = createdAt.toISOString().slice(0, 10);
+      const bucket = dailyBookingsLast7Days.find((entry) => entry.key === key);
+      if (bucket) bucket.count += 1;
+    });
     
     const stats = {
       total: bookings.length,
@@ -312,6 +364,12 @@ bookingRouter.get('/stats', async (req, res) => {
       totalRevenue: bookings
         .filter(b => b.status === 'completed')
         .reduce((sum, b) => sum + b.servicePrice, 0),
+      bookingsLast7Days,
+      bookingsPrev7Days,
+      trendVsPrev7DaysPct,
+      conversionRateLast30Days,
+      cancellationRateLast30Days,
+      dailyBookingsLast7Days,
     };
 
     res.status(200).json(stats);

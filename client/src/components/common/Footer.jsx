@@ -41,6 +41,9 @@ const Footer = () => {
                         <h4 style={{ fontSize: '13px', fontWeight: '600', marginBottom: '10px', textTransform: 'uppercase', color: '#86868b' }}>{t('footer_legal')}</h4>
                         <ul style={{ listStyle: 'none', padding: 0, margin: 0, fontSize: '13px' }}>
                             <li style={{ marginBottom: '8px' }}>
+                                <span onClick={() => navigate('/qui-sommes-nous')} style={{ color: '#424245', cursor: 'pointer' }}>{t('footer_about_us', { defaultValue: 'Qui sommes-nous' })}</span>
+                            </li>
+                            <li style={{ marginBottom: '8px' }}>
                                 <span onClick={() => navigate('/mentions-legales')} style={{ color: '#424245', cursor: 'pointer' }}>{t('legal_mentions')}</span>
                             </li>
                             <li style={{ marginBottom: '8px' }}>

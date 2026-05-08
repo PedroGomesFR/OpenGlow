@@ -7,6 +7,7 @@ import {
     IoCut,
     IoStar,
     IoPerson,
+    IoSettingsOutline,
     IoLogOut,
     IoBusiness,
     IoCall,
@@ -548,7 +549,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                     <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '15px' }}>
                                         {t('save_changes')}
                                     </button>
-                                    <button type="button" className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '15px' }} onClick={() => navigate(`/professional/${user._id || user.id}`)}>
+                                    <button type="button" className="btn btn-outline" style={{ padding: '12px 24px', fontSize: '15px' }} onClick={() => navigate(user?.slug ? `/pro/${user.slug}` : `/professional/${user._id || user.id}`)}>
                                         {t('public_preview')}
                                     </button>
                                 </div>
@@ -700,6 +701,25 @@ function ProfessionalDashboard({ user, setUser }) {
                 </nav>
 
                 <div className="logout-btn" style={{ borderTop: '1px solid #E5E5E5', paddingTop: '20px' }}>
+                    <button
+                        onClick={() => navigate('/settings')}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: '#1d1d1f',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            gap: '10px'
+                        }}
+                    >
+                        <IoSettingsOutline />
+                        {t('settings_title', { defaultValue: 'Paramètres' })}
+                    </button>
                     <button
                         onClick={deconnection}
                         style={{

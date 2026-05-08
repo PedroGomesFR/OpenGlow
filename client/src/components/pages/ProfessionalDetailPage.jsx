@@ -25,7 +25,7 @@ const formatOpeningHours = (str) => {
 };
 
 function ProfessionalDetailPage() {
-    const { id } = useParams();
+    const { id, slug } = useParams();
     const navigate = useNavigate();
     const { t } = useTranslation();
     const toast = useToast();
@@ -35,6 +35,7 @@ function ProfessionalDetailPage() {
     const [slots, setSlots] = useState([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [announcements, setAnnouncements] = useState([]);
+    const resolvedProfessionalId = professional?._id || id || null;
 
     const [bookingData, setBookingData] = useState({
         serviceId: '',
@@ -44,29 +45,55 @@ function ProfessionalDetailPage() {
 
     useEffect(() => {
         loadProfessionalData();
-    }, [id]);
+    }, [id, slug]);
 
     useEffect(() => {
-        if (bookingData.date) {
+        if (bookingData.date && resolvedProfessionalId) {
             loadSlots(bookingData.date);
         }
-    }, [bookingData.date]);
+    }, [bookingData.date, resolvedProfessionalId]);
 
     const loadProfessionalData = async () => {
+        setLoading(true);
         try {
-            const proResponse = await fetch(`${window.API_URL}/records/professional/${id}`);
-            if (proResponse.ok) {
-                const proData = await proResponse.json();
-                setProfessional(proData);
+            let proData = null;
+
+            if (slug) {
+                const slugResponse = await fetch(`${window.API_URL}/records/professional/slug/${encodeURIComponent(slug)}`);
+                if (slugResponse.ok) {
+                    const slugPayload = await slugResponse.json();
+                    proData = slugPayload.professional;
+
+                    if (slugPayload.redirectTo && slugPayload.redirectTo !== slug) {
+                        navigate(`/pro/${slugPayload.redirectTo}`, { replace: true });
+                    }
+                }
             }
 
-            const servicesResponse = await fetch(`${window.API_URL}/services/professional/${id}`);
+            if (!proData && id) {
+                const proResponse = await fetch(`${window.API_URL}/records/professional/${id}`);
+                if (proResponse.ok) {
+                    proData = await proResponse.json();
+                }
+            }
+
+            if (!proData) {
+                setProfessional(null);
+                setServices([]);
+                setAnnouncements([]);
+                return;
+            }
+
+            setProfessional(proData);
+            const professionalId = proData._id;
+
+            const servicesResponse = await fetch(`${window.API_URL}/services/professional/${professionalId}`);
             if (servicesResponse.ok) {
                 const servicesData = await servicesResponse.json();
                 setServices(servicesData.filter(s => s.isActive));
             }
 
-            const annResponse = await fetch(`${window.API_URL}/announcements/professional/${id}`);
+            const annResponse = await fetch(`${window.API_URL}/announcements/professional/${professionalId}`);
             if (annResponse.ok) {
                 const annData = await annResponse.json();
                 setAnnouncements(annData);
@@ -79,9 +106,14 @@ function ProfessionalDetailPage() {
     };
 
     const loadSlots = async (date) => {
+        if (!resolvedProfessionalId) {
+            setSlots([]);
+            return;
+        }
+
         setLoadingSlots(true);
         try {
-            const response = await fetch(`${window.API_URL}/availability/slots/${id}?date=${date}`);
+            const response = await fetch(`${window.API_URL}/availability/slots/${resolvedProfessionalId}?date=${date}`);
             if (response.ok) {
                 const data = await response.json();
                 setSlots(data);
@@ -111,6 +143,11 @@ function ProfessionalDetailPage() {
             return;
         }
 
+        if (!resolvedProfessionalId) {
+            toast(t('pro_not_found'), 'error');
+            return;
+        }
+
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(window.API_URL + '/bookings/create', {
@@ -120,7 +157,7 @@ function ProfessionalDetailPage() {
                     'Authorization': `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    professionalId: id,
+                    professionalId: resolvedProfessionalId,
                     serviceId: bookingData.serviceId,
                     date: bookingData.date,
                     time: bookingData.hour,
@@ -207,7 +244,7 @@ function ProfessionalDetailPage() {
                                 </div>
                             )}
                             {professional.totalReviews > 0 && (
-                                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/reviews/${id}`)} style={{ whiteSpace: 'nowrap' }}>
+                                <button className="btn btn-outline btn-sm" onClick={() => navigate(`/reviews/${professional._id || id}`)} style={{ whiteSpace: 'nowrap' }}>
                                     {t('view_reviews')}
                                 </button>
                             )}

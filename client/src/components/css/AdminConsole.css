@@ -357,6 +357,21 @@
   border-radius: 14px;
 }
 
+.admin-select {
+  border: 1.5px solid #e5e5ea;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 13px;
+  background: #fafafa;
+  color: inherit;
+  cursor: pointer;
+}
+
+.admin-select--sm {
+  padding: 3px 8px;
+  font-size: 12px;
+}
+
 .admin-health-grid,
 .admin-rgpd-grid {
   display: grid;

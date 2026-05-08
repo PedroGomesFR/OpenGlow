@@ -1,7 +1,9 @@
 import { useCallback, useDeferredValue, useEffect, useState } from 'react';
 import {
     IoArrowBack,
+    IoBug,
     IoCalendarClear,
+    IoChatbubbleEllipses,
     IoCheckmarkCircle,
     IoDocumentText,
     IoDownload,
@@ -14,6 +16,7 @@ import {
     IoRefresh,
     IoSearch,
     IoShieldCheckmark,
+    IoSparkles,
     IoStatsChart,
     IoTime,
     IoTrash,
@@ -25,6 +28,7 @@ import '../css/AdminConsole.css';
 import { useToast } from '../common/ToastContext';
 import { useConfirm } from '../common/ConfirmContext';
 import { useTranslation } from 'react-i18next';
+import { io as socketIO } from 'socket.io-client';
 
 const EMPTY_SUMMARY = {
     totalUsers: 0,
@@ -39,6 +43,14 @@ const EMPTY_SUMMARY = {
     cancelledBookings: 0,
     activeAnnouncements: 0,
     emailsSentLast30Days: 0,
+    usersCreatedLast7Days: 0,
+    usersCreatedPrev7Days: 0,
+    usersTrend7dPct: 0,
+    bookingsCreatedLast7Days: 0,
+    bookingsCreatedPrev7Days: 0,
+    bookingsTrend7dPct: 0,
+    bookingsConversionRate30d: 0,
+    bookingsCancellationRate30d: 0,
 };
 
 const CAMPAIGN_PURPOSES = [
@@ -115,12 +127,20 @@ function AdminPage() {
         recentBookings: [],
         recentPendingRegistrations: [],
         recentCommunications: [],
+        traffic: {
+            bookingsLast7Days: [],
+            usersLast7Days: [],
+        },
     });
     const [users, setUsers] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [pendingRegistrations, setPendingRegistrations] = useState([]);
     const [communicationLogs, setCommunicationLogs] = useState([]);
     const [internalNotifications, setInternalNotifications] = useState([]);
+    const [feedbackItems, setFeedbackItems] = useState([]);
+    const [feedbackLoading, setFeedbackLoading] = useState(false);
+    const [chatReplyDrafts, setChatReplyDrafts] = useState({});
+    const [sendingChatReplyId, setSendingChatReplyId] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [sendingEmail, setSendingEmail] = useState(false);
@@ -186,6 +206,23 @@ function AdminPage() {
         return response.json();
     }, []);
 
+    const loadFeedbackItems = useCallback(async ({ silent = false } = {}) => {
+        if (!silent) setFeedbackLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const fbRes = await fetch(`${window.API_URL}/feedback`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (fbRes.ok) {
+                setFeedbackItems(await fbRes.json());
+            }
+        } catch {
+            // ignore
+        } finally {
+            if (!silent) setFeedbackLoading(false);
+        }
+    }, []);
+
     const loadAdminData = useCallback(async ({ silent = false } = {}) => {
         if (silent) {
             setRefreshing(true);
@@ -209,19 +246,47 @@ function AdminPage() {
                 recentBookings: dashboardData.recentBookings || [],
                 recentPendingRegistrations: dashboardData.recentPendingRegistrations || [],
                 recentCommunications: dashboardData.recentCommunications || [],
+                traffic: dashboardData.traffic || { bookingsLast7Days: [], usersLast7Days: [] },
             });
             setUsers(usersData || []);
             setBookings(bookingsData || []);
             setPendingRegistrations(pendingData || []);
             setCommunicationLogs(logsData || []);
             setInternalNotifications(notificationsData || []);
+
+            await loadFeedbackItems();
         } catch (error) {
             toast(error.message || tx('admin_load_error', 'Impossible de charger les données administrateur.'), 'error');
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [adminFetch, toast, tx]);
+    }, [adminFetch, loadFeedbackItems, toast, tx]);
+
+    const sendAdminChatReply = useCallback(async (chatItemId) => {
+        const draft = String(chatReplyDrafts[chatItemId] || '').trim();
+        if (!draft) return;
+        setSendingChatReplyId(chatItemId);
+        try {
+            const token = localStorage.getItem('token');
+            const formData = new FormData();
+            formData.append('message', draft);
+            const response = await fetch(`${window.API_URL}/feedback/chat/${chatItemId}/messages`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                body: formData,
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error(data?.error || 'Erreur envoi chat');
+            setChatReplyDrafts((prev) => ({ ...prev, [chatItemId]: '' }));
+            await loadFeedbackItems({ silent: true });
+            toast('Réponse envoyée.', 'success');
+        } catch (error) {
+            toast(error.message || 'Erreur envoi chat', 'error');
+        } finally {
+            setSendingChatReplyId(null);
+        }
+    }, [chatReplyDrafts, loadFeedbackItems, toast]);
 
     const validateAccessAndLoad = useCallback(async () => {
         const userStr = localStorage.getItem('user');
@@ -247,6 +312,30 @@ function AdminPage() {
     useEffect(() => {
         validateAccessAndLoad();
     }, [validateAccessAndLoad]);
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            loadFeedbackItems({ silent: true });
+        }, 4000);
+        return () => clearInterval(timer);
+    }, [loadFeedbackItems]);
+
+    // Socket.io — realtime feedback/chat updates for admin
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const socket = socketIO(window.BASE_URL || window.API_URL?.replace('/api', '') || 'http://127.0.0.1:8100', {
+            auth: { token },
+            transports: ['websocket', 'polling'],
+        });
+
+        socket.on('chat:message', () => {
+            loadFeedbackItems({ silent: true });
+        });
+
+        return () => socket.disconnect();
+    }, [loadFeedbackItems]);
 
     const filteredUsers = users.filter((user) => {
         const searchValue = normalizeText(deferredUserSearch);
@@ -606,6 +695,17 @@ function AdminPage() {
 
     if (loading) return <div className="loading-spinner"></div>;
 
+    const bookingTrafficMax = Math.max(1, ...(dashboard.traffic?.bookingsLast7Days || []).map((day) => day.count || 0));
+    const userTrafficMax = Math.max(1, ...(dashboard.traffic?.usersLast7Days || []).map((day) => day.count || 0));
+
+    const bookingTrendLabel = dashboard.summary.bookingsTrend7dPct > 0
+        ? `+${dashboard.summary.bookingsTrend7dPct}%`
+        : `${dashboard.summary.bookingsTrend7dPct}%`;
+
+    const userTrendLabel = dashboard.summary.usersTrend7dPct > 0
+        ? `+${dashboard.summary.usersTrend7dPct}%`
+        : `${dashboard.summary.usersTrend7dPct}%`;
+
     return (
         <div className="admin-console-page">
             <div className="admin-console-shell">
@@ -659,6 +759,97 @@ function AdminPage() {
                         <div className="admin-stat-card__label">{tx('admin_emails_30d', 'EMAILS 30 JOURS')}</div>
                         <div className="admin-stat-card__value">{dashboard.summary.emailsSentLast30Days}</div>
                         <div className="admin-stat-card__meta">Traçabilité activée</div>
+                    </article>
+                </section>
+
+                <section className="admin-console-section">
+                    <article className="card admin-console-panel">
+                        <div className="admin-console-panel__header">
+                            <div>
+                                <h2><IoStatsChart /> {tx('admin_traffic_visibility_title', 'Visibilité trafic plateforme')}</h2>
+                                <p>{tx('admin_traffic_visibility_desc', 'Tendance des 7 derniers jours et qualité du flux de réservations (30 jours).')}</p>
+                            </div>
+                        </div>
+
+                        <div className="admin-console-stats" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', marginBottom: '14px' }}>
+                            <article className="admin-stat-card card" style={{ padding: '16px' }}>
+                                <div className="admin-stat-card__label">{tx('admin_traffic_bookings_7d', 'RÉSERVATIONS 7J')}</div>
+                                <div className="admin-stat-card__value" style={{ fontSize: '28px' }}>{dashboard.summary.bookingsCreatedLast7Days}</div>
+                                <div className="admin-stat-card__meta" style={{ color: dashboard.summary.bookingsTrend7dPct >= 0 ? '#16693f' : '#ba4f3b' }}>
+                                    {bookingTrendLabel} {tx('admin_vs_prev_7d', 'vs 7j précédents')}
+                                </div>
+                            </article>
+
+                            <article className="admin-stat-card card" style={{ padding: '16px' }}>
+                                <div className="admin-stat-card__label">{tx('admin_traffic_new_users_7d', 'NOUVEAUX COMPTES 7J')}</div>
+                                <div className="admin-stat-card__value" style={{ fontSize: '28px' }}>{dashboard.summary.usersCreatedLast7Days}</div>
+                                <div className="admin-stat-card__meta" style={{ color: dashboard.summary.usersTrend7dPct >= 0 ? '#16693f' : '#ba4f3b' }}>
+                                    {userTrendLabel} {tx('admin_vs_prev_7d', 'vs 7j précédents')}
+                                </div>
+                            </article>
+
+                            <article className="admin-stat-card card" style={{ padding: '16px' }}>
+                                <div className="admin-stat-card__label">{tx('admin_conversion_30d', 'CONVERSION 30J')}</div>
+                                <div className="admin-stat-card__value" style={{ fontSize: '28px' }}>{dashboard.summary.bookingsConversionRate30d}%</div>
+                                <div className="admin-stat-card__meta">{tx('admin_completed_over_created', 'Terminées / créées')}</div>
+                            </article>
+
+                            <article className="admin-stat-card card" style={{ padding: '16px' }}>
+                                <div className="admin-stat-card__label">{tx('admin_cancellation_30d', 'ANNULATION 30J')}</div>
+                                <div className="admin-stat-card__value" style={{ fontSize: '28px' }}>{dashboard.summary.bookingsCancellationRate30d}%</div>
+                                <div className="admin-stat-card__meta">{tx('admin_cancelled_over_created', 'Annulées / créées')}</div>
+                            </article>
+                        </div>
+
+                        <div className="admin-mini-columns" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+                            <div>
+                                <h3>{tx('admin_booking_flow_7d', 'Flux réservations (7j)')}</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '8px' }}>
+                                    {(dashboard.traffic?.bookingsLast7Days || []).map((day) => (
+                                        <div key={`booking-${day.key}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                            <div style={{ width: '100%', maxWidth: '34px', height: '64px', display: 'flex', alignItems: 'flex-end' }}>
+                                                <div
+                                                    title={`${day.count} réservation(s)`}
+                                                    style={{
+                                                        width: '100%',
+                                                        borderRadius: '8px 8px 4px 4px',
+                                                        minHeight: day.count > 0 ? '10px' : '4px',
+                                                        height: `${Math.max(8, Math.round(((day.count || 0) / bookingTrafficMax) * 64))}px`,
+                                                        background: 'linear-gradient(180deg, #1a5c6b 0%, #14495c 100%)',
+                                                    }}
+                                                />
+                                            </div>
+                                            <strong style={{ fontSize: '12px' }}>{day.count || 0}</strong>
+                                            <span className="text-secondary" style={{ fontSize: '11px' }}>{day.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <h3>{tx('admin_user_flow_7d', 'Flux nouveaux comptes (7j)')}</h3>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(0, 1fr))', gap: '8px' }}>
+                                    {(dashboard.traffic?.usersLast7Days || []).map((day) => (
+                                        <div key={`user-${day.key}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
+                                            <div style={{ width: '100%', maxWidth: '34px', height: '64px', display: 'flex', alignItems: 'flex-end' }}>
+                                                <div
+                                                    title={`${day.count} compte(s)`}
+                                                    style={{
+                                                        width: '100%',
+                                                        borderRadius: '8px 8px 4px 4px',
+                                                        minHeight: day.count > 0 ? '10px' : '4px',
+                                                        height: `${Math.max(8, Math.round(((day.count || 0) / userTrafficMax) * 64))}px`,
+                                                        background: 'linear-gradient(180deg, #f48068 0%, #d8674f 100%)',
+                                                    }}
+                                                />
+                                            </div>
+                                            <strong style={{ fontSize: '12px' }}>{day.count || 0}</strong>
+                                            <span className="text-secondary" style={{ fontSize: '11px' }}>{day.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
                     </article>
                 </section>
 
@@ -1330,6 +1521,142 @@ function AdminPage() {
                                 <div className="admin-empty-state">Aucune notification interne publiée pour le moment.</div>
                             )}
                         </div>
+                    </article>
+                </section>
+
+                <section className="admin-console-section">
+                    <article className="card admin-console-panel">
+                        <div className="admin-console-panel__header">
+                            <div>
+                                <h2><IoChatbubbleEllipses /> Feedback &amp; Signalements</h2>
+                                <p>Messages envoyés par les utilisateurs via le widget de feedback.</p>
+                            </div>
+                            <span className="admin-badge admin-badge--pending">{feedbackItems.filter((f) => f.status === 'open').length} ouverts</span>
+                        </div>
+                        {feedbackLoading ? (
+                            <div className="admin-empty-state">Chargement…</div>
+                        ) : feedbackItems.length === 0 ? (
+                            <div className="admin-empty-state">Aucun feedback reçu pour le moment.</div>
+                        ) : (
+                            <div className="admin-table-wrapper">
+                                <table className="admin-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Type</th>
+                                            <th>Message</th>
+                                            <th>Images</th>
+                                            <th>E-mail</th>
+                                            <th>Statut</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {feedbackItems.map((item) => {
+                                            const typeIcon = item.type === 'bug' ? <IoBug /> : item.type === 'feature' ? <IoSparkles /> : <IoChatbubbleEllipses />;
+                                            const typeLabel = item.type === 'bug' ? 'Bug' : item.type === 'feature' ? 'Idee' : item.type === 'chat' ? 'Chat' : 'Feedback';
+                                            const statusLabels = { open: 'Ouvert', in_progress: 'En cours', resolved: 'Résolu', dismissed: 'Ignoré' };
+                                            return (
+                                                <tr key={item._id}>
+                                                    <td><span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>{typeIcon} {typeLabel}</span></td>
+                                                    <td style={{ maxWidth: 260, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{item.message}</td>
+                                                    <td>
+                                                        {item.imageIds?.length ? (
+                                                            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                                                                {item.imageIds.map((id) => (
+                                                                    <a key={String(id)} href={`${window.API_URL}/uploads/image/${id}`} target="_blank" rel="noreferrer">
+                                                                        <img
+                                                                            src={`${window.API_URL}/uploads/image/${id}`}
+                                                                            alt="Piece jointe"
+                                                                            style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6, border: '1px solid #e5e5ea', cursor: 'pointer' }}
+                                                                        />
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        ) : <span style={{ color: '#aeaeb2' }}>-</span>}
+                                                    </td>
+                                                    <td>{item.email || <span style={{ color: '#aeaeb2' }}>—</span>}</td>
+                                                    <td>
+                                                        <select
+                                                            className="admin-select admin-select--sm"
+                                                            value={item.status}
+                                                            onChange={async (e) => {
+                                                                const newStatus = e.target.value;
+                                                                try {
+                                                                    const token = localStorage.getItem('token');
+                                                                    const res = await fetch(`${window.API_URL}/feedback/${item._id}/status`, {
+                                                                        method: 'PATCH',
+                                                                        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                                                                        body: JSON.stringify({ status: newStatus }),
+                                                                    });
+                                                                    if (res.ok) {
+                                                                        setFeedbackItems((prev) => prev.map((f) => f._id === item._id ? { ...f, status: newStatus } : f));
+                                                                    } else {
+                                                                        toast('Erreur mise a jour statut.', 'error');
+                                                                    }
+                                                                } catch {
+                                                                    toast('Erreur reseau.', 'error');
+                                                                }
+                                                            }}
+                                                        >
+                                                            {Object.entries(statusLabels).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td>{formatDate(item.createdAt)}</td>
+                                                    <td>
+                                                        {item.type === 'chat' && (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8, minWidth: 210 }}>
+                                                                <input
+                                                                    type="text"
+                                                                    value={chatReplyDrafts[item._id] || ''}
+                                                                    onChange={(e) => setChatReplyDrafts((prev) => ({ ...prev, [item._id]: e.target.value }))}
+                                                                    placeholder="Répondre au client..."
+                                                                    style={{ border: '1px solid #d2d2d7', borderRadius: 8, padding: '6px 8px', fontSize: 12 }}
+                                                                />
+                                                                <button
+                                                                    type="button"
+                                                                    className="btn btn-primary btn-sm"
+                                                                    disabled={sendingChatReplyId === item._id || !(chatReplyDrafts[item._id] || '').trim()}
+                                                                    onClick={() => sendAdminChatReply(item._id)}
+                                                                >
+                                                                    {sendingChatReplyId === item._id ? 'Envoi...' : 'Envoyer'}
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                        <button
+                                                            type="button"
+                                                            className="btn btn-outline btn-sm btn-danger"
+                                                            title="Supprimer"
+                                                            onClick={async () => {
+                                                                const ok = await confirm('Supprimer ce feedback ?', { confirmLabel: 'Supprimer', variant: 'danger' });
+                                                                if (!ok) return;
+                                                                try {
+                                                                    const token = localStorage.getItem('token');
+                                                                    const res = await fetch(`${window.API_URL}/feedback/${item._id}`, {
+                                                                        method: 'DELETE',
+                                                                        headers: { Authorization: `Bearer ${token}` },
+                                                                    });
+                                                                    if (res.ok) {
+                                                                        setFeedbackItems((prev) => prev.filter((f) => f._id !== item._id));
+                                                                        toast('Feedback supprime.', 'success');
+                                                                    } else {
+                                                                        toast('Erreur suppression.', 'error');
+                                                                    }
+                                                                } catch {
+                                                                    toast('Erreur reseau.', 'error');
+                                                                }
+                                                            }}
+                                                        >
+                                                            <IoTrash />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </article>
                 </section>
 

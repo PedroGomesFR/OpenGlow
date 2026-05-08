@@ -101,6 +101,8 @@ function MapView() {
     const [filterCategory, setFilterCategory] = useState('all');
     const [mobileTab, setMobileTab] = useState('list'); // 'list' | 'map'
 
+    const getProfessionalPath = (pro) => (pro?.slug ? `/pro/${pro.slug}` : `/professional/${pro?._id}`);
+
     useEffect(() => {
         loadProfessionals();
         getUserLocation();
@@ -256,7 +258,7 @@ function MapView() {
                                     className="btn btn-primary btn-sm"
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/professional/${pro._id}`);
+                                        navigate(getProfessionalPath(pro));
                                     }}
                                 >
                                     {t('view_profile')}
@@ -307,7 +309,7 @@ function MapView() {
                                     <p style={{ margin: '0 0 5px', fontSize: '12px', color: '#666' }}>{pro.profession}</p>
                                     <div style={{ display: 'flex', gap: '5px' }}>
                                         <button
-                                            onClick={() => navigate(`/professional/${pro._id}`)}
+                                            onClick={() => navigate(getProfessionalPath(pro))}
                                             style={{
                                                 background: 'var(--primary)',
                                                 color: 'white',
@@ -380,7 +382,7 @@ function MapView() {
                             <h3 style={{ margin: 0, fontSize: '16px' }}>{selectedPro.companyName}</h3>
                             <p style={{ margin: '2px 0', fontSize: '13px', color: '#666' }}>{selectedPro.address}</p>
                             <div style={{ display: 'flex', gap: '10px', marginTop: '8px', flexWrap: 'wrap' }}>
-                                <button className="btn btn-primary btn-sm" onClick={() => navigate(`/professional/${selectedPro._id}`)}>{t('view_profile')}</button>
+                                <button className="btn btn-primary btn-sm" onClick={() => navigate(getProfessionalPath(selectedPro))}>{t('view_profile')}</button>
                                 <a 
                                     href={`https://www.google.com/maps/dir/?api=1&destination=${selectedPro.latitude},${selectedPro.longitude}`}
                                     target="_blank"

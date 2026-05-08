@@ -34,6 +34,101 @@ const resetPasswordLimiter = rateLimit({
   message: { error: 'Trop de tentatives. Veuillez réessayer dans 15 minutes.' }
 });
 
+const PROFESSIONAL_SLUG_INDEX_CREATED_FLAG = '__professionalSlugIndexCreated';
+
+const slugifyValue = (value) => {
+  if (!value) return '';
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .replace(/-{2,}/g, '-');
+};
+
+const buildProfessionalSlugBase = (user = {}) => {
+  const companyBase = slugifyValue(user.companyName);
+  if (companyBase) return companyBase;
+
+  const nameBase = slugifyValue(`${user.prenom || ''} ${user.nom || ''}`);
+  if (nameBase) return nameBase;
+
+  const professionBase = slugifyValue(user.profession);
+  if (professionBase) return professionBase;
+
+  return 'pro';
+};
+
+const ensureProfessionalSlugIndex = async (db) => {
+  if (db[PROFESSIONAL_SLUG_INDEX_CREATED_FLAG]) return;
+
+  await db.collection('users').createIndex(
+    { slug: 1 },
+    {
+      unique: true,
+      partialFilterExpression: {
+        isClient: false,
+        slug: { $type: 'string' }
+      },
+      name: 'users_professional_slug_unique'
+    }
+  );
+
+  db[PROFESSIONAL_SLUG_INDEX_CREATED_FLAG] = true;
+};
+
+const generateUniqueProfessionalSlug = async (db, baseInput, excludeUserId = null) => {
+  const users = db.collection('users');
+  const base = slugifyValue(baseInput) || 'pro';
+  const escapedBase = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+  const query = {
+    isClient: false,
+    slug: { $regex: `^${escapedBase}(?:-[0-9]+)?$`, $options: 'i' }
+  };
+
+  if (excludeUserId) {
+    query._id = { $ne: new ObjectId(excludeUserId) };
+  }
+
+  const existing = await users.find(query, { projection: { slug: 1 } }).toArray();
+  const existingSlugs = new Set(existing.map((item) => String(item.slug).toLowerCase()));
+
+  if (!existingSlugs.has(base)) return base;
+
+  let suffix = 2;
+  while (existingSlugs.has(`${base}-${suffix}`)) {
+    suffix += 1;
+  }
+
+  return `${base}-${suffix}`;
+};
+
+const ensureProfessionalSlug = async (db, professional) => {
+  if (!professional || professional.isClient !== false || professional.isAdmin === true) {
+    return professional;
+  }
+
+  if (professional.slug) return professional;
+
+  await ensureProfessionalSlugIndex(db);
+
+  const slug = await generateUniqueProfessionalSlug(db, buildProfessionalSlugBase(professional), professional._id);
+
+  await db.collection('users').updateOne(
+    { _id: professional._id, isClient: false, $or: [{ slug: { $exists: false } }, { slug: null }, { slug: '' }] },
+    {
+      $set: {
+        slug,
+        updatedAt: new Date()
+      }
+    }
+  );
+
+  return { ...professional, slug };
+};
+
 // ─── Helper: verify reCAPTCHA token ──────────────────────────────────────────
 const verifyCaptcha = async (token, req) => {
   // Skip in local development (localhost)
@@ -226,6 +321,8 @@ router.post('/verify-email', async (req, res) => {
     const users = db.collection('users');
     const pendingRegistrations = db.collection('pending_registrations');
 
+    await ensureProfessionalSlugIndex(db);
+
     const existingUser = await users.findOne({ email });
     if (existingUser) return res.status(400).json({ error: 'Account already verified' });
 
@@ -261,6 +358,11 @@ router.post('/verify-email', async (req, res) => {
       updatedAt: new Date(),
     };
 
+    if (pendingUser.isClient === false) {
+      userToInsert.slug = await generateUniqueProfessionalSlug(db, buildProfessionalSlugBase(pendingUser));
+      userToInsert.slugAliases = [];
+    }
+
     const insertResult = await users.insertOne(userToInsert);
     await pendingRegistrations.deleteOne({ _id: pendingUser._id });
 
@@ -284,7 +386,8 @@ router.post('/verify-email', async (req, res) => {
         openingHours: userToInsert.openingHours,
         profession: userToInsert.profession,
         latitude: userToInsert.latitude,
-        longitude: userToInsert.longitude
+        longitude: userToInsert.longitude,
+        slug: userToInsert.slug || null
       },
       token
     });
@@ -311,10 +414,14 @@ router.post('/login', loginLimiter, async (req, res) => {
     const db = await connectDB();
     const users = db.collection('users');
 
-    const user = await users.findOne({ email });
+    await ensureProfessionalSlugIndex(db);
+
+    let user = await users.findOne({ email });
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
+    user = await ensureProfessionalSlug(db, user);
 
     if (user.isSuspended) {
       return res.status(403).json({
@@ -352,7 +459,8 @@ router.post('/login', loginLimiter, async (req, res) => {
         openingHours: user.openingHours,
         profession: user.profession,
         latitude: user.latitude,
-        longitude: user.longitude
+        longitude: user.longitude,
+        slug: user.slug || null
       },
       token
     });
@@ -532,6 +640,8 @@ router.get('/professionals', async (req, res) => {
     const db = await connectDB();
     const { search, profession } = req.query;
 
+    await ensureProfessionalSlugIndex(db);
+
     let query = { isClient: false, isAdmin: { $ne: true }, isSuspended: { $ne: true } };
 
     if (search) {
@@ -551,7 +661,62 @@ router.get('/professionals', async (req, res) => {
       { projection: { password: 0 } }
     ).toArray();
 
-    res.status(200).json(professionals);
+    const professionalsWithSlug = await Promise.all(
+      professionals.map((professional) => ensureProfessionalSlug(db, professional))
+    );
+
+    res.status(200).json(professionalsWithSlug);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/professional/slug/:slug', async (req, res) => {
+  try {
+    const requestedSlug = slugifyValue(req.params.slug);
+    if (!requestedSlug) {
+      return res.status(400).json({ error: 'Invalid slug' });
+    }
+
+    const db = await connectDB();
+    await ensureProfessionalSlugIndex(db);
+
+    const users = db.collection('users');
+    let professional = await users.findOne(
+      {
+        slug: requestedSlug,
+        isClient: false,
+        isAdmin: { $ne: true },
+        isSuspended: { $ne: true }
+      },
+      { projection: { password: 0 } }
+    );
+
+    let redirectTo = null;
+
+    if (!professional) {
+      professional = await users.findOne(
+        {
+          slugAliases: requestedSlug,
+          isClient: false,
+          isAdmin: { $ne: true },
+          isSuspended: { $ne: true }
+        },
+        { projection: { password: 0 } }
+      );
+
+      if (professional?.slug) {
+        redirectTo = professional.slug;
+      }
+    }
+
+    professional = await ensureProfessionalSlug(db, professional);
+
+    if (!professional) {
+      return res.status(404).json({ error: 'Professional not found' });
+    }
+
+    res.status(200).json({ professional, redirectTo });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -563,10 +728,14 @@ router.get('/professional/:id', async (req, res) => {
     const { id } = req.params;
     const db = await connectDB();
 
-    const professional = await db.collection('users').findOne(
+    await ensureProfessionalSlugIndex(db);
+
+    let professional = await db.collection('users').findOne(
       { _id: new ObjectId(id), isClient: false, isAdmin: { $ne: true }, isSuspended: { $ne: true } },
       { projection: { password: 0 } }
     );
+
+    professional = await ensureProfessionalSlug(db, professional);
 
     if (!professional) {
       return res.status(404).json({ error: 'Professional not found' });
@@ -642,6 +811,18 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     } = req.body;
 
     const db = await connectDB();
+    await ensureProfessionalSlugIndex(db);
+
+    const users = db.collection('users');
+    const currentUser = await users.findOne(
+      { _id: new ObjectId(userId) },
+      { projection: { password: 0 } }
+    );
+
+    if (!currentUser) {
+      return res.status(404).json({ error: 'Utilisateur non trouvé.' });
+    }
+
     const updateData = { updatedAt: new Date() };
 
     if (description !== undefined) updateData.description = description;
@@ -694,12 +875,43 @@ router.put('/update-profile', verifyToken, async (req, res) => {
       updateData.longitude = parseFloat(longitude);
     }
 
-    await db.collection('users').updateOne(
+    let nextSlug = currentUser.slug || null;
+    let slugAliasToAdd = null;
+    if (currentUser.isClient === false) {
+      const shouldRebuildSlug =
+        companyName !== undefined ||
+        prenom !== undefined ||
+        nom !== undefined;
+
+      if (!currentUser.slug || shouldRebuildSlug) {
+        const slugBaseSource = {
+          companyName: companyName !== undefined ? companyName : currentUser.companyName,
+          prenom: prenom !== undefined ? prenom : currentUser.prenom,
+          nom: nom !== undefined ? nom : currentUser.nom,
+          profession: currentUser.profession
+        };
+
+        nextSlug = await generateUniqueProfessionalSlug(db, buildProfessionalSlugBase(slugBaseSource), userId);
+
+        if (currentUser.slug && currentUser.slug !== nextSlug) {
+          slugAliasToAdd = currentUser.slug;
+        }
+
+        updateData.slug = nextSlug;
+      }
+    }
+
+    const updateOperation = { $set: updateData };
+    if (slugAliasToAdd) {
+      updateOperation.$addToSet = { slugAliases: slugAliasToAdd };
+    }
+
+    await users.updateOne(
       { _id: new ObjectId(userId) },
-      { $set: updateData }
+      updateOperation
     );
 
-    res.status(200).json({ message: 'Profile updated successfully', data: updateData });
+    res.status(200).json({ message: 'Profile updated successfully', data: { ...updateData, slug: nextSlug } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -708,13 +920,17 @@ router.put('/update-profile', verifyToken, async (req, res) => {
 router.get('/me/context', verifyToken, async (req, res) => {
   try {
     const db = await connectDB();
-    const user = await db.collection('users').findOne({ _id: new ObjectId(req.userId) }, {
+    await ensureProfessionalSlugIndex(db);
+
+    let user = await db.collection('users').findOne({ _id: new ObjectId(req.userId) }, {
       projection: {
         password: 0,
         passwordResetCodeHash: 0,
         passwordResetCodeExpires: 0,
       }
     });
+
+    user = await ensureProfessionalSlug(db, user);
 
     if (!user) {
       return res.status(404).json({ error: 'Utilisateur non trouvé.' });

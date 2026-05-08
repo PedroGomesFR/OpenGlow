@@ -69,8 +69,11 @@ function RecherchePage() {
         filterProfessionals();
     };
 
-    const viewProfile = (professionalId) => {
-        navigate(`/professional/${professionalId}`);
+    const viewProfile = (professional) => {
+        const profilePath = professional?.slug
+            ? `/pro/${professional.slug}`
+            : `/professional/${professional?._id}`;
+        navigate(profilePath);
     };
 
     if (loading) {
@@ -115,7 +118,7 @@ function RecherchePage() {
                 {filteredProfessionals.length > 0 ? (
                     <div className="professionals-grid">
                         {filteredProfessionals.map((pro) => (
-                            <div key={pro._id} className="professional-card" onClick={() => viewProfile(pro._id)}>
+                            <div key={pro._id} className="professional-card" onClick={() => viewProfile(pro)}>
                                 {pro.profilePhoto ? (
                                     <img
                                         src={`${window.BASE_URL}${pro.profilePhoto}`}

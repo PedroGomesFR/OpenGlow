@@ -1,7 +1,10 @@
 import dotenv from "dotenv";
 import express from "express";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
 import path from "path";
 import { fileURLToPath } from 'url';
+import jwt from 'jsonwebtoken';
 import router from "./routes/records.js";
 import eventRouter from "./routes/events.js";
 import serviceRouter from "./routes/services.js";
@@ -13,6 +16,7 @@ import adminRouter from "./routes/admin.js";
 import professionalRouter from "./routes/professional.js";
 import productRouter from "./routes/products.js";
 import announcementRouter from "./routes/announcements.js";
+import feedbackRouter from "./routes/feedback.js";
 import connectDB from "./db/connection.js";
 dotenv.config({ path: ".env" });
 
@@ -22,6 +26,7 @@ const __dirname = path.dirname(__filename);
 const port = process.env.PORT || 5001;
 const bindHost = process.env.HOST || process.env.IP || "::";
 const app = express();
+const httpServer = createServer(app);
 const FRONTEND_URL = (process.env.FRONTEND_URL || 'https://www.openglow.fr').replace(/\/$/, '');
 
 // Origines autorisées (CORS whitelist)
@@ -35,6 +40,10 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4173',
   'http://127.0.0.1:5173',
   'http://127.0.0.1:4173',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:1234',
+  'http://127.0.0.1:3000',
 ];
 
 const EXTRA_ALLOWED_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS || '')
@@ -51,6 +60,40 @@ const isOriginAllowed = (origin) => {
   // Optional preview/staging domains
   return /\.onrender\.com$/i.test(origin) || /\.netlify\.app$/i.test(origin);
 };
+
+// Socket.io setup
+const io = new SocketIOServer(httpServer, {
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || isOriginAllowed(origin)) callback(null, true);
+      else callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  },
+});
+
+// Socket.io JWT auth middleware
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (!token) return next(new Error('Authentication required'));
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mycontacts_jwt_secret');
+    socket.userId = String(decoded.id);
+    socket.isAdmin = !!decoded.isAdmin;
+    next();
+  } catch {
+    next(new Error('Invalid token'));
+  }
+});
+
+io.on('connection', (socket) => {
+  // Each user joins their personal room + admin room if admin
+  socket.join(`chat:${socket.userId}`);
+  if (socket.isAdmin) socket.join('admin');
+});
+
+// Expose io for use in route handlers
+app.set('io', io);
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -94,6 +137,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/professionals", professionalRouter);
 app.use("/api/products", productRouter);
 app.use("/api/announcements", announcementRouter);
+app.use("/api/feedback", feedbackRouter);
 
 // SPA fallback: redirect non-API browser routes to the frontend app.
 app.get(/^\/(?!api).*/, (req, res) => {
@@ -116,7 +160,7 @@ app.use("/api/keepAlive/Health", async (req, res) => {
   }
 })
 
-const server = app.listen(port, bindHost, () => {
+const server = httpServer.listen(port, bindHost, () => {
   const addr = server.address();
   console.log(`Server is running on port: ${port}`);
   console.log(`Bind host env: ${process.env.HOST || "(not set)"}`);

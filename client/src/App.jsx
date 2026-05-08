@@ -34,14 +34,18 @@ import CGP from './components/pages/cgp.jsx';
 import HelpPage from './components/pages/HelpPage.jsx';
 import PolitiqueConfidentialite from './components/pages/PolitiqueConfidentialite.jsx';
 import AdminPage from './components/pages/AdminPage.jsx';
+import SettingsPage from './components/pages/SettingsPage.jsx';
 import Footer from './components/common/Footer.jsx';
 import MentionsLegales from './components/pages/MentionsLegales.jsx';
 import CGU from './components/pages/CGU.jsx';
+import QuiSommesNous from './components/pages/QuiSommesNous.jsx';
 import CookieBanner from './components/common/CookieBanner.jsx';
+import FeedbackWidget from './components/common/FeedbackWidget.jsx';
 import { ToastProvider } from './components/common/ToastContext.jsx';
 import { ConfirmProvider } from './components/common/ConfirmContext.jsx';
 import { useToast } from './components/common/ToastContext.jsx';
 import UserNotifications from './components/common/UserNotifications.jsx';
+import { SETTINGS_EVENT, applyTheme, getStoredSettings } from './utils/preferences';
 
 function App() {
   return (
@@ -70,6 +74,22 @@ function AppShell() {
   useEffect(() => {
     document.documentElement.dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
   }, [i18n.language]);
+
+  useEffect(() => {
+    const syncTheme = (event) => {
+      const nextTheme = event?.detail?.theme || getStoredSettings().theme;
+      applyTheme(nextTheme);
+    };
+
+    syncTheme();
+    window.addEventListener(SETTINGS_EVENT, syncTheme);
+    window.addEventListener('storage', syncTheme);
+
+    return () => {
+      window.removeEventListener(SETTINGS_EVENT, syncTheme);
+      window.removeEventListener('storage', syncTheme);
+    };
+  }, []);
 
   const refreshUserContext = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -178,6 +198,7 @@ function AppShell() {
 
             <Route path="/recherche" element={<RecherchePage />} />
 
+            <Route path="/pro/:slug" element={<ProfessionalDetailPage />} />
             <Route path="/professional/:id" element={<ProfessionalDetailPage />} />
 
             <Route path="/bookings" element={<BookingsPage />} />
@@ -186,7 +207,9 @@ function AppShell() {
             <Route path="/reviews/:professionalId" element={<ReviewsPage user={user} />} />
             <Route path="/map" element={<MapView />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/settings" element={<SettingsPage user={user} />} />
             <Route path="/mentions-legales" element={<MentionsLegales />} />
+            <Route path="/qui-sommes-nous" element={<QuiSommesNous />} />
             <Route path="/cgp" element={<CGP />} />
             <Route path="/cgu" element={<CGU />} />
             <Route path="/help" element={<HelpPage />} />
@@ -198,6 +221,7 @@ function AppShell() {
         </main>
         <Footer />
         <CookieBanner />
+        {user && <FeedbackWidget user={user} />}
       </Router>
     </>
   )
