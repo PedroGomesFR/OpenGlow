@@ -173,6 +173,16 @@ function AdminPage() {
         expiresAt: '',
         segment: { role: 'all', cities: '', serviceCategories: '', minSeniority: '' },
     });
+    const [activeAdminTab, setActiveAdminTab] = useState('chat');
+
+    const adminTabs = [
+        { key: 'chat', label: tx('admin_tab_chat', 'Chat & feedback'), icon: <IoChatbubbleEllipses /> },
+        { key: 'users', label: tx('admin_tab_users', 'Utilisateurs'), icon: <IoPeople /> },
+        { key: 'bookings', label: tx('admin_tab_bookings', 'Reservations'), icon: <IoCalendarClear /> },
+        { key: 'communications', label: tx('admin_tab_comms', 'Communications'), icon: <IoMail /> },
+        { key: 'analytics', label: tx('admin_tab_analytics', 'Analytique'), icon: <IoStatsChart /> },
+        { key: 'governance', label: tx('admin_tab_governance', 'RGPD'), icon: <IoWarning /> },
+    ];
 
     const deferredUserSearch = useDeferredValue(userSearch);
     const deferredBookingSearch = useDeferredValue(bookingSearch);
@@ -762,6 +772,21 @@ function AdminPage() {
                     </article>
                 </section>
 
+                <section className="admin-console-tabs card">
+                    {adminTabs.map((tab) => (
+                        <button
+                            key={tab.key}
+                            type="button"
+                            className={`admin-console-tab ${activeAdminTab === tab.key ? 'active' : ''}`}
+                            onClick={() => setActiveAdminTab(tab.key)}
+                        >
+                            {tab.icon}
+                            <span>{tab.label}</span>
+                        </button>
+                    ))}
+                </section>
+
+                {activeAdminTab === 'analytics' && (
                 <section className="admin-console-section">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -852,7 +877,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'analytics' && (
                 <section className="admin-console-section admin-console-grid admin-console-grid--summary">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -918,7 +945,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'users' && (
                 <section className="admin-console-section">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -1046,7 +1075,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'users' && (
                 <section className="admin-console-section admin-console-grid admin-console-grid--two-columns">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -1137,7 +1168,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'bookings' && (
                 <section className="admin-console-section admin-console-grid admin-console-grid--two-columns">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -1234,7 +1267,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'communications' && (
                 <section className="admin-console-section admin-console-grid admin-console-grid--two-columns">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -1354,7 +1389,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'communications' && (
                 <section className="admin-console-section admin-console-grid admin-console-grid--two-columns">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -1523,7 +1560,9 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'chat' && (
                 <section className="admin-console-section">
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
@@ -1659,7 +1698,9 @@ function AdminPage() {
                         )}
                     </article>
                 </section>
+                )}
 
+                {activeAdminTab === 'governance' && (
                 <section className="admin-console-section">
                     <article className="card admin-console-panel admin-console-panel--rgpd">
                         <div className="admin-console-panel__header">
@@ -1688,6 +1729,7 @@ function AdminPage() {
                         </div>
                     </article>
                 </section>
+                )}
             </div>
         </div>
     );
