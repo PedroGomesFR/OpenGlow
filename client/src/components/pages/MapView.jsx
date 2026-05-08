@@ -76,7 +76,7 @@ const selectedProIcon = createProIcon('#000000', 48, true); // Pure Black & Larg
 function FlyToView({ center }) {
     const map = useMap();
     useEffect(() => {
-        if (center && center[0] && center[1]) {
+        if (center && !isNaN(center[0]) && !isNaN(center[1])) {
             map.flyTo(center, 14, { duration: 1.5 });
         }
     }, [center, map]);
@@ -285,7 +285,7 @@ function MapView() {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
-                    <FlyToView center={selectedPro ? [selectedPro.latitude, selectedPro.longitude] : [userLocation.lat, userLocation.lng]} />
+                    <FlyToView center={selectedPro ? [parseFloat(selectedPro.latitude), parseFloat(selectedPro.longitude)] : [userLocation.lat, userLocation.lng]} />
                     <InvalidateSize trigger={mobileTab} />
 
                     {/* User Marker */}
