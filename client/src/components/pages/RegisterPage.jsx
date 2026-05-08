@@ -34,6 +34,42 @@ const abbreviateFrenchStreetName = (streetName = '') => {
   ), streetName.trim());
 };
 
+const shortenDisplayName = (displayName = '') => {
+  const parts = String(displayName)
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length) return '';
+
+  const usefulParts = parts.filter((part) => ![
+    'France',
+    'France métropolitaine',
+    'Île-de-France',
+    'Auvergne-Rhône-Alpes',
+    'Provence-Alpes-Côte d\'Azur',
+    'Occitanie',
+    'Nouvelle-Aquitaine',
+    'Grand Est',
+    'Hauts-de-France',
+    'Normandie',
+    'Bretagne',
+    'Pays de la Loire',
+    'Centre-Val de Loire',
+    'Bourgogne-Franche-Comté',
+    'Corse',
+]
+    .includes(part));
+
+  const postcodeIndex = usefulParts.findIndex((part) => /\b\d{5}\b/.test(part));
+  if (postcodeIndex >= 0) {
+    const start = Math.max(0, postcodeIndex - 1);
+    return usefulParts.slice(start, postcodeIndex + 2).join(', ');
+  }
+
+  return usefulParts.slice(0, 3).join(', ');
+};
+
 const formatAddressSuggestion = (suggestion) => {
   const address = suggestion?.address || {};
   const streetNumber = address.house_number || address.housenumber || '';
@@ -47,7 +83,7 @@ const formatAddressSuggestion = (suggestion) => {
   const cityLine = [postcode, city].filter(Boolean).join(' ').trim();
   const shortLabel = [streetLine, cityLine].filter(Boolean).join(', ').trim();
 
-  return shortLabel || suggestion?.display_name || '';
+  return shortLabel || shortenDisplayName(suggestion?.display_name) || suggestion?.display_name || '';
 };
 
 function RegisterPage({ setUser }) {
@@ -91,18 +127,14 @@ function RegisterPage({ setUser }) {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearchingAddress(true);
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}&format=json&addressdetails=1&limit=8&countrycodes=fr&accept-language=fr`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}&format=json&addressdetails=1&limit=10&countrycodes=fr&accept-language=fr`);
         const data = await response.json();
         const normalizedSuggestions = (Array.isArray(data) ? data : [])
           .map((suggestion) => ({
             ...suggestion,
             shortLabel: formatAddressSuggestion(suggestion),
           }))
-          .filter((suggestion) => {
-            const address = suggestion.address || {};
-            return Boolean(address.road || address.pedestrian || address.footway || address.cycleway);
-          })
-          .slice(0, 5);
+          .slice(0, 8);
 
         setAddressSuggestions(normalizedSuggestions);
         setShowAddressSuggestions(true);
