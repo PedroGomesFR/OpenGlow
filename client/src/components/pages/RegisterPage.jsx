@@ -16,10 +16,30 @@ const getSuggestionCity = (address = {}) => (
   || ''
 );
 
+const abbreviateFrenchStreetName = (streetName = '') => {
+  const abbreviations = [
+    [/^avenue\s+/i, 'Av. '],
+    [/^boulevard\s+/i, 'Bd '],
+    [/^place\s+/i, 'Pl. '],
+    [/^impasse\s+/i, 'Imp. '],
+    [/^all[éee]e\s+/i, 'All. '],
+    [/^chemin\s+/i, 'Chem. '],
+    [/^route\s+/i, 'Rte '],
+    [/^faubourg\s+/i, 'Fg '],
+    [/^quai\s+/i, 'Quai '],
+  ];
+
+  return abbreviations.reduce((currentValue, [pattern, replacement]) => (
+    currentValue.replace(pattern, replacement)
+  ), streetName.trim());
+};
+
 const formatAddressSuggestion = (suggestion) => {
   const address = suggestion?.address || {};
   const streetNumber = address.house_number || address.housenumber || '';
-  const streetName = address.road || address.pedestrian || address.footway || address.cycleway || '';
+  const streetName = abbreviateFrenchStreetName(
+    address.road || address.pedestrian || address.footway || address.cycleway || ''
+  );
   const postcode = address.postcode || '';
   const city = getSuggestionCity(address);
 
