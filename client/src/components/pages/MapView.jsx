@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { SiGooglemaps, SiWaze } from 'react-icons/si';
@@ -91,6 +92,8 @@ const isValidLatLng = (lat, lng) => (
 // Component to recenter map with animation
 function FlyToView({ center }) {
     const map = useMap();
+    const lastCenterKeyRef = useRef(null);
+
     useEffect(() => {
         const lat = toFiniteNumber(center?.[0]);
         const lng = toFiniteNumber(center?.[1]);
@@ -98,8 +101,26 @@ function FlyToView({ center }) {
             return;
         }
 
+        // Avoid recenter loops: only update when target center actually changes.
+        const centerKey = `${lat.toFixed(6)},${lng.toFixed(6)}`;
+        if (lastCenterKeyRef.current === centerKey) {
+            return;
+        }
+        lastCenterKeyRef.current = centerKey;
+
+        // On mobile/responsive transitions, Leaflet may not be fully ready yet.
+        if (!map._loaded) {
+            return;
+        }
+
+        const size = map.getSize?.();
+        if (!size || size.x <= 0 || size.y <= 0) {
+            return;
+        }
+
         try {
-            map.flyTo([lat, lng], 14, { duration: 1.5 });
+            const currentZoom = Number.isFinite(map.getZoom?.()) ? map.getZoom() : 13;
+            map.setView([lat, lng], currentZoom, { animate: false });
         } catch (error) {
             console.warn('Map flyTo skipped due to invalid coordinates:', { lat, lng, error });
         }
@@ -209,6 +230,10 @@ function MapView() {
         return pro.profession === filterCategory;
     });
 
+    const mappableProfessionals = filteredProfessionals.filter((pro) =>
+        isValidLatLng(pro?.latitude, pro?.longitude)
+    );
+
     const categories = [...new Set(professionals.map(p => p.profession))].filter(Boolean);
 
     return (
@@ -219,7 +244,7 @@ function MapView() {
                     className={`mobile-tab-btn ${mobileTab === 'list' ? 'active' : ''}`}
                     onClick={() => setMobileTab('list')}
                 >
-                    ☰ Liste ({filteredProfessionals.length})
+                    ☰ Liste ({mappableProfessionals.length})
                 </button>
                 <button
                     className={`mobile-tab-btn ${mobileTab === 'map' ? 'active' : ''}`}
@@ -234,7 +259,7 @@ function MapView() {
                 <div className="sidebar-header">
                     <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoLocation color="var(--primary)" /> {t('map_title')}</h2>
                     <p className="text-secondary">
-                        {t('map_nearby_count', { count: filteredProfessionals.length })}
+                        {t('map_nearby_count', { count: mappableProfessionals.length })}
                     </p>
                 </div>
 
@@ -259,7 +284,7 @@ function MapView() {
 
                 {/* List */}
                 <div className="professionals-list">
-                    {filteredProfessionals.map(pro => {
+                    {mappableProfessionals.map(pro => {
                         const distance = userLocation
                             ? calculateDistance(userLocation.lat, userLocation.lng, pro.latitude, pro.longitude)
                             : null;
