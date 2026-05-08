@@ -94,8 +94,14 @@ function FlyToView({ center }) {
     useEffect(() => {
         const lat = toFiniteNumber(center?.[0]);
         const lng = toFiniteNumber(center?.[1]);
-        if (isValidLatLng(lat, lng)) {
+        if (!isValidLatLng(lat, lng) || !map || typeof map.flyTo !== 'function') {
+            return;
+        }
+
+        try {
             map.flyTo([lat, lng], 14, { duration: 1.5 });
+        } catch (error) {
+            console.warn('Map flyTo skipped due to invalid coordinates:', { lat, lng, error });
         }
     }, [center, map]);
     return null;
