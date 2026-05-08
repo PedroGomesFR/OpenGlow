@@ -113,8 +113,12 @@ function MapView() {
             const response = await fetch(window.API_URL + '/records/professionals');
             if (response.ok) {
                 const data = await response.json();
-                // Filter pros with location
-                const prosWithLocation = data.filter(p => p.latitude && p.longitude);
+                // Filter pros with valid numeric coordinates
+                const prosWithLocation = data.filter(p => {
+                    const lat = parseFloat(p.latitude);
+                    const lng = parseFloat(p.longitude);
+                    return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
+                });
                 setProfessionals(prosWithLocation);
             }
         } catch (error) {
@@ -295,7 +299,7 @@ function MapView() {
                     {filteredProfessionals.map(pro => (
                         <Marker
                             key={pro._id}
-                            position={[pro.latitude, pro.longitude]}
+                            position={[parseFloat(pro.latitude), parseFloat(pro.longitude)]}
                             icon={selectedPro?._id === pro._id ? selectedProIcon : defaultProIcon}
                             eventHandlers={{
                                 click: () => {
