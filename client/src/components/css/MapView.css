@@ -26,6 +26,11 @@
     display: flex;
     min-height: calc(100dvh - 88px);
     background: var(--bg-secondary);
+    /* Neutralise le padding/max-width du .container parent */
+    width: 100vw;
+    margin-left: calc(-1 * var(--space-lg));
+    margin-right: calc(-1 * var(--space-lg));
+    max-width: 100vw;
 }
 
 /* Sidebar */
@@ -347,12 +352,16 @@
     .map-view-page {
         flex-direction: column;
         min-height: 0;
-        height: calc(100dvh - 88px);
+        height: calc(100dvh - 64px);
+        /* Annule les marges négatives desktop sur mobile */
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
     }
 
     .map-sidebar {
         width: 100%;
-        height: calc(100dvh - 88px - 45px);
+        height: calc(100dvh - 64px - 45px);
         max-height: none;
         border-right: none;
         border-bottom: none;
@@ -361,7 +370,7 @@
 
     .map-container {
         width: 100%;
-        height: calc(100dvh - 88px - 45px);
+        height: calc(100dvh - 64px - 45px);
         min-height: 0;
         flex: none;
     }
