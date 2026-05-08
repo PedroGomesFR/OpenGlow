@@ -72,12 +72,30 @@ const userIcon = createUserIcon();
 const defaultProIcon = createProIcon('#1C1C1E', 36); // Apple Dark Gray 
 const selectedProIcon = createProIcon('#000000', 48, true); // Pure Black & Larger for selection
 
+const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
+
+const toFiniteNumber = (value) => {
+    const parsed = typeof value === 'number' ? value : parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : null;
+};
+
+const isValidLatLng = (lat, lng) => (
+    Number.isFinite(lat) &&
+    Number.isFinite(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+);
+
 // Component to recenter map with animation
 function FlyToView({ center }) {
     const map = useMap();
     useEffect(() => {
-        if (center && !isNaN(center[0]) && !isNaN(center[1])) {
-            map.flyTo(center, 14, { duration: 1.5 });
+        const lat = toFiniteNumber(center?.[0]);
+        const lng = toFiniteNumber(center?.[1]);
+        if (isValidLatLng(lat, lng)) {
+            map.flyTo([lat, lng], 14, { duration: 1.5 });
         }
     }, [center, map]);
     return null;
@@ -97,7 +115,7 @@ function MapView() {
     const { t } = useTranslation();
     const [professionals, setProfessionals] = useState([]);
     const [selectedPro, setSelectedPro] = useState(null);
-    const [userLocation, setUserLocation] = useState({ lat: 48.8566, lng: 2.3522 }); // Default Paris
+    const [userLocation, setUserLocation] = useState(DEFAULT_CENTER); // Default Paris
     const [filterCategory, setFilterCategory] = useState('all');
     const [mobileTab, setMobileTab] = useState('list'); // 'list' | 'map'
 
@@ -113,12 +131,18 @@ function MapView() {
             const response = await fetch(window.API_URL + '/records/professionals');
             if (response.ok) {
                 const data = await response.json();
-                // Filter pros with valid numeric coordinates
-                const prosWithLocation = data.filter(p => {
-                    const lat = parseFloat(p.latitude);
-                    const lng = parseFloat(p.longitude);
-                    return !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0;
-                });
+                // Normalize and keep only professionals with valid coordinates
+                const prosWithLocation = data
+                    .map((p) => {
+                        const lat = toFiniteNumber(p.latitude);
+                        const lng = toFiniteNumber(p.longitude);
+                        return {
+                            ...p,
+                            latitude: lat,
+                            longitude: lng
+                        };
+                    })
+                    .filter((p) => isValidLatLng(p.latitude, p.longitude));
                 setProfessionals(prosWithLocation);
             }
         } catch (error) {
@@ -130,10 +154,12 @@ function MapView() {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
-                    setUserLocation({
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude
-                    });
+                    const lat = toFiniteNumber(position?.coords?.latitude);
+                    const lng = toFiniteNumber(position?.coords?.longitude);
+
+                    if (isValidLatLng(lat, lng)) {
+                        setUserLocation({ lat, lng });
+                    }
                 },
                 (error) => {
                     console.log('Geolocation error, using default:', error);
@@ -141,6 +167,14 @@ function MapView() {
             );
         }
     };
+
+    const safeMapCenter = isValidLatLng(userLocation?.lat, userLocation?.lng)
+        ? [userLocation.lat, userLocation.lng]
+        : [DEFAULT_CENTER.lat, DEFAULT_CENTER.lng];
+
+    const selectedCenter = isValidLatLng(selectedPro?.latitude, selectedPro?.longitude)
+        ? [selectedPro.latitude, selectedPro.longitude]
+        : safeMapCenter;
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
         const R = 6371; // km
@@ -276,7 +310,7 @@ function MapView() {
             {/* Map */}
             <div className={`map-container ${mobileTab === 'list' ? 'mobile-hidden' : ''}`}>
                 <MapContainer
-                    center={[userLocation.lat, userLocation.lng]}
+                    center={safeMapCenter}
                     zoom={13}
                     style={{ height: '100%', width: '100%' }}
                 >
@@ -285,11 +319,11 @@ function MapView() {
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
 
-                    <FlyToView center={selectedPro ? [parseFloat(selectedPro.latitude), parseFloat(selectedPro.longitude)] : [userLocation.lat, userLocation.lng]} />
+                    <FlyToView center={selectedCenter} />
                     <InvalidateSize trigger={mobileTab} />
 
                     {/* User Marker */}
-                    <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+                    <Marker position={safeMapCenter} icon={userIcon}>
                         <Popup>
                             <b>{t('map_you_are_here')}</b>
                         </Popup>
@@ -299,7 +333,7 @@ function MapView() {
                     {filteredProfessionals.map(pro => (
                         <Marker
                             key={pro._id}
-                            position={[parseFloat(pro.latitude), parseFloat(pro.longitude)]}
+                            position={[pro.latitude, pro.longitude]}
                             icon={selectedPro?._id === pro._id ? selectedProIcon : defaultProIcon}
                             eventHandlers={{
                                 click: () => {
