@@ -7,6 +7,29 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { useToast } from '../common/ToastContext';
 import { IoEye, IoEyeOff } from 'react-icons/io5';
 
+const getSuggestionCity = (address = {}) => (
+  address.city
+  || address.town
+  || address.village
+  || address.municipality
+  || address.suburb
+  || ''
+);
+
+const formatAddressSuggestion = (suggestion) => {
+  const address = suggestion?.address || {};
+  const streetNumber = address.house_number || address.housenumber || '';
+  const streetName = address.road || address.pedestrian || address.footway || address.cycleway || '';
+  const postcode = address.postcode || '';
+  const city = getSuggestionCity(address);
+
+  const streetLine = [streetNumber, streetName].filter(Boolean).join(' ').trim();
+  const cityLine = [postcode, city].filter(Boolean).join(' ').trim();
+  const shortLabel = [streetLine, cityLine].filter(Boolean).join(', ').trim();
+
+  return shortLabel || suggestion?.display_name || '';
+};
+
 function RegisterPage({ setUser }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -48,9 +71,20 @@ function RegisterPage({ setUser }) {
     const delayDebounceFn = setTimeout(async () => {
       setIsSearchingAddress(true);
       try {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}&format=json&addressdetails=1&limit=5`);
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery)}&format=json&addressdetails=1&limit=8&countrycodes=fr&accept-language=fr`);
         const data = await response.json();
-        setAddressSuggestions(data);
+        const normalizedSuggestions = (Array.isArray(data) ? data : [])
+          .map((suggestion) => ({
+            ...suggestion,
+            shortLabel: formatAddressSuggestion(suggestion),
+          }))
+          .filter((suggestion) => {
+            const address = suggestion.address || {};
+            return Boolean(address.road || address.pedestrian || address.footway || address.cycleway);
+          })
+          .slice(0, 5);
+
+        setAddressSuggestions(normalizedSuggestions);
         setShowAddressSuggestions(true);
       } catch (error) {
         console.error("Error fetching addresses", error);
@@ -63,10 +97,11 @@ function RegisterPage({ setUser }) {
   }, [addressQuery]);
 
   const handleAddressSelect = (suggestion) => {
-    setAddressQuery(suggestion.display_name);
+    const shortAddress = formatAddressSuggestion(suggestion);
+    setAddressQuery(shortAddress);
     setFormData({
       ...formData,
-      address: suggestion.display_name,
+      address: shortAddress,
       latitude: suggestion.lat,
       longitude: suggestion.lon
     });
@@ -322,7 +357,7 @@ function RegisterPage({ setUser }) {
                              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#f5f5f7'}
                              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'white'}
                            >
-                             {sug.display_name}
+                             {sug.shortLabel || formatAddressSuggestion(sug)}
                            </li>
                         ))}
                       </ul>
