@@ -283,6 +283,9 @@
   border: 2px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .form-group select:focus,
