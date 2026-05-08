@@ -28,7 +28,6 @@ const QuiSommesNous = () => {
                         <ul className="text-secondary" style={{ paddingLeft: '20px', lineHeight: '1.8' }}>
                             <li>{t('about_build_item_1')}</li>
                             <li>{t('about_build_item_2')}</li>
-                            <li>{t('about_build_item_3')}</li>
                         </ul>
                     </section>
 
