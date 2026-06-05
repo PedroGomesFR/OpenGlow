@@ -65,6 +65,9 @@
   --space-lg: 24px;
   --space-xl: 32px;
   --space-2xl: 48px;
+  --container-inline: var(--space-lg);
+  --app-header-height: 64px;
+  --mobile-map-tabs-height: 45px;
 
   /* Typography - San Francisco inspired */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', 'SF Pro Text', Roboto, Helvetica, Arial, sans-serif;
@@ -507,7 +510,7 @@ p {
   width: min(1200px, 100%);
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 var(--space-lg);
+  padding: 0 var(--container-inline);
 }
 
 .grid {
@@ -528,6 +531,9 @@ p {
 }
 
 @media (max-width: 768px) {
+  :root {
+    --container-inline: var(--space-md);
+  }
 
   .grid-2,
   .grid-3,
@@ -727,10 +733,6 @@ p {
     display: none;
   }
 
-  .container {
-    padding: 0 var(--space-md);
-  }
-
   h1 {
     font-size: 1.75rem;
   }
@@ -758,6 +760,29 @@ p {
     flex-direction: column;
   }
 
+  .dashboard-sidebar {
+    width: 100%;
+    padding: 12px;
+    border-right: none;
+    border-bottom: 1px solid #E5E5E5;
+  }
+
+  .modal-content {
+    padding: var(--space-lg);
+  }
+
+
+@media (max-width: 640px) {
+  :root {
+    --app-header-height: 46px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --container-inline: 12px;
+  }
+}
   .dashboard-sidebar {
     width: 100%;
     border-right: none;

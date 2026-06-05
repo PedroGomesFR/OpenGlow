@@ -250,18 +250,18 @@ function Planning() {
               borderBottom: '1px solid #E5E5E7',
               gap: '20px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div className="planning-toolbar-main" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                 <h2 style={{ textTransform: 'capitalize', margin: 0, fontSize: '20px', fontWeight: '700', color: '#1d1d1f' }}>
                   {currentWeek.format('MMMM YYYY')}
                 </h2>
-                <div style={{ display: 'flex', background: '#F2F2F7', borderRadius: '10px', padding: '4px' }}>
+                <div className="planning-week-controls" style={{ display: 'flex', background: '#F2F2F7', borderRadius: '10px', padding: '4px' }}>
                   <button className="icon-btn" style={{ background: 'transparent', width: '32px', height: '32px', color: '#1d1d1f' }} onClick={() => setCurrentWeek(currentWeek.subtract(1, 'week'))}>‹</button>
                   <button className="btn" style={{ background: 'white', padding: '4px 12px', fontSize: '13px', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', color: '#1d1d1f', border: 'none' }} onClick={() => setCurrentWeek(dayjs().startOf('week'))}>Aujourd'hui</button>
                   <button className="icon-btn" style={{ background: 'transparent', width: '32px', height: '32px', color: '#1d1d1f' }} onClick={() => setCurrentWeek(currentWeek.add(1, 'week'))}>›</button>
                 </div>
               </div>
 
-              <button className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '14px' }} onClick={() => setShowModal(true)}>
+              <button className="btn btn-primary planning-add-btn" style={{ padding: '10px 20px', fontSize: '14px' }} onClick={() => setShowModal(true)}>
                 <IoAdd size={18} /> Nouveau RDV
               </button>
             </div>
@@ -375,14 +375,14 @@ function Planning() {
 
         {/* Settings Tab */}
         {activeTab === 'settings' && (
-          <div className="card" style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <div className="card planning-settings-card" style={{ maxWidth: '800px', margin: '0 auto' }}>
             <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><IoSettings color="var(--primary)" /> Configuration des Disponibilités</h2>
             <p className="text-secondary" style={{ marginBottom: '30px' }}>Définissez vos jours et horaires de travail habituels.</p>
 
             <form onSubmit={handleSaveSettings}>
               <div className="form-group" style={{ marginBottom: '25px' }}>
                 <label className="form-label" style={{ display: 'block', marginBottom: '10px', fontWeight: '600' }}>Jours travaillés</label>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <div className="planning-days-wrap" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   {days.map(day => (
                     <button
                       key={day}
@@ -466,7 +466,7 @@ function Planning() {
       {/* Add Booking Modal */}
       {showModal && (
         <div className="modal-overlay" onClick={() => setShowModal(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
+          <div className="modal-content planning-booking-modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '500px' }}>
             <div className="modal-header">
               <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <IoAdd /> Nouveau Rendez-vous

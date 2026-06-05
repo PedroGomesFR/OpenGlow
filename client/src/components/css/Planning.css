@@ -13,11 +13,19 @@
 }
 
 .planning-calendar-grid {
-  min-width: 900px;
+  min-width: 820px;
 }
 
 .planning-two-col {
   grid-template-columns: 1fr 1fr;
+}
+
+.planning-toolbar-main {
+  min-width: 0;
+}
+
+.planning-week-controls {
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -40,7 +48,51 @@
     gap: 12px !important;
   }
 
+  .planning-toolbar-main {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch !important;
+    gap: 12px !important;
+  }
+
+  .planning-week-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .planning-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .planning-settings-card {
+    padding: 18px !important;
+  }
+
+  .planning-days-wrap .btn {
+    flex: 1 1 120px;
+    justify-content: center;
+  }
+
+  .planning-booking-modal {
+    padding: 18px !important;
+  }
+
   .planning-two-col {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .planning-calendar-grid {
+    min-width: 760px;
+  }
+
+  .planning-week-controls .btn {
+    font-size: 12px;
+  }
+
+  .planning-booking-modal {
+    padding: 16px !important;
   }
 }

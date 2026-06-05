@@ -9,6 +9,12 @@
     padding: 24px 12px !important;
   }
 
+  .profile-page-card .btn,
+  .profile-inline-form input,
+  .profile-inline-form button {
+    font-size: 16px !important;
+  }
+
   .profile-page-container {
     padding-left: 6px !important;
     padding-right: 6px !important;
@@ -56,6 +62,10 @@
 
   .profile-inline-form {
     padding: 14px !important;
+  }
+
+  .profile-action-grid .btn span {
+    text-align: center;
   }
 
   .profile-action-grid .btn {

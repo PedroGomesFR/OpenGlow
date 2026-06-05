@@ -634,6 +634,8 @@ router.put('/change-password', verifyToken, async (req, res) => {
   }
 });
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 // Get all professionals
 router.get('/professionals', async (req, res) => {
   try {
@@ -645,11 +647,30 @@ router.get('/professionals', async (req, res) => {
     let query = { isClient: false, isAdmin: { $ne: true }, isSuspended: { $ne: true } };
 
     if (search) {
+      const escapedSearch = escapeRegex(search.trim());
+      const matchingServiceProfessionalIds = await db.collection('services').distinct('professionalId', {
+        isActive: { $ne: false },
+        $or: [
+          { name: { $regex: escapedSearch, $options: 'i' } },
+          { description: { $regex: escapedSearch, $options: 'i' } },
+          { category: { $regex: escapedSearch, $options: 'i' } }
+        ]
+      });
+
+      const serviceProfessionalObjectIds = matchingServiceProfessionalIds
+        .filter((id) => ObjectId.isValid(id))
+        .map((id) => new ObjectId(id));
+
       query.$or = [
-        { companyName: { $regex: search, $options: 'i' } },
-        { profession: { $regex: search, $options: 'i' } },
-        { address: { $regex: search, $options: 'i' } }
+        { companyName: { $regex: escapedSearch, $options: 'i' } },
+        { profession: { $regex: escapedSearch, $options: 'i' } },
+        { address: { $regex: escapedSearch, $options: 'i' } },
+        { description: { $regex: escapedSearch, $options: 'i' } }
       ];
+
+      if (serviceProfessionalObjectIds.length > 0) {
+        query.$or.push({ _id: { $in: serviceProfessionalObjectIds } });
+      }
     }
 
     if (profession) {
@@ -665,7 +686,38 @@ router.get('/professionals', async (req, res) => {
       professionals.map((professional) => ensureProfessionalSlug(db, professional))
     );
 
-    res.status(200).json(professionalsWithSlug);
+    const professionalIds = professionalsWithSlug.map((professional) => String(professional._id));
+    const services = professionalIds.length > 0
+      ? await db.collection('services').find(
+        {
+          professionalId: { $in: professionalIds },
+          isActive: { $ne: false }
+        },
+        { projection: { professionalId: 1, name: 1 } }
+      ).toArray()
+      : [];
+
+    const servicesByProfessional = services.reduce((acc, service) => {
+      const professionalId = String(service.professionalId || '');
+      const serviceName = String(service.name || '').trim();
+      if (!professionalId || !serviceName) {
+        return acc;
+      }
+      if (!acc[professionalId]) {
+        acc[professionalId] = [];
+      }
+      if (!acc[professionalId].includes(serviceName)) {
+        acc[professionalId].push(serviceName);
+      }
+      return acc;
+    }, {});
+
+    const professionalsWithServices = professionalsWithSlug.map((professional) => ({
+      ...professional,
+      offeredServices: servicesByProfessional[String(professional._id)] || []
+    }));
+
+    res.status(200).json(professionalsWithServices);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

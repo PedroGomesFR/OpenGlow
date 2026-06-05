@@ -229,7 +229,7 @@ function ServiceManagement({ user }) {
                 )}
 
                 {/* Filters toggle bar */}
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
+                <div className="service-toolbar" style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap' }}>
                     {/* Search always visible */}
                     <div className="search-bar" style={{ flex: 1, minWidth: '200px' }}>
                         <span className="search-icon"><IoSearch /></span>
@@ -244,6 +244,7 @@ function ServiceManagement({ user }) {
 
                     {/* Filter toggle button */}
                     <button
+                        className="service-toolbar-toggle"
                         onClick={() => setShowFilters(f => !f)}
                         style={{
                             display: 'flex', alignItems: 'center', gap: '8px',
@@ -269,6 +270,7 @@ function ServiceManagement({ user }) {
                     {/* Reset filter button - only when active */}
                     {(filterCategory !== 'all' || searchQuery) && (
                         <button
+                            className="service-toolbar-reset"
                             onClick={() => { setFilterCategory('all'); setSearchQuery(''); }}
                             style={{
                                 display: 'flex', alignItems: 'center', gap: '6px',
@@ -412,7 +414,7 @@ function ServiceManagement({ user }) {
             {/* Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                    <div className="modal-content service-modal-content" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
                             <h2 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 {editingService ? <IoCreate /> : <IoAdd />}

@@ -19,6 +19,7 @@ import {
     IoEyeOff
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
+import '../css/ProfessionalDashboard.css';
 import DashboardOverview from './DashboardOverview';
 import Planning from '../common/planning';
 import ServiceManagement from '../pages/ServiceManagement';
@@ -278,18 +279,18 @@ function ProfessionalDashboard({ user, setUser }) {
                 return <Announcements user={user} />;
             case 'settings':
                 return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+                    <div className="pro-settings-stack" style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
                         {/* Section Visuel - Photos */}
                         <div className="card" style={{ overflow: 'hidden', padding: 0 }}>
-                            <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
+                            <div className="pro-section-header" style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '18px' }}>
                                     <IoCamera color="var(--primary)" /> {t('pro_visuals_title')}
                                 </h3>
                             </div>
                             
-                            <div style={{ padding: '24px' }}>
+                            <div className="pro-section-body" style={{ padding: '24px' }}>
                                 {/* Profile Photo Area */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '30px', marginBottom: '30px' }}>
+                                <div className="pro-profile-photo-row" style={{ display: 'flex', alignItems: 'center', gap: '30px', marginBottom: '30px' }}>
                                     <div style={{ position: 'relative', flexShrink: 0 }}>
                                         {user?.profilePhoto ? (
                                             <img
@@ -341,7 +342,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                             <input type="file" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'profile')} style={{ display: 'none' }} />
                                         </label>
                                     </div>
-                                    <div>
+                                    <div className="pro-profile-photo-copy">
                                         <h4 style={{ margin: '0 0 5px 0' }}>{t('pro_profile_photo')}</h4>
                                         <p style={{ fontSize: '13px', color: 'var(--text-secondary)', margin: 0, maxWidth: '400px' }}>
                                             {t('pro_profile_photo_desc')}
@@ -351,7 +352,7 @@ function ProfessionalDashboard({ user, setUser }) {
 
                                 {/* Salon Photos Area */}
                                 <div>
-                                    <h4 style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #E5E5E5', paddingTop: '30px', margin: '0 0 16px 0' }}>
+                                    <h4 className="pro-gallery-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #E5E5E5', paddingTop: '30px', margin: '0 0 16px 0' }}>
                                         {t('pro_gallery_title')}
                                         <label className="btn btn-outline" style={{ padding: '6px 14px', fontSize: '13px', cursor: 'pointer', display: 'flex', gap: '6px', margin: 0 }}>
                                             <IoCamera size={16} /> {t('pro_add_photos')}
@@ -360,7 +361,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                     </h4>
                                     
                                     {user?.salonPhotos && user.salonPhotos.length > 0 ? (
-                                        <div style={{
+                                        <div className="pro-gallery-grid" style={{
                                             display: 'grid',
                                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
                                             gap: '16px'
@@ -382,7 +383,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                             ))}
                                         </div>
                                     ) : (
-                                        <div style={{
+                                        <div className="pro-gallery-empty" style={{
                                             background: '#F5F5F7',
                                             borderRadius: '12px',
                                             padding: '40px',
@@ -400,13 +401,13 @@ function ProfessionalDashboard({ user, setUser }) {
 
                         {/* Section Textes - Formulaire */}
                         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                            <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
+                            <div className="pro-section-header" style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
                                 <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '18px' }}>
                                     <IoBusiness color="var(--primary)" /> {t('pro_business_info')}
                                 </h3>
                             </div>
                             
-                            <form onSubmit={handleProfileUpdate} style={{ padding: '24px' }}>
+                            <form className="pro-settings-form" onSubmit={handleProfileUpdate} style={{ padding: '24px' }}>
                                 <div className="form-group" style={{ marginBottom: '24px' }}>
                                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                          {t('pro_company_public_name')}
@@ -451,7 +452,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                     <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                                         <IoTime /> {t('pro_opening_hours')}
                                     </label>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <div className="pro-hours-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                                         {DAYS_FR.map(({ key, label }) => {
                                             const day = hoursData[key] || { open: false, from: '09:00', to: '19:00', break: false, breakFrom: '12:00', breakTo: '14:00' };
                                             return (
@@ -462,8 +463,8 @@ function ProfessionalDashboard({ user, setUser }) {
                                                     overflow: 'hidden',
                                                 }}>
                                                     {/* Ligne principale */}
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px' }}>
-                                                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '110px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
+                                                    <div className="pro-hours-day-main" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px' }}>
+                                                        <label className="pro-hours-day-label" style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '110px', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
                                                             <input
                                                                 type="checkbox"
                                                                 checked={day.open}
@@ -507,7 +508,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                                     </div>
                                                     {/* Ligne pause midi */}
                                                     {day.open && day.break && (
-                                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 10px 134px', borderTop: '1px dashed #C6F6D5', background: '#E6FFED' }}>
+                                                        <div className="pro-hours-break-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 10px 134px', borderTop: '1px dashed #C6F6D5', background: '#E6FFED' }}>
                                                             <span style={{ fontSize: '13px', color: '#2D6A4F', fontWeight: '500', whiteSpace: 'nowrap' }}>Pause :</span>
                                                             <select
                                                                 className="form-input"
@@ -545,7 +546,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                     ></textarea>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '15px', marginTop: '30px', paddingTop: '24px', borderTop: '1px solid #E5E5E5' }}>
+                                <div className="pro-settings-actions" style={{ display: 'flex', gap: '15px', marginTop: '30px', paddingTop: '24px', borderTop: '1px solid #E5E5E5' }}>
                                     <button type="submit" className="btn btn-primary" style={{ padding: '12px 24px', fontSize: '15px' }}>
                                         {t('save_changes')}
                                     </button>
@@ -557,10 +558,10 @@ function ProfessionalDashboard({ user, setUser }) {
                         </div>
 
                         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                            <div style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
+                            <div className="pro-section-header" style={{ padding: '24px', borderBottom: '1px solid #E5E5E5', background: '#FAFAFA' }}>
                                 <h3 style={{ margin: 0, fontSize: '18px' }}>{t('change_password_title')}</h3>
                             </div>
-                            <div style={{ padding: '24px' }}>
+                            <div className="pro-section-body" style={{ padding: '24px' }}>
                                 <button
                                     type="button"
                                     className="btn btn-secondary"
@@ -576,7 +577,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                 </button>
                             </div>
                             {showPasswordForm && (
-                                <form onSubmit={handleChangePassword} style={{ padding: '0 24px 24px 24px' }}>
+                                <form className="pro-password-form" onSubmit={handleChangePassword} style={{ padding: '0 24px 24px 24px' }}>
                                     <div className="grid grid-3" style={{ gap: '16px' }}>
                                         <div className="form-group" style={{ marginBottom: 0 }}>
                                             <label className="form-label">{t('current_password_label')}</label>
@@ -670,7 +671,7 @@ function ProfessionalDashboard({ user, setUser }) {
                     <strong>{t('pro_mobile_header')}</strong>
                 </div>
 
-                <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <nav className="pro-dashboard-nav" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {menuItems.map(item => (
                         <button
                             key={item.id}
@@ -744,7 +745,7 @@ function ProfessionalDashboard({ user, setUser }) {
 
             {/* Main Content */}
             <div className="dashboard-content">
-                <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+                <div className="pro-dashboard-content-inner" style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
                     {renderContent()}
                 </div>
             </div>

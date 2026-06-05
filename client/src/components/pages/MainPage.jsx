@@ -101,16 +101,18 @@ function MainPage() {
           <form
             onSubmit={handleSearch}
             className="main-hero-actions"
-            style={{ display: 'flex', gap: '0', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '580px', margin: '0 auto' }}
+            style={{ display: 'flex', gap: '0', justifyContent: 'center', flexWrap: 'wrap', maxWidth: '580px', margin: '0 auto', width: '100%' }}
           >
             <input
               type="text"
+              className="main-hero-search-input"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t('search_placeholder') || 'Coiffeur, esthéticienne, barbier…'}
               style={{
                 flex: 1,
-                minWidth: '200px',
+                width: '100%',
+                minWidth: 0,
                 padding: '15px 22px',
                 borderRadius: '30px 0 0 30px',
                 border: 'none',
@@ -123,7 +125,7 @@ function MainPage() {
             />
             <button
               type="submit"
-              className="btn btn-primary"
+              className="btn btn-primary main-hero-search-btn"
               style={{ padding: '15px 28px', borderRadius: '0 30px 30px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}
             >
               <IoSearch size={20} />
