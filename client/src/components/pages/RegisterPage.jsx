@@ -177,13 +177,13 @@ function RegisterPage({ setUser }) {
       return;
     }
 
-    // Age 18+ check
+    // Age 15+ check
     if (formData.dateDeNaissance) {
       const birthDate = new Date(formData.dateDeNaissance);
       const today = new Date();
       const age = today.getFullYear() - birthDate.getFullYear() -
         (today < new Date(today.getFullYear(), birthDate.getMonth(), birthDate.getDate()) ? 1 : 0);
-      if (age < 18) {
+      if (age < 15) {
         toast(t('must_be_adult'), 'error');
         return;
       }

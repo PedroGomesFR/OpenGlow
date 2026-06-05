@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoCalendar, IoMail, IoCall } from 'react-icons/io5';
+import { IoCalendar, IoMail, IoCall, IoAdd } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import { useConfirm } from '../common/ConfirmContext';
 
@@ -15,6 +15,10 @@ function BookingsPage() {
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState('all');
     const [user, setUser] = useState(null); // Define user state
+    const [proServices, setProServices] = useState([]);
+    const [editingServicesBookingId, setEditingServicesBookingId] = useState(null);
+    const [selectedServiceIdsToAdd, setSelectedServiceIdsToAdd] = useState([]);
+    const [addingServices, setAddingServices] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -33,8 +37,24 @@ function BookingsPage() {
         }
         if (!parsedUser.isClient) {
             loadStats();
+            loadProfessionalServices();
         }
     }, [navigate]);
+
+    const getBookingServices = (booking) => {
+        if (Array.isArray(booking.services) && booking.services.length > 0) {
+            return booking.services;
+        }
+        if (!booking.serviceId) {
+            return [];
+        }
+        return [{
+            id: booking.serviceId,
+            name: booking.serviceName,
+            price: booking.servicePrice,
+            duration: booking.serviceDuration,
+        }];
+    };
 
     const loadBookings = async () => {
         try {
@@ -83,6 +103,67 @@ function BookingsPage() {
             }
         } catch (error) {
             console.error('Error loading stats:', error);
+        }
+    };
+
+    const loadProfessionalServices = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${window.API_URL}/services/my-services`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setProServices((data || []).filter((service) => service.isActive !== false));
+            }
+        } catch (error) {
+            console.error('Error loading professional services:', error);
+        }
+    };
+
+    const toggleServiceToAdd = (serviceId) => {
+        setSelectedServiceIdsToAdd((prev) => (
+            prev.includes(serviceId)
+                ? prev.filter((id) => id !== serviceId)
+                : [...prev, serviceId]
+        ));
+    };
+
+    const openAddServicesPanel = (booking) => {
+        const existingIds = new Set(getBookingServices(booking).map((service) => String(service.id || service._id || service.serviceId)));
+        setEditingServicesBookingId(booking._id);
+        setSelectedServiceIdsToAdd(
+            proServices
+                .map((service) => String(service._id))
+                .filter((serviceId) => !existingIds.has(serviceId))
+        );
+    };
+
+    const handleAddServices = async (bookingId) => {
+        if (selectedServiceIdsToAdd.length === 0) return;
+        setAddingServices(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${window.API_URL}/bookings/${bookingId}/add-services`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ serviceIds: selectedServiceIdsToAdd }),
+            });
+
+            if (response.ok) {
+                setEditingServicesBookingId(null);
+                setSelectedServiceIdsToAdd([]);
+                await loadBookings();
+                await loadStats();
+            }
+        } catch (error) {
+            console.error('Error adding services to booking:', error);
+        } finally {
+            setAddingServices(false);
         }
     };
 
@@ -161,8 +242,8 @@ function BookingsPage() {
                             <div className="text-secondary">{t('status_confirmed')}</div>
                         </div>
                         <div className="card text-center">
-                            <h3 style={{ fontSize: '2rem', color: 'var(--primary)' }}>{stats.totalRevenue || 0}€</h3>
-                            <div className="text-secondary">{t('status_revenue')}</div>
+                            <h3 style={{ fontSize: '2rem', color: 'var(--primary)' }}>{stats.completed || 0}</h3>
+                            <div className="text-secondary">{t('filter_completed')}</div>
                         </div>
                     </div>
                 )}
@@ -207,7 +288,10 @@ function BookingsPage() {
                                 </div>
 
                                 <div className="grid grid-3" style={{ fontSize: '14px', marginBottom: '15px' }}>
-                                    <div><strong>{t('label_service')}:</strong> {booking.serviceName}</div>
+                                    <div>
+                                        <strong>{t('label_service')}:</strong>{' '}
+                                        {getBookingServices(booking).map((service) => service.name).join(', ') || booking.serviceName}
+                                    </div>
                                     <div><strong>{t('label_date')}:</strong> {new Date(booking.date).toLocaleDateString(t('locale') === 'en' ? 'en-US' : 'fr-FR')}</div>
                                     <div><strong>{t('label_time')}:</strong> {booking.time}</div>
                                     <div><strong>{t('label_duration')}:</strong> {booking.serviceDuration} min</div>
@@ -252,6 +336,14 @@ function BookingsPage() {
                                             if (ok) handleStatusUpdate(booking._id, 'completed');
                                         }}>{t('action_complete')}</button>
                                     )}
+                                    {!user.isClient && ['pending', 'confirmed'].includes(booking.status) && (
+                                        <button
+                                            className="btn btn-secondary btn-sm"
+                                            onClick={() => openAddServicesPanel(booking)}
+                                        >
+                                            <IoAdd /> {t('bookings_add_services', { defaultValue: 'Ajouter des prestations' })}
+                                        </button>
+                                    )}
                                     {(booking.status === 'pending' || booking.status === 'confirmed') && (
                                         <button className="btn btn-danger btn-sm" onClick={async () => {
                                             const ok = await confirm({ title: t('cancel_booking_title'), message: t('confirm_cancel_booking'), confirmLabel: t('cancel_booking_confirm'), danger: true });
@@ -262,6 +354,64 @@ function BookingsPage() {
                                         <button className="btn btn-outline btn-sm" onClick={() => handleDelete(booking._id)}>{t('action_delete')}</button>
                                     )}
                                 </div>
+
+                                {!user.isClient && editingServicesBookingId === booking._id && (
+                                    <div style={{ marginTop: '12px', borderTop: '1px solid #ececec', paddingTop: '12px' }}>
+                                        <div style={{ fontWeight: 600, marginBottom: '8px' }}>
+                                            {t('bookings_add_services', { defaultValue: 'Ajouter des prestations' })}
+                                        </div>
+                                        <div style={{ display: 'grid', gap: '8px', marginBottom: '12px' }}>
+                                            {proServices.map((service) => {
+                                                const alreadyInBooking = getBookingServices(booking).some(
+                                                    (item) => String(item.id || item._id || item.serviceId) === String(service._id)
+                                                );
+                                                return (
+                                                    <label
+                                                        key={service._id}
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            padding: '8px 10px',
+                                                            border: '1px solid #E5E5E7',
+                                                            borderRadius: '8px',
+                                                            opacity: alreadyInBooking ? 0.55 : 1,
+                                                        }}
+                                                    >
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <input
+                                                                type="checkbox"
+                                                                disabled={alreadyInBooking}
+                                                                checked={alreadyInBooking || selectedServiceIdsToAdd.includes(String(service._id))}
+                                                                onChange={() => toggleServiceToAdd(String(service._id))}
+                                                            />
+                                                            <span>{service.name}</span>
+                                                        </span>
+                                                        <strong>{service.price}€</strong>
+                                                    </label>
+                                                );
+                                            })}
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                                            <button
+                                                className="btn btn-outline btn-sm"
+                                                onClick={() => {
+                                                    setEditingServicesBookingId(null);
+                                                    setSelectedServiceIdsToAdd([]);
+                                                }}
+                                            >
+                                                {t('action_cancel')}
+                                            </button>
+                                            <button
+                                                className="btn btn-primary btn-sm"
+                                                disabled={addingServices || selectedServiceIdsToAdd.length === 0}
+                                                onClick={() => handleAddServices(booking._id)}
+                                            >
+                                                {addingServices ? t('saving') : t('action_confirm')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ))
                     ) : (

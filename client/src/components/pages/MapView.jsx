@@ -533,31 +533,32 @@ function MapView() {
 
                                 <div className="pro-info">
                                     <h3>{pro.companyName || `${pro.prenom} ${pro.nom}`}</h3>
-                                    <p className="pro-profession">{pro.profession}</p>
+                                    <p className="pro-profession">{getTranslatedProfessionLabel(pro.profession, t)}</p>
 
-                                    {pro.averageRating > 0 && (
-                                        <div className="pro-rating">
-                                            {renderStars(pro.averageRating)}
-                                            <span className="rating-value">{pro.averageRating.toFixed(1)}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="pro-meta">
+                                    <div className="pro-rating-distance">
+                                        {pro.averageRating > 0 && (
+                                            <div className="pro-rating">
+                                                {renderStars(pro.averageRating)}
+                                                <span className="rating-value">{pro.averageRating.toFixed(1)}</span>
+                                            </div>
+                                        )}
                                         {distance && (
-                                            <span className="meta-item" style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoLocationOutline /> {distance.toFixed(1)} km</span>
+                                            <span className="meta-item" style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                <IoLocationOutline size={13} /> {distance.toFixed(1)} km
+                                            </span>
                                         )}
                                     </div>
-                                </div>
 
-                                <button
-                                    className="btn btn-primary btn-sm"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(getProfessionalPath(pro));
-                                    }}
-                                >
-                                    {t('view_profile')}
-                                </button>
+                                    <button
+                                        className="btn btn-primary btn-sm pro-card-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigate(getProfessionalPath(pro));
+                                        }}
+                                    >
+                                        {t('view_profile')}
+                                    </button>
+                                </div>
                             </div>
                         );
                     })}

@@ -160,6 +160,76 @@
   }
 }
 
+/* Bell notification button */
+.header-bell-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  color: var(--primary);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.header-bell-btn:hover {
+  background: var(--primary-light, rgba(0,0,0,0.06));
+}
+
+.header-bell-active {
+  animation: bellShake 0.6s cubic-bezier(0.36, 0.07, 0.19, 0.97) 0.5s both;
+}
+
+.header-bell-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: #FF3B30;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-primary, white);
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.header-bell-active .header-bell-badge {
+  animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), badgePulse 2s ease-in-out 0.3s infinite;
+}
+
+@keyframes bellShake {
+  10%, 90% { transform: rotate(-4deg); }
+  20%, 80% { transform: rotate(5deg); }
+  30%, 50%, 70% { transform: rotate(-6deg); }
+  40%, 60% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes badgePop {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
+@keyframes bookingAlertIn {
+  from { opacity: 0; transform: translateX(40px) scale(0.95); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
 @media (max-width: 390px) {
   .header-brand-text {
     display: none;

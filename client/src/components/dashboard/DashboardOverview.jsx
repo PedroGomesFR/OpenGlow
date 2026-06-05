@@ -1,23 +1,27 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    IoCard,
     IoCalendar,
     IoStar,
     IoArrowForward,
     IoHelpCircle,
     IoCalendarNumber,
     IoAddCircle,
-    IoStatsChart
+    IoStatsChart,
+    IoPricetag,
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../common/ToastContext';
 
 function DashboardOverview({ user, setActiveTab }) {
     const navigate = useNavigate();
     const { t } = useTranslation();
+    const toast = useToast();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [priceDisplayMode, setPriceDisplayMode] = useState(user?.priceDisplayMode || 'tiers');
+    const [priceSaving, setPriceSaving] = useState(false);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -39,6 +43,29 @@ function DashboardOverview({ user, setActiveTab }) {
 
         fetchStats();
     }, []);
+
+    const handlePriceDisplayChange = async (newMode) => {
+        if (newMode === priceDisplayMode || priceSaving) return;
+        setPriceSaving(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(window.API_URL + '/records/update-profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ priceDisplayMode: newMode }),
+            });
+            if (res.ok) {
+                setPriceDisplayMode(newMode);
+                toast(t('pro_price_display_saved', { defaultValue: 'Affichage des prix mis à jour.' }), 'success');
+            } else {
+                toast(t('error_generic', { defaultValue: 'Une erreur est survenue.' }), 'error');
+            }
+        } catch {
+            toast(t('network_error_retry'), 'error');
+        } finally {
+            setPriceSaving(false);
+        }
+    };
 
     if (loading) return <div className="loading-spinner"></div>;
 
@@ -62,12 +89,12 @@ function DashboardOverview({ user, setActiveTab }) {
                 <div className="grid grid-3">
                     <div className="card">
                         <div className="text-secondary" style={{ fontSize: '13px', fontWeight: 'bold', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <IoCard /> {t('pro_revenue')}
+                            <IoCalendarNumber /> {t('filter_completed')}
                         </div>
                         <div style={{ fontSize: '32px', fontWeight: '700', margin: '10px 0', color: 'var(--primary)' }}>
-                            {stats.totalRevenue ? `${stats.totalRevenue}€` : '0€'}
+                            {stats.completed || 0}
                         </div>
-                        <div className="text-secondary" style={{ fontSize: '13px' }}>{t('pro_total_earned')}</div>
+                        <div className="text-secondary" style={{ fontSize: '13px' }}>{t('pro_completed_services')}</div>
                     </div>
 
                     <div className="card">
@@ -176,6 +203,56 @@ function DashboardOverview({ user, setActiveTab }) {
                     <p style={{ opacity: 0.9, fontSize: '14px', margin: '15px 0', color: 'white' }}>{t('pro_help_text')}</p>
                     <button onClick={() => navigate('/help')} className="btn" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         {t('pro_view_guide')} <IoArrowForward />
+                    </button>
+                </div>
+            </div>
+
+            {/* Affichage des tranches de prix */}
+            <div className="card" style={{ marginTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <IoPricetag size={18} />
+                        <div>
+                            <div style={{ fontWeight: '600', fontSize: '15px' }}>
+                                {t('pro_price_display_tiers', { defaultValue: 'Tranches de prix' })}
+                                <span style={{ marginLeft: '8px', fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '400' }}>
+                                    € / €€ / €€€ / €€€€
+                                </span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                                {t('pro_price_display_tiers_desc', { defaultValue: 'Affiche une gamme de prix à la place des montants exacts.' })}
+                            </div>
+                        </div>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => handlePriceDisplayChange(priceDisplayMode === 'tiers' ? 'exact' : 'tiers')}
+                        disabled={priceSaving}
+                        aria-label={t('pro_price_display_tiers', { defaultValue: 'Tranches de prix' })}
+                        style={{
+                            flexShrink: 0,
+                            width: '48px',
+                            height: '28px',
+                            borderRadius: '999px',
+                            border: 'none',
+                            background: priceDisplayMode === 'tiers' ? 'var(--primary)' : 'var(--gray-300, #d1d5db)',
+                            cursor: priceSaving ? 'wait' : 'pointer',
+                            position: 'relative',
+                            transition: 'background 0.2s',
+                            opacity: priceSaving ? 0.6 : 1,
+                        }}
+                    >
+                        <span style={{
+                            position: 'absolute',
+                            top: '3px',
+                            left: priceDisplayMode === 'tiers' ? '23px' : '3px',
+                            width: '22px',
+                            height: '22px',
+                            borderRadius: '50%',
+                            background: 'white',
+                            boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+                            transition: 'left 0.2s',
+                        }} />
                     </button>
                 </div>
             </div>

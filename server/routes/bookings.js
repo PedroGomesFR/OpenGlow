@@ -6,6 +6,32 @@ import { sendEmail } from '../utils/sendEmail.js';
 
 const bookingRouter = express.Router();
 
+const normalizeServiceIdsInput = (serviceId, serviceIds) => {
+  const fromArray = Array.isArray(serviceIds) ? serviceIds : [];
+  const merged = [...fromArray, serviceId].filter(Boolean).map((id) => String(id));
+  return [...new Set(merged)];
+};
+
+const buildBookingServices = (services) =>
+  services.map((service) => ({
+    id: String(service._id),
+    name: service.name,
+    price: Number(service.price) || 0,
+    duration: Number(service.duration) || 0,
+    category: service.category || '',
+  }));
+
+const summarizeBookingServices = (bookingServices) => {
+  const totalPrice = bookingServices.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+  const totalDuration = bookingServices.reduce((sum, item) => sum + (Number(item.duration) || 0), 0);
+  return {
+    serviceId: bookingServices[0]?.id || null,
+    serviceName: bookingServices.map((item) => item.name).join(' + '),
+    servicePrice: totalPrice,
+    serviceDuration: totalDuration,
+  };
+};
+
 // Require authentication for booking routes
 bookingRouter.use(verifyToken);
 
@@ -37,19 +63,31 @@ bookingRouter.get('/my-bookings', async (req, res) => {
 bookingRouter.post('/create', async (req, res) => {
   try {
     const clientId = req.userId;
-    const { professionalId, serviceId, date, time, notes } = req.body;
+    const { professionalId, serviceId, serviceIds, date, time, notes } = req.body;
+    const selectedServiceIds = normalizeServiceIdsInput(serviceId, serviceIds);
 
-    if (!professionalId || !serviceId || !date || !time) {
+    if (!professionalId || selectedServiceIds.length === 0 || !date || !time) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const db = await connectDB();
-    
-    // Get service details
-    const service = await db.collection('services').findOne({ _id: new ObjectId(serviceId) });
-    if (!service) {
-      return res.status(404).json({ error: 'Service not found' });
+
+    const serviceObjectIds = selectedServiceIds
+      .filter((id) => ObjectId.isValid(id))
+      .map((id) => new ObjectId(id));
+    if (serviceObjectIds.length !== selectedServiceIds.length) {
+      return res.status(400).json({ error: 'Invalid service IDs' });
     }
+
+    const services = await db.collection('services').find({ _id: { $in: serviceObjectIds }, professionalId }).toArray();
+    if (services.length !== selectedServiceIds.length) {
+      return res.status(404).json({ error: 'One or more services not found' });
+    }
+
+    const servicesById = new Map(services.map((service) => [String(service._id), service]));
+    const orderedServices = selectedServiceIds.map((id) => servicesById.get(id)).filter(Boolean);
+    const bookingServices = buildBookingServices(orderedServices);
+    const serviceSummary = summarizeBookingServices(bookingServices);
 
     // Get professional details
     const professional = await db.collection('users').findOne({ _id: new ObjectId(professionalId) });
@@ -67,10 +105,11 @@ bookingRouter.post('/create', async (req, res) => {
       clientPhone: client.phone || null,
       professionalId,
       professionalName: professional.companyName || `${professional.prenom} ${professional.nom}`,
-      serviceId,
-      serviceName: service.name,
-      servicePrice: service.price,
-      serviceDuration: service.duration,
+      services: bookingServices,
+      serviceId: serviceSummary.serviceId,
+      serviceName: serviceSummary.serviceName,
+      servicePrice: serviceSummary.servicePrice,
+      serviceDuration: serviceSummary.serviceDuration,
       date,
       time,
       notes: notes || '',
@@ -88,7 +127,7 @@ bookingRouter.post('/create', async (req, res) => {
       html: `
         <h1>Bonjour ${client.prenom},</h1>
         <p>Votre demande de rendez-vous avec <strong>${newBooking.professionalName}</strong> a bien été enregistrée.</p>
-        <p><strong>Prestation :</strong> ${newBooking.serviceName}</p>
+        <p><strong>Prestations :</strong> ${bookingServices.map((item) => item.name).join(', ')}</p>
         <p><strong>Date :</strong> ${new Date(date).toLocaleDateString()}</p>
         <p><strong>Heure :</strong> ${time}</p>
         <br>
@@ -104,7 +143,7 @@ bookingRouter.post('/create', async (req, res) => {
       html: `
         <h1>Bonjour ${professional.prenom || professional.companyName},</h1>
         <p>Vous avez reçu une nouvelle demande de rendez-vous de la part de <strong>${newBooking.clientName}</strong>.</p>
-        <p><strong>Prestation :</strong> ${newBooking.serviceName}</p>
+        <p><strong>Prestations :</strong> ${bookingServices.map((item) => item.name).join(', ')}</p>
         <p><strong>Date :</strong> ${new Date(date).toLocaleDateString()}</p>
         <p><strong>Heure :</strong> ${time}</p>
         <br>
@@ -126,9 +165,10 @@ bookingRouter.post('/create', async (req, res) => {
 bookingRouter.post('/professional/create', async (req, res) => {
   try {
     const professionalId = req.userId;
-    const { clientName, clientEmail, clientPhone, serviceId, date, time, notes } = req.body;
+    const { clientName, clientEmail, clientPhone, serviceId, serviceIds, date, time, notes } = req.body;
+    const selectedServiceIds = normalizeServiceIdsInput(serviceId, serviceIds);
 
-    if (!clientName || !serviceId || !date || !time) {
+    if (!clientName || selectedServiceIds.length === 0 || !date || !time) {
       return res.status(400).json({ error: 'Missing required fields (Name, service, date, time)' });
     }
 
@@ -140,11 +180,22 @@ bookingRouter.post('/professional/create', async (req, res) => {
       return res.status(403).json({ error: 'Only professionals can use this endpoint' });
     }
 
-    // Get service details
-    const service = await db.collection('services').findOne({ _id: new ObjectId(serviceId) });
-    if (!service) {
-      return res.status(404).json({ error: 'Service not found' });
+    const serviceObjectIds = selectedServiceIds
+      .filter((id) => ObjectId.isValid(id))
+      .map((id) => new ObjectId(id));
+    if (serviceObjectIds.length !== selectedServiceIds.length) {
+      return res.status(400).json({ error: 'Invalid service IDs' });
     }
+
+    const services = await db.collection('services').find({ _id: { $in: serviceObjectIds }, professionalId }).toArray();
+    if (services.length !== selectedServiceIds.length) {
+      return res.status(404).json({ error: 'One or more services not found' });
+    }
+
+    const servicesById = new Map(services.map((service) => [String(service._id), service]));
+    const orderedServices = selectedServiceIds.map((id) => servicesById.get(id)).filter(Boolean);
+    const bookingServices = buildBookingServices(orderedServices);
+    const serviceSummary = summarizeBookingServices(bookingServices);
 
     const newBooking = {
       clientId: null, // No client ID for walk-ins
@@ -153,10 +204,11 @@ bookingRouter.post('/professional/create', async (req, res) => {
       clientPhone: clientPhone || '',
       professionalId,
       professionalName: professional.companyName || `${professional.prenom} ${professional.nom}`,
-      serviceId,
-      serviceName: service.name,
-      servicePrice: service.price,
-      serviceDuration: service.duration,
+      services: bookingServices,
+      serviceId: serviceSummary.serviceId,
+      serviceName: serviceSummary.serviceName,
+      servicePrice: serviceSummary.servicePrice,
+      serviceDuration: serviceSummary.serviceDuration,
       date,
       time,
       notes: notes || '',
@@ -176,7 +228,7 @@ bookingRouter.post('/professional/create', async (req, res) => {
         html: `
           <h1>Bonjour ${clientName},</h1>
           <p>Un rendez-vous a été ajouté pour vous chez <strong>${newBooking.professionalName}</strong>.</p>
-          <p><strong>Prestation :</strong> ${newBooking.serviceName}</p>
+          <p><strong>Prestations :</strong> ${bookingServices.map((item) => item.name).join(', ')}</p>
           <p><strong>Date :</strong> ${new Date(date).toLocaleDateString()}</p>
           <p><strong>Heure :</strong> ${time}</p>
           <br>
@@ -190,6 +242,105 @@ bookingRouter.post('/professional/create', async (req, res) => {
       message: 'Booking created successfully',
       booking: { id: result.insertedId, ...newBooking } 
     });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+bookingRouter.put('/:id/add-services', async (req, res) => {
+  try {
+    const professionalId = req.userId;
+    const { id } = req.params;
+    const { serviceIds } = req.body;
+
+    if (!Array.isArray(serviceIds) || serviceIds.length === 0) {
+      return res.status(400).json({ error: 'serviceIds is required' });
+    }
+
+    const uniqueServiceIds = [...new Set(serviceIds.filter(Boolean).map((serviceId) => String(serviceId)))];
+    const serviceObjectIds = uniqueServiceIds
+      .filter((serviceId) => ObjectId.isValid(serviceId))
+      .map((serviceId) => new ObjectId(serviceId));
+
+    if (serviceObjectIds.length !== uniqueServiceIds.length) {
+      return res.status(400).json({ error: 'Invalid service IDs' });
+    }
+
+    const db = await connectDB();
+    const booking = await db.collection('bookings').findOne({ _id: new ObjectId(id) });
+
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+    if (booking.professionalId !== professionalId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    if (['completed', 'cancelled'].includes(booking.status)) {
+      return res.status(400).json({ error: 'Cannot add services to completed or cancelled bookings' });
+    }
+
+    const services = await db.collection('services').find({ _id: { $in: serviceObjectIds }, professionalId }).toArray();
+    if (services.length !== uniqueServiceIds.length) {
+      return res.status(404).json({ error: 'One or more services not found' });
+    }
+
+    const existingServices = Array.isArray(booking.services) && booking.services.length > 0
+      ? booking.services.map((item) => ({
+          id: String(item.id || item._id || item.serviceId),
+          name: item.name || booking.serviceName || '',
+          price: Number(item.price) || 0,
+          duration: Number(item.duration) || 0,
+          category: item.category || '',
+        }))
+      : [{
+          id: String(booking.serviceId),
+          name: booking.serviceName || '',
+          price: Number(booking.servicePrice) || 0,
+          duration: Number(booking.serviceDuration) || 0,
+          category: '',
+        }].filter((item) => item.id && ObjectId.isValid(item.id));
+
+    const existingIds = new Set(existingServices.map((service) => String(service.id)));
+    const newServices = buildBookingServices(services).filter((service) => !existingIds.has(String(service.id)));
+
+    if (newServices.length === 0) {
+      return res.status(400).json({ error: 'Selected services are already attached to this booking' });
+    }
+
+    const updatedServices = [...existingServices, ...newServices];
+    const serviceSummary = summarizeBookingServices(updatedServices);
+
+    await db.collection('bookings').updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          services: updatedServices,
+          serviceId: serviceSummary.serviceId,
+          serviceName: serviceSummary.serviceName,
+          servicePrice: serviceSummary.servicePrice,
+          serviceDuration: serviceSummary.serviceDuration,
+          updatedAt: new Date(),
+        },
+      }
+    );
+
+    if (booking.clientEmail) {
+      sendEmail({
+        email: booking.clientEmail,
+        subject: 'Mise à jour de votre réservation - OpenGlow',
+        html: `
+          <h1>Bonjour ${booking.clientName?.split(' ')[0] || ''},</h1>
+          <p>Votre réservation avec <strong>${booking.professionalName}</strong> a été mise à jour.</p>
+          <p><strong>Prestations :</strong> ${updatedServices.map((item) => item.name).join(', ')}</p>
+          <p><strong>Date :</strong> ${new Date(booking.date).toLocaleDateString()}</p>
+          <p><strong>Heure :</strong> ${booking.time}</p>
+          <br>
+          <p>L'équipe OpenGlow</p>
+        `,
+      });
+    }
+
+    res.status(200).json({ message: 'Services added to booking', services: updatedServices, ...serviceSummary });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

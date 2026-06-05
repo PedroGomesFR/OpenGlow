@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone, IoCall } from 'react-icons/io5';
+import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone, IoCall, IoCheckmarkCircle } from 'react-icons/io5';
 import '../css/AppleDesign.css';
+import '../css/ProfessionalDetailPage.css';
 import { useToast } from '../common/ToastContext';
 
 const DAYS_LABELS = { lun: 'Lun', mar: 'Mar', mer: 'Mer', jeu: 'Jeu', ven: 'Ven', sam: 'Sam', dim: 'Dim' };
@@ -24,6 +25,20 @@ const formatOpeningHours = (str) => {
     return str;
 };
 
+const getPriceTier = (price) => {
+    const normalizedPrice = Number(price) || 0;
+    if (normalizedPrice <= 25) return '€';
+    if (normalizedPrice <= 45) return '€€';
+    if (normalizedPrice <= 80) return '€€€';
+    return '€€€€';
+};
+
+const formatDisplayedPrice = (price, mode) => {
+    if (mode === 'hidden') return null;
+    if (mode === 'tiers') return getPriceTier(price);
+    return `${price}€`;
+};
+
 function ProfessionalDetailPage() {
     const { id, slug } = useParams();
     const navigate = useNavigate();
@@ -35,13 +50,26 @@ function ProfessionalDetailPage() {
     const [slots, setSlots] = useState([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [announcements, setAnnouncements] = useState([]);
+    const [serviceSearch, setServiceSearch] = useState('');
     const resolvedProfessionalId = professional?._id || id || null;
 
     const [bookingData, setBookingData] = useState({
-        serviceId: '',
+        serviceIds: [],
         date: '',
         hour: '', // Will be 11:00 format
     });
+
+    const toggleServiceSelection = (serviceId) => {
+        setBookingData((prev) => {
+            const exists = prev.serviceIds.includes(serviceId);
+            return {
+                ...prev,
+                serviceIds: exists
+                    ? prev.serviceIds.filter((id) => id !== serviceId)
+                    : [...prev.serviceIds, serviceId],
+            };
+        });
+    };
 
     useEffect(() => {
         loadProfessionalData();
@@ -137,8 +165,8 @@ function ProfessionalDetailPage() {
             return;
         }
 
-        const selectedService = services.find(s => s._id === bookingData.serviceId);
-        if (!selectedService) {
+        const selectedServices = services.filter((service) => bookingData.serviceIds.includes(service._id));
+        if (selectedServices.length === 0) {
             toast(t('alert_select_service'), 'warning');
             return;
         }
@@ -158,7 +186,7 @@ function ProfessionalDetailPage() {
                 },
                 body: JSON.stringify({
                     professionalId: resolvedProfessionalId,
-                    serviceId: bookingData.serviceId,
+                    serviceIds: bookingData.serviceIds,
                     date: bookingData.date,
                     time: bookingData.hour,
                     notes: '',
@@ -180,7 +208,16 @@ function ProfessionalDetailPage() {
     if (loading) return <div className="text-center p-5">{t('loading')}</div>;
     if (!professional) return <div className="text-center p-5">{t('pro_not_found')}</div>;
 
-    const selectedService = services.find(s => s._id === bookingData.serviceId);
+    const selectedServices = services.filter((service) => bookingData.serviceIds.includes(service._id));
+    const selectedServicesTotal = selectedServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0);
+    const priceDisplayMode = professional?.priceDisplayMode || 'tiers';
+    const filteredServices = services.filter((service) => {
+        if (!serviceSearch.trim()) return true;
+        const q = serviceSearch.toLowerCase();
+        return [service.name, service.category, service.description]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(q));
+    });
 
     return (
         <div className="professional-page" style={{ background: '#F5F5F7', minHeight: '100vh', paddingBottom: '40px' }}>
@@ -362,10 +399,10 @@ function ProfessionalDetailPage() {
                                                 borderBottom: '1px solid #f5f5f7',
                                                 cursor: 'pointer'
                                             }}
-                                            onClick={() => setBookingData({ ...bookingData, serviceId: service._id })}
+                                            onClick={() => toggleServiceSelection(service._id)}
                                         >
                                             <div>
-                                                <div style={{ fontWeight: '600', marginBottom: '4px', color: bookingData.serviceId === service._id ? 'var(--primary)' : 'inherit' }}>
+                                                <div style={{ fontWeight: '600', marginBottom: '4px', color: bookingData.serviceIds.includes(service._id) ? 'var(--primary)' : 'inherit' }}>
                                                     {service.name}
                                                 </div>
                                                 <div className="text-secondary" style={{ fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -375,7 +412,11 @@ function ProfessionalDetailPage() {
                                                 </div>
                                                 {service.description && <div className="text-secondary" style={{ fontSize: '12px', marginTop: '4px' }}>{service.description}</div>}
                                             </div>
-                                            <div style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}><IoPricetag size={14} /> {service.price}€</div>
+                                            {priceDisplayMode !== 'hidden' && (
+                                                <div style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                    <IoPricetag size={14} /> {formatDisplayedPrice(service.price, priceDisplayMode)}
+                                                </div>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -404,17 +445,84 @@ function ProfessionalDetailPage() {
                         <form onSubmit={handleBooking}>
                             <div className="form-group" style={{ marginBottom: '20px' }}>
                                 <label className="form-label">{t('label_select_service')}</label>
-                                <select
-                                    className="form-input"
-                                    required
-                                    value={bookingData.serviceId}
-                                    onChange={(e) => setBookingData({ ...bookingData, serviceId: e.target.value })}
-                                >
-                                    <option value="">{t('placeholder_select_service')}</option>
-                                    {services.map(s => (
-                                        <option key={s._id} value={s._id}>{s.name} ({s.price}€)</option>
-                                    ))}
-                                </select>
+                                {services.length > 6 && (
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        placeholder={t('search_placeholder', { defaultValue: 'Rechercher une prestation...' })}
+                                        value={serviceSearch}
+                                        onChange={(e) => setServiceSearch(e.target.value)}
+                                        style={{ marginBottom: '10px' }}
+                                    />
+                                )}
+                                <div className="booking-services-picker">
+                                    {filteredServices.map((service) => {
+                                        const isSelected = bookingData.serviceIds.includes(service._id);
+                                        return (
+                                            <button
+                                                key={service._id}
+                                                type="button"
+                                                className={`booking-service-option${isSelected ? ' is-selected' : ''}`}
+                                                onClick={() => toggleServiceSelection(service._id)}
+                                                aria-pressed={isSelected}
+                                                style={{
+                                                    border: 'none',
+                                                }}
+                                            >
+                                                <span className="booking-service-option__main">
+                                                    <span className="booking-service-option__title-row">
+                                                        <span className="booking-service-option__title">{service.name}</span>
+                                                        {isSelected && (
+                                                            <span className="booking-service-option__selected">
+                                                                <IoCheckmarkCircle size={14} />
+                                                                {t('selected', { defaultValue: 'Sélectionnée' })}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                    <span className="booking-service-option__meta">
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoTime size={13} /> {service.duration} min</span>
+                                                        {service.category && (
+                                                            <>
+                                                                <span>•</span>
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><IoFolder size={13} /> {service.category}</span>
+                                                            </>
+                                                        )}
+                                                    </span>
+                                                </span>
+                                                {priceDisplayMode !== 'hidden' && (
+                                                    <strong className="booking-service-option__price">{formatDisplayedPrice(service.price, priceDisplayMode)}</strong>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                                {filteredServices.length === 0 && (
+                                    <div className="text-secondary" style={{ fontSize: '12px', marginTop: '8px' }}>
+                                        {t('no_services')}
+                                    </div>
+                                )}
+                                {bookingData.serviceIds.length === 0 && (
+                                    <div className="text-secondary" style={{ fontSize: '12px', marginTop: '8px' }}>
+                                        {t('placeholder_select_service')}
+                                    </div>
+                                )}
+                                {selectedServices.length > 0 && (
+                                    <div className="booking-selected-services-summary">
+                                        <div className="booking-selected-services-summary__count">
+                                            {t('booking_services_selected_count', {
+                                                count: selectedServices.length,
+                                                defaultValue: `${selectedServices.length} prestation(s) sélectionnée(s)`,
+                                            })}
+                                        </div>
+                                        <div className="booking-selected-services-summary__chips">
+                                            {selectedServices.map((service) => (
+                                                <span key={service._id} className="booking-selected-services-summary__chip">
+                                                    {service.name}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="form-group" style={{ marginBottom: '20px' }}>
@@ -460,11 +568,16 @@ function ProfessionalDetailPage() {
                                 </div>
                             )}
 
-                            {selectedService && bookingData.hour && (
+                            {selectedServices.length > 0 && bookingData.hour && (
                                 <div style={{ padding: '15px', background: '#F5F5F7', borderRadius: '12px', marginBottom: '20px' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                        <span>{t('total_label')}</span>
-                                        <strong>{selectedService.price}€</strong>
+                                    {priceDisplayMode !== 'hidden' && (
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                            <span>{t('total_label')}</span>
+                                            <strong>{formatDisplayedPrice(selectedServicesTotal, priceDisplayMode)}</strong>
+                                        </div>
+                                    )}
+                                    <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
+                                        {selectedServices.map((service) => service.name).join(', ')}
                                     </div>
                                     <div style={{ fontSize: '13px', color: '#86868b' }}>
                                         {new Date(bookingData.date).toLocaleDateString(t('locale') === 'en' ? 'en-US' : 'fr-FR')} à {bookingData.hour}
@@ -476,7 +589,7 @@ function ProfessionalDetailPage() {
                                 type="submit"
                                 className="btn btn-primary btn-lg"
                                 style={{ width: '100%' }}
-                                disabled={!bookingData.serviceId || !bookingData.date || !bookingData.hour}
+                                disabled={bookingData.serviceIds.length === 0 || !bookingData.date || !bookingData.hour}
                             >
                                 {t('confirm_booking_btn')}
                             </button>

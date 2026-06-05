@@ -67,7 +67,7 @@ const Footer = () => {
                     color: '#86868b'
                 }}>
                     <div>
-                        Copyright © {currentYear} OpenGlow Beauty Inc. {t('footer_rights')}
+                        Copyright © {currentYear} OpenGlow. {t('footer_rights')}
                     </div>
                     <div>
                         {t('country_france')}

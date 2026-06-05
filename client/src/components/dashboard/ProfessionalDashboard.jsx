@@ -75,6 +75,7 @@ function ProfessionalDashboard({ user, setUser }) {
         phone: user?.phone || '',
         openingHours: user?.openingHours || '',
         companyName: user?.companyName || '',
+        priceDisplayMode: user?.priceDisplayMode || 'tiers',
     });
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
@@ -95,6 +96,7 @@ function ProfessionalDashboard({ user, setUser }) {
                 phone: user.phone || '',
                 openingHours: user.openingHours || '',
                 companyName: user.companyName || '',
+                priceDisplayMode: user.priceDisplayMode || 'exact',
             });
             setHoursData(parseHoursData(user.openingHours));
         }
@@ -419,6 +421,21 @@ function ProfessionalDashboard({ user, setUser }) {
                                         onChange={(e) => setProfileData({ ...profileData, companyName: e.target.value })}
                                         placeholder={t('pro_company_placeholder')}
                                     />
+                                </div>
+
+                                <div className="form-group" style={{ marginBottom: '24px' }}>
+                                    <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        {t('pro_price_display_mode', { defaultValue: 'Affichage des prix (page publique)' })}
+                                    </label>
+                                    <select
+                                        className="form-input"
+                                        value={profileData.priceDisplayMode || 'exact'}
+                                        onChange={(e) => setProfileData({ ...profileData, priceDisplayMode: e.target.value })}
+                                    >
+                                        <option value="exact">{t('pro_price_display_exact', { defaultValue: 'Prix exacts (ex: 35€)' })}</option>
+                                        <option value="tiers">{t('pro_price_display_tiers', { defaultValue: 'Niveau (€ / €€ / €€€ / €€€€)' })}</option>
+                                        <option value="hidden">{t('pro_price_display_hidden', { defaultValue: 'Masquer les prix' })}</option>
+                                    </select>
                                 </div>
                                 
                                 <div className="grid grid-2" style={{ gap: '24px', marginBottom: '24px' }}>

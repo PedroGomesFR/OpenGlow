@@ -339,6 +339,141 @@
   cursor: not-allowed;
 }
 
+.booking-services-picker {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.booking-services-picker::-webkit-scrollbar {
+  width: 8px;
+}
+
+.booking-services-picker::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 128, 0.35);
+  border-radius: 999px;
+}
+
+.booking-service-option {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #e5e5e7;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  text-align: left;
+}
+
+.booking-service-option:hover {
+  border-color: #c8ced6;
+  background: #fcfcfd;
+}
+
+.booking-service-option.is-selected {
+  border-color: var(--primary, #1d1d1f);
+  background: #f2f9ff;
+  box-shadow: 0 0 0 2px rgba(26, 92, 107, 0.08);
+}
+
+.booking-service-option__main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.booking-service-option__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.booking-service-option__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1d1d1f;
+}
+
+.booking-service-option__selected {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #0c6b45;
+  background: #e6ffed;
+  border: 1px solid #b8f0cc;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+
+.booking-service-option__meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  flex-wrap: wrap;
+}
+
+.booking-service-option__price {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary, #1d1d1f);
+  white-space: nowrap;
+}
+
+.booking-selected-services-summary {
+  margin-top: 10px;
+  background: #f6f8fb;
+  border: 1px solid #e5e8ee;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.booking-selected-services-summary__count {
+  font-size: 12px;
+  color: #4b5563;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.booking-selected-services-summary__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.booking-selected-services-summary__chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: #fff;
+  border: 1px solid #d8dde5;
+  font-size: 12px;
+  color: #1f2937;
+}
+
+@media (max-width: 640px) {
+  .booking-service-option {
+    padding: 11px 12px;
+  }
+
+  .booking-service-option__price {
+    font-size: 14px;
+  }
+}
+
 .no-services,
 .no-gallery {
   text-align: center;

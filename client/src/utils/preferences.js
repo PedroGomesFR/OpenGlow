@@ -7,6 +7,7 @@ export const DEFAULT_SETTINGS = {
   pushNotifications: true,
   marketingEmails: false,
   compactMode: false,
+  bookingSound: true,
 };
 
 export const THEMES = {

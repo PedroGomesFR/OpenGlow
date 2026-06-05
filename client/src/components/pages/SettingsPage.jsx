@@ -11,6 +11,9 @@ import {
   IoEye,
   IoEyeOff,
   IoTrash,
+  IoVolumeHigh,
+  IoVolumeMute,
+  IoNotifications,
 } from 'react-icons/io5';
 import { useToast } from '../common/ToastContext';
 import { useConfirm } from '../common/ConfirmContext';
@@ -20,20 +23,6 @@ import {
   getStoredSettings,
   saveStoredSettings,
 } from '../../utils/preferences';
-
-function Toggle({ checked, onChange }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={`sp-switch${checked ? ' is-on' : ''}`}
-    >
-      <span className="sp-switch__thumb" />
-    </button>
-  );
-}
 
 function SettingsPage({ user }) {
   const navigate = useNavigate();
@@ -58,24 +47,6 @@ function SettingsPage({ user }) {
     rose:    { label: t('settings_theme_rose'),    dot: ['#b4546c', '#fdf1f5', '#f4d9e2'] },
     dark:    { label: t('settings_theme_dark'),    dot: ['#f5f5f7', '#1c1c1e', '#2c2c2e'] },
   };
-
-  const notifRows = [
-    {
-      key: 'emailNotifications',
-      label: t('settings_notif_email'),
-      sub: t('settings_notif_email_sub'),
-    },
-    {
-      key: 'pushNotifications',
-      label: t('settings_notif_push'),
-      sub: t('settings_notif_push_sub'),
-    },
-    {
-      key: 'marketingEmails',
-      label: t('settings_notif_marketing'),
-      sub: t('settings_notif_marketing_sub'),
-    },
-  ];
 
   const handlePwdChange = async (e) => {
     e.preventDefault();
@@ -194,40 +165,6 @@ function SettingsPage({ user }) {
                 })}
               </div>
 
-              <div className="sp__divider" />
-
-              <div className="sp__row sp__row--toggle">
-                <div>
-                  <span className="sp__row-label">{t('settings_compact_mode')}</span>
-                  <span className="sp__row-sub">{t('settings_compact_mode_sub')}</span>
-                </div>
-                <Toggle
-                  checked={settings.compactMode}
-                  onChange={(v) => update({ compactMode: v })}
-                />
-              </div>
-            </div>
-          </section>
-
-          {/* Notifications */}
-          <section className="sp__section">
-            <h2 className="sp__section-label">{t('settings_section_notifications')}</h2>
-            <div className="sp__card">
-              {notifRows.map((row, i) => (
-                <div key={row.key}>
-                  {i > 0 && <div className="sp__divider sp__divider--inset" />}
-                  <div className="sp__row sp__row--toggle">
-                    <div>
-                      <span className="sp__row-label">{row.label}</span>
-                      <span className="sp__row-sub">{row.sub}</span>
-                    </div>
-                    <Toggle
-                      checked={Boolean(settings[row.key])}
-                      onChange={(v) => update({ [row.key]: v })}
-                    />
-                  </div>
-                </div>
-              ))}
             </div>
           </section>
 
@@ -264,6 +201,50 @@ function SettingsPage({ user }) {
               </button>
             </div>
           </section>
+
+          {/* Notifications — pros seulement */}
+          {user?.isClient === false && (
+            <section className="sp__section">
+              <h2 className="sp__section-label">{t('settings_section_notifications', { defaultValue: 'Notifications' })}</h2>
+              <div className="sp__card">
+                <div className="sp__row">
+                  <span className="sp__row-icon">
+                    <IoNotifications size={16} />
+                  </span>
+                  <div style={{ flex: 1 }}>
+                    <span className="sp__row-label">{t('settings_booking_sound_label', { defaultValue: 'Son pour les nouvelles demandes' })}</span>
+                    <span className="sp__row-sub">{t('settings_booking_sound_hint', { defaultValue: 'Joue un son quand un client fait une demande de RDV.' })}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => update({ bookingSound: !settings.bookingSound })}
+                    aria-label={settings.bookingSound ? t('settings_sound_disable', { defaultValue: 'Désactiver le son' }) : t('settings_sound_enable', { defaultValue: 'Activer le son' })}
+                    style={{
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '7px',
+                      padding: '7px 14px',
+                      borderRadius: '999px',
+                      border: '1.5px solid',
+                      borderColor: settings.bookingSound ? 'var(--primary)' : 'var(--gray-300, #d1d5db)',
+                      background: settings.bookingSound ? 'var(--primary)' : 'transparent',
+                      color: settings.bookingSound ? 'white' : 'var(--text-secondary)',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {settings.bookingSound
+                      ? <><IoVolumeHigh size={15} /> {t('settings_sound_on', { defaultValue: 'Activé' })}</>
+                      : <><IoVolumeMute size={15} /> {t('settings_sound_off', { defaultValue: 'Désactivé' })}</>
+                    }
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
 
           {/* Sécurité */}
           {user && (

@@ -21,7 +21,7 @@ const CGU = () => {
                     <section style={{ marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>2. Accès à la Plateforme</h2>
                         <p className="text-secondary">
-                            L'accès à la Plateforme est ouvert à toute personne physique majeure (18 ans ou plus). La création d'un compte est nécessaire pour accéder aux fonctionnalités de réservation et de gestion.
+                            L'accès à la Plateforme est ouvert à toute personne physique âgée d'au moins 15 ans. La création d'un compte est nécessaire pour accéder aux fonctionnalités de réservation et de gestion.
                         </p>
                         <p className="text-secondary">
                             OpenGlow Beauty se réserve le droit de suspendre ou de supprimer l'accès à la Plateforme en cas de non-respect des présentes CGU, sans préavis ni indemnité.

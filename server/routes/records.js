@@ -207,14 +207,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 12 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.' });
     }
 
-    // Age 18+ verification (RGPD art. 8)
+    // Age 15+ verification (RGPD art. 8)
     if (dateDeNaissance) {
       const birth = new Date(dateDeNaissance);
       const today = new Date();
       const age = today.getFullYear() - birth.getFullYear() -
         (today < new Date(today.getFullYear(), birth.getMonth(), birth.getDate()) ? 1 : 0);
-      if (isNaN(age) || age < 18) {
-        return res.status(400).json({ error: 'Vous devez avoir au moins 18 ans pour vous inscrire.' });
+      if (isNaN(age) || age < 15) {
+        return res.status(400).json({ error: 'Vous devez avoir au moins 15 ans pour vous inscrire.' });
       }
     }
 
@@ -855,6 +855,7 @@ router.put('/update-profile', verifyToken, async (req, res) => {
       phone,
       openingHours,
       companyName,
+      priceDisplayMode,
       latitude,
       longitude,
       prenom,
@@ -888,6 +889,13 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     }
     if (openingHours !== undefined) updateData.openingHours = openingHours;
     if (companyName !== undefined) updateData.companyName = companyName;
+    if (priceDisplayMode !== undefined) {
+      const allowedPriceDisplayModes = ['exact', 'tiers', 'hidden'];
+      if (!allowedPriceDisplayModes.includes(priceDisplayMode)) {
+        return res.status(400).json({ error: 'Mode d\'affichage des prix invalide.' });
+      }
+      updateData.priceDisplayMode = priceDisplayMode;
+    }
 
     if (prenom !== undefined) {
       const cleanedPrenom = String(prenom).trim();

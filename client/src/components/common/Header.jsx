@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import '../css/AppleDesign.css';
 import '../css/Header.css';
 
-function Header({ user, notificationCount = 0 }) {
+function Header({ user, notificationCount = 0, newBookingCount = 0 }) {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -64,10 +64,17 @@ function Header({ user, notificationCount = 0 }) {
               <IoShieldCheckmark size={16} /> {t('admin')}
             </Link>
           )}
-          {user && (
-            <span style={{ ...navStyle, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <IoNotifications size={15} /> {notificationCount}
-            </span>
+          {user && user.isClient === false && (
+            <button
+              onClick={() => navigate('/bookings')}
+              className={`header-bell-btn${newBookingCount > 0 ? ' header-bell-active' : ''}`}
+              aria-label="Nouvelles demandes de rendez-vous"
+            >
+              <IoNotifications size={19} />
+              {newBookingCount > 0 && (
+                <span className="header-bell-badge">{newBookingCount > 9 ? '9+' : newBookingCount}</span>
+              )}
+            </button>
           )}
         </nav>
 
