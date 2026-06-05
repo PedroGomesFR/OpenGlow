@@ -102,6 +102,17 @@ const MAP_STYLES = {
     }
 };
 
+const getPriceTier = (price) => {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return null;
+    if (p <= 25) return '€';
+    if (p <= 45) return '€€';
+    if (p <= 80) return '€€€';
+    return '€€€€';
+};
+
+const PRICE_TIERS = ['€', '€€', '€€€', '€€€€'];
+
 const toFiniteNumber = (value) => {
     const parsed = typeof value === 'number' ? value : parseFloat(value);
     return Number.isFinite(parsed) ? parsed : null;
@@ -237,6 +248,7 @@ function MapView() {
     const [mapStyle, setMapStyle] = useState('standard');
     const [isMapStyleMenuOpen, setIsMapStyleMenuOpen] = useState(false);
     const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
+    const [selectedPriceTiers, setSelectedPriceTiers] = useState([]);
     const [mobileTab, setMobileTab] = useState('list'); // 'list' | 'map'
 
     const getProfessionalPath = (pro) => (pro?.slug ? `/pro/${pro.slug}` : `/professional/${pro?._id}`);
@@ -353,6 +365,13 @@ function MapView() {
             }
         }
 
+        if (selectedPriceTiers.length > 0) {
+            const tier = getPriceTier(pro.minPrice);
+            if (tier === null || !selectedPriceTiers.includes(tier)) {
+                return false;
+            }
+        }
+
         return true;
     });
 
@@ -445,6 +464,23 @@ function MapView() {
                         ))}
                     </div>
 
+                    <div className="price-tier-filter-row">
+                        <span className="price-tier-filter-label">{tx('filter_price', 'Prix')}</span>
+                        <div className="price-tier-buttons">
+                            {PRICE_TIERS.map((tier) => (
+                                <button
+                                    key={tier}
+                                    className={`price-tier-btn ${selectedPriceTiers.includes(tier) ? 'active' : ''}`}
+                                    onClick={() => setSelectedPriceTiers((prev) =>
+                                        prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier]
+                                    )}
+                                >
+                                    {tier}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="map-advanced-filters">
                         <label className="map-filter-field map-filter-field-full">
                             <span>{tx('search_action', 'Rechercher')}</span>
@@ -532,7 +568,12 @@ function MapView() {
                                 </div>
 
                                 <div className="pro-info">
-                                    <h3>{pro.companyName || `${pro.prenom} ${pro.nom}`}</h3>
+                                    <div className="pro-info-header">
+                                        <h3>{pro.companyName || `${pro.prenom} ${pro.nom}`}</h3>
+                                        {getPriceTier(pro.minPrice) && (
+                                            <span className="card-price-tier">{getPriceTier(pro.minPrice)}</span>
+                                        )}
+                                    </div>
                                     <p className="pro-profession">{getTranslatedProfessionLabel(pro.profession, t)}</p>
 
                                     <div className="pro-rating-distance">

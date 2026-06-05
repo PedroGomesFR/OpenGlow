@@ -376,6 +376,86 @@
     min-width: 0;
 }
 
+.pro-info-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.pro-info-header h3 {
+    margin: 0;
+    flex: 1;
+}
+
+.card-price-tier {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: #f0f4ff;
+    border: 1px solid #d0dcf7;
+    color: #2c5ae9;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Price tier filter */
+.price-tier-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 12px;
+    background: #f7f9fc;
+    border: 1px solid #e4e9f1;
+    margin-bottom: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.price-tier-filter-label {
+    font-size: 0.72rem;
+    color: #60708a;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.price-tier-buttons {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.price-tier-btn {
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #f0f4ff;
+    color: #2c5ae9;
+    border: 1px solid #d0dcf7;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.price-tier-btn:hover {
+    background: #dce8ff;
+    border-color: #a8c0f5;
+}
+
+.price-tier-btn.active {
+    background: linear-gradient(135deg, #1a3a9e, #2c5ae9);
+    color: white;
+    border-color: #1a3a9e;
+    box-shadow: 0 3px 8px rgba(28, 58, 158, 0.25);
+}
+
 .pro-info h3 {
     font-size: 1rem;
     font-weight: var(--font-weight-semibold);

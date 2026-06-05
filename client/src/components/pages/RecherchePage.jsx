@@ -39,6 +39,17 @@ const formatProfessionLabel = (value = '') => {
     }
     return value;
 };
+const getPriceTier = (price) => {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return null;
+    if (p <= 25) return '€';
+    if (p <= 45) return '€€';
+    if (p <= 80) return '€€€';
+    return '€€€€';
+};
+
+const PRICE_TIERS = ['€', '€€', '€€€', '€€€€'];
+
 const toFiniteNumber = (value) => {
     const parsed = typeof value === 'number' ? value : parseFloat(value);
     return Number.isFinite(parsed) ? parsed : null;
@@ -81,6 +92,7 @@ function RecherchePage() {
     const [sortBy, setSortBy] = useState('distance');
     const [userLocation, setUserLocation] = useState(null);
     const [isFiltersCollapsed, setIsFiltersCollapsed] = useState(true);
+    const [selectedPriceTiers, setSelectedPriceTiers] = useState([]);
 
     const professions = ['all', 'hairdresser', 'esthetician', 'barber', 'manicure', 'masseur'];
 
@@ -95,7 +107,7 @@ function RecherchePage() {
 
     useEffect(() => {
         filterProfessionals();
-    }, [searchQuery, selectedProfession, minRating, maxDistance, sortBy, professionals, userLocation, t]);
+    }, [searchQuery, selectedProfession, minRating, maxDistance, sortBy, professionals, userLocation, t, selectedPriceTiers]);
 
     const getUserLocation = () => {
         if (!navigator.geolocation) {
@@ -160,6 +172,13 @@ function RecherchePage() {
         if (Number(minRating) > 0) {
             const min = Number(minRating);
             filtered = filtered.filter((pro) => Number(pro.averageRating || 0) >= min);
+        }
+
+        if (selectedPriceTiers.length > 0) {
+            filtered = filtered.filter((pro) => {
+                const tier = getPriceTier(pro.minPrice);
+                return tier !== null && selectedPriceTiers.includes(tier);
+            });
         }
 
         if (userLocation && Number(maxDistance) < 100) {
@@ -264,6 +283,23 @@ function RecherchePage() {
                         ))}
                     </div>
 
+                    <div className="price-tier-filter-row">
+                        <span className="price-tier-filter-label">{tx('filter_price', 'Prix')}</span>
+                        <div className="price-tier-buttons">
+                            {PRICE_TIERS.map((tier) => (
+                                <button
+                                    key={tier}
+                                    className={`price-tier-btn ${selectedPriceTiers.includes(tier) ? 'active' : ''}`}
+                                    onClick={() => setSelectedPriceTiers((prev) =>
+                                        prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier]
+                                    )}
+                                >
+                                    {tier}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="search-advanced-filters">
                         <label className="search-filter-field">
                             <span>{tx('filter_sort', 'Trier')}</span>
@@ -344,7 +380,12 @@ function RecherchePage() {
                                 )}
 
                                 <div className="card-content">
-                                    <h3>{pro.companyName || `${pro.prenom} ${pro.nom}`}</h3>
+                                    <div className="card-header-row">
+                                        <h3>{pro.companyName || `${pro.prenom} ${pro.nom}`}</h3>
+                                        {getPriceTier(pro.minPrice) && (
+                                            <span className="card-price-tier">{getPriceTier(pro.minPrice)}</span>
+                                        )}
+                                    </div>
                                     <span className="profession-badge">{formatProfessionLabel(pro.profession || 'Professionnel')}</span>
 
                                     {pro.averageRating > 0 && (

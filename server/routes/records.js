@@ -693,28 +693,37 @@ router.get('/professionals', async (req, res) => {
           professionalId: { $in: professionalIds },
           isActive: { $ne: false }
         },
-        { projection: { professionalId: 1, name: 1 } }
+        { projection: { professionalId: 1, name: 1, price: 1 } }
       ).toArray()
       : [];
 
-    const servicesByProfessional = services.reduce((acc, service) => {
+    const servicesByProfessional = {};
+    const minPriceByProfessional = {};
+
+    for (const service of services) {
       const professionalId = String(service.professionalId || '');
       const serviceName = String(service.name || '').trim();
-      if (!professionalId || !serviceName) {
-        return acc;
+      if (!professionalId) continue;
+
+      if (serviceName) {
+        if (!servicesByProfessional[professionalId]) servicesByProfessional[professionalId] = [];
+        if (!servicesByProfessional[professionalId].includes(serviceName)) {
+          servicesByProfessional[professionalId].push(serviceName);
+        }
       }
-      if (!acc[professionalId]) {
-        acc[professionalId] = [];
+
+      const price = parseFloat(service.price);
+      if (Number.isFinite(price)) {
+        if (minPriceByProfessional[professionalId] === undefined || price < minPriceByProfessional[professionalId]) {
+          minPriceByProfessional[professionalId] = price;
+        }
       }
-      if (!acc[professionalId].includes(serviceName)) {
-        acc[professionalId].push(serviceName);
-      }
-      return acc;
-    }, {});
+    }
 
     const professionalsWithServices = professionalsWithSlug.map((professional) => ({
       ...professional,
-      offeredServices: servicesByProfessional[String(professional._id)] || []
+      offeredServices: servicesByProfessional[String(professional._id)] || [],
+      minPrice: minPriceByProfessional[String(professional._id)] ?? null
     }));
 
     res.status(200).json(professionalsWithServices);
