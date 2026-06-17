@@ -207,6 +207,13 @@
     outline: none;
 }
 
+.map-filter-field input.map-filter-range {
+    height: 18px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
 .map-filter-range::-webkit-slider-runnable-track {
     height: var(--slider-height);
     border-radius: 999px;
@@ -231,6 +238,7 @@
     background: #4f607a;
     box-shadow: 0 2px 6px rgba(20, 37, 63, 0.2);
     cursor: pointer;
+    margin-top: calc((var(--slider-height) - 16px) / 2);
 }
 
 .map-filter-range::-moz-range-thumb {
@@ -371,9 +379,14 @@
     font-size: 2rem;
 }
 
-.pro-info {
+.map-sidebar .pro-info {
     flex: 1;
     min-width: 0;
+    position: static !important;
+    margin-top: 0 !important;
+    display: flex;
+    flex-direction: column;
+    align-self: center;
 }
 
 .pro-info-header {
@@ -475,6 +488,8 @@
     padding: 0;
     font-size: 0.875rem;
     color: var(--text-secondary);
+    line-height: 1.35;
+    margin-top: 0;
     margin-bottom: var(--space-sm);
 }
 

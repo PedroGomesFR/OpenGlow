@@ -864,7 +864,6 @@ router.put('/update-profile', verifyToken, async (req, res) => {
       phone,
       openingHours,
       companyName,
-      priceDisplayMode,
       latitude,
       longitude,
       prenom,
@@ -898,13 +897,6 @@ router.put('/update-profile', verifyToken, async (req, res) => {
     }
     if (openingHours !== undefined) updateData.openingHours = openingHours;
     if (companyName !== undefined) updateData.companyName = companyName;
-    if (priceDisplayMode !== undefined) {
-      const allowedPriceDisplayModes = ['exact', 'tiers', 'hidden'];
-      if (!allowedPriceDisplayModes.includes(priceDisplayMode)) {
-        return res.status(400).json({ error: 'Mode d\'affichage des prix invalide.' });
-      }
-      updateData.priceDisplayMode = priceDisplayMode;
-    }
 
     if (prenom !== undefined) {
       const cleanedPrenom = String(prenom).trim();

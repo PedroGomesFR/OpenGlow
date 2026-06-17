@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IoArrowBack, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone, IoCall, IoCheckmarkCircle } from 'react-icons/io5';
+import { IoArrowBack, IoArrowForward, IoCut, IoCamera, IoCalendar, IoLocation, IoStar, IoTime, IoFolder, IoPricetag, IoMegaphone, IoCall, IoCheckmarkCircle } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import '../css/ProfessionalDetailPage.css';
 import { useToast } from '../common/ToastContext';
@@ -25,19 +25,7 @@ const formatOpeningHours = (str) => {
     return str;
 };
 
-const getPriceTier = (price) => {
-    const normalizedPrice = Number(price) || 0;
-    if (normalizedPrice <= 25) return '€';
-    if (normalizedPrice <= 45) return '€€';
-    if (normalizedPrice <= 80) return '€€€';
-    return '€€€€';
-};
-
-const formatDisplayedPrice = (price, mode) => {
-    if (mode === 'hidden') return null;
-    if (mode === 'tiers') return getPriceTier(price);
-    return `${price}€`;
-};
+const formatDisplayedPrice = (price) => `${price}€`;
 
 function ProfessionalDetailPage() {
     const { id, slug } = useParams();
@@ -210,7 +198,11 @@ function ProfessionalDetailPage() {
 
     const selectedServices = services.filter((service) => bookingData.serviceIds.includes(service._id));
     const selectedServicesTotal = selectedServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0);
-    const priceDisplayMode = professional?.priceDisplayMode || 'tiers';
+    const galleryPath = professional?.slug
+        ? `/pro/${professional.slug}/galerie`
+        : `/professional/${professional?._id || id}/galerie`;
+    const galleryPreviewPhotos = (professional.salonPhotos || []).slice(0, 6);
+    const remainingGalleryPhotos = Math.max((professional.salonPhotos || []).length - galleryPreviewPhotos.length, 0);
     const filteredServices = services.filter((service) => {
         if (!serviceSearch.trim()) return true;
         const q = serviceSearch.toLowerCase();
@@ -412,11 +404,9 @@ function ProfessionalDetailPage() {
                                                 </div>
                                                 {service.description && <div className="text-secondary" style={{ fontSize: '12px', marginTop: '4px' }}>{service.description}</div>}
                                             </div>
-                                            {priceDisplayMode !== 'hidden' && (
-                                                <div style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                                    <IoPricetag size={14} /> {formatDisplayedPrice(service.price, priceDisplayMode)}
-                                                </div>
-                                            )}
+                                            <div style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                <IoPricetag size={14} /> {formatDisplayedPrice(service.price)}
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -426,13 +416,30 @@ function ProfessionalDetailPage() {
                         </div>
 
                         {professional.salonPhotos?.length > 0 && (
-                            <div className="card">
-                                <h2 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}><IoCamera /> {t('gallery_title')}</h2>
-                                <div className="grid grid-3">
-                                    {professional.salonPhotos.map((photo, i) => (
-                                        <div key={i} style={{ aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden' }}>
-                                            <img src={`${window.BASE_URL}${photo}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                        </div>
+                            <div className="card professional-gallery-preview-card">
+                                <div className="professional-gallery-preview-head">
+                                    <h2><IoCamera /> {t('gallery_title')}</h2>
+                                    <button
+                                        type="button"
+                                        className="btn btn-outline btn-sm"
+                                        onClick={() => navigate(galleryPath)}
+                                    >
+                                        Voir toute la galerie <IoArrowForward />
+                                    </button>
+                                </div>
+                                <div className="professional-gallery-preview-grid">
+                                    {galleryPreviewPhotos.map((photo, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            className="professional-gallery-preview-item"
+                                            onClick={() => navigate(`${galleryPath}?photo=${i}`)}
+                                        >
+                                            <img src={`${window.BASE_URL}${photo}`} alt={`Galerie ${i + 1}`} />
+                                            {remainingGalleryPhotos > 0 && i === galleryPreviewPhotos.length - 1 && (
+                                                <span>+{remainingGalleryPhotos}</span>
+                                            )}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -489,9 +496,7 @@ function ProfessionalDetailPage() {
                                                         )}
                                                     </span>
                                                 </span>
-                                                {priceDisplayMode !== 'hidden' && (
-                                                    <strong className="booking-service-option__price">{formatDisplayedPrice(service.price, priceDisplayMode)}</strong>
-                                                )}
+                                                <strong className="booking-service-option__price">{formatDisplayedPrice(service.price)}</strong>
                                             </button>
                                         );
                                     })}
@@ -570,12 +575,10 @@ function ProfessionalDetailPage() {
 
                             {selectedServices.length > 0 && bookingData.hour && (
                                 <div style={{ padding: '15px', background: '#F5F5F7', borderRadius: '12px', marginBottom: '20px' }}>
-                                    {priceDisplayMode !== 'hidden' && (
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                                            <span>{t('total_label')}</span>
-                                            <strong>{formatDisplayedPrice(selectedServicesTotal, priceDisplayMode)}</strong>
-                                        </div>
-                                    )}
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+                                        <span>{t('total_label')}</span>
+                                        <strong>{formatDisplayedPrice(selectedServicesTotal)}</strong>
+                                    </div>
                                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
                                         {selectedServices.map((service) => service.name).join(', ')}
                                     </div>

@@ -27,6 +27,7 @@ import ProfilePage from './components/pages/ProfilePage.jsx';
 import PlanningPage from './components/pages/PlanningPage.jsx';
 import RecherchePage from './components/pages/RecherchePage.jsx';
 import ProfessionalDetailPage from './components/pages/ProfessionalDetailPage.jsx';
+import ProfessionalGalleryPage from './components/pages/ProfessionalGalleryPage.jsx';
 import BookingsPage from './components/pages/BookingsPage.jsx';
 import ServiceManagement from './components/pages/ServiceManagement.jsx';
 import ReviewsPage from './components/pages/ReviewsPage.jsx';
@@ -393,6 +394,8 @@ function AppShell() {
 
             <Route path="/recherche" element={<RecherchePage />} />
 
+            <Route path="/pro/:slug/galerie" element={<ProfessionalGalleryPage />} />
+            <Route path="/professional/:id/galerie" element={<ProfessionalGalleryPage />} />
             <Route path="/pro/:slug" element={<ProfessionalDetailPage />} />
             <Route path="/professional/:id" element={<ProfessionalDetailPage />} />
 
