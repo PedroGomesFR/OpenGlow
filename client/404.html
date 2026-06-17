@@ -1,15 +1,24 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Redirection...</title>
+  <title>OpenGlow</title>
+  <link rel="icon" href="assets/logo.png" type="image/png">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4839643786861276"
+    crossorigin="anonymous"></script>
   <script>
-    // Fallback for hosts without SPA rewrites: send unknown routes to app root.
-    window.location.replace('/');
+    const isLocal = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    window.BASE_URL = isLocal ? 'http://127.0.0.1:8100' : 'https://openglow.alwaysdata.net';
+    window.API_URL = window.BASE_URL + '/api';
+    window.RECAPTCHA_SITE_KEY = '6LcgJM8sAAAAAKz6AXH6vLXwKKrmPkPfjkZYcDM6';
   </script>
 </head>
+
 <body>
-  <p>Redirection vers l'application...</p>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
 </body>
+
 </html>
