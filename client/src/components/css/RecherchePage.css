@@ -31,12 +31,11 @@
   /* Apple-like soft shadow */
   border-radius: 999px;
   /* Pill shape */
-  transition: all 0.3s ease;
+  transition: box-shadow 0.2s ease;
 }
 
 .search-bar:focus-within {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  box-shadow: 0 0 0 3px rgba(26, 92, 107, 0.12), 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 .search-bar input {
@@ -106,13 +105,12 @@
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
-  transition: all 0.22s ease;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
 }
 
 .filter-btn:hover {
   background: #eef3fb;
   border-color: #cfdcf0;
-  transform: translateY(-1px);
 }
 
 .filter-btn.active {
@@ -321,7 +319,7 @@
   overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.03);
-  transition: all 0.3s ease;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -329,7 +327,8 @@
 
 .professional-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-color: rgba(0, 0, 0, 0.06);
 }
 
 .card-image {
@@ -526,12 +525,10 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

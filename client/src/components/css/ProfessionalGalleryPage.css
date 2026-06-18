@@ -107,7 +107,6 @@
 }
 
 .professional-gallery-tile:hover img {
-    transform: scale(1.045);
     filter: brightness(0.82);
 }
 

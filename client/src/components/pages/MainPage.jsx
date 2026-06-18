@@ -219,15 +219,7 @@ function MainPage() {
                     cursor: 'pointer',
                     overflow: 'hidden',
                     padding: 0,
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-8px)';
-                    e.currentTarget.style.boxShadow = '0 20px 40px rgba(0,0,0,0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    transition: 'border-color 0.18s ease, box-shadow 0.18s ease'
                   }}
                 >
                   <div style={{

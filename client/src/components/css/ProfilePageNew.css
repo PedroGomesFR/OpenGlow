@@ -53,11 +53,6 @@
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--primary);
-  transition: var(--transition);
-}
-
-.profile-photo:hover {
-  transform: scale(1.05);
 }
 
 .profile-photo-placeholder {
@@ -86,8 +81,6 @@
 
 .upload-photo-btn:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
 }
 
 .profile-info {
@@ -220,11 +213,6 @@
   gap: 8px;
 }
 
-.btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
-}
-
 .btn-primary {
   background: var(--primary);
   color: white;
@@ -295,8 +283,6 @@
 
 .add-service-btn:hover {
   background: var(--primary-dark);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow);
 }
 
 .services-list {
@@ -313,12 +299,6 @@
   border-radius: var(--radius-sm);
   border-left: 4px solid var(--primary);
   transition: var(--transition);
-}
-
-.service-card:hover {
-  background: white;
-  box-shadow: var(--shadow);
-  transform: translateX(4px);
 }
 
 .service-info {
@@ -398,7 +378,6 @@
 
 .icon-btn-edit:hover {
   background: #0b7dda;
-  transform: scale(1.1);
 }
 
 .icon-btn-delete {
@@ -408,7 +387,6 @@
 
 .icon-btn-delete:hover {
   background: #da190b;
-  transform: scale(1.1);
 }
 
 .icon-btn-toggle {
@@ -422,7 +400,7 @@
 }
 
 .icon-btn-toggle:hover {
-  transform: scale(1.1);
+  background: var(--bg-light);
 }
 
 /* Gallery Section */
@@ -449,8 +427,7 @@
 }
 
 .salon-photo-item:hover {
-  transform: scale(1.03);
-  box-shadow: var(--shadow-hover);
+  box-shadow: var(--shadow);
 }
 
 .salon-photo {
@@ -483,7 +460,6 @@
 
 .delete-photo-btn:hover {
   background: var(--danger);
-  transform: scale(1.1);
 }
 
 /* Modal */
@@ -525,12 +501,10 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 

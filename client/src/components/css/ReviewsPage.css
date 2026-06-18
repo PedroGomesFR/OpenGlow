@@ -106,7 +106,7 @@
 }
 
 .star.interactive:hover {
-    transform: scale(1.15);
+    color: #F5A623;
 }
 
 /* Stats Section */
@@ -178,11 +178,6 @@
 /* Review Card */
 .review-card {
     padding: var(--space-xl);
-    transition: all var(--transition-base);
-}
-
-.review-card:hover {
-    box-shadow: var(--shadow-md);
 }
 
 .review-header {

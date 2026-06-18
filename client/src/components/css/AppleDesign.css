@@ -204,7 +204,7 @@ p {
 }
 
 .btn:active {
-  transform: scale(0.96);
+  opacity: 0.9;
 }
 
 .btn-primary {
@@ -287,7 +287,7 @@ p {
 }
 
 .icon-btn:active {
-  transform: scale(0.92);
+  opacity: 0.9;
 }
 
 /* ========================================
@@ -300,12 +300,6 @@ p {
   padding: var(--space-lg);
   box-shadow: var(--shadow-sm);
   border: 1px solid var(--gray-200);
-  transition: all var(--transition-base);
-}
-
-.card:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
 }
 
 .card-header {
@@ -460,12 +454,10 @@ p {
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
 
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -583,7 +575,7 @@ p {
 }
 
 .star.interactive:hover {
-  transform: scale(1.1);
+  color: #F5A623;
 }
 
 /* ========================================

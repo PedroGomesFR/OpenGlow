@@ -107,10 +107,6 @@
   cursor: pointer;
 }
 
-.booking-item:hover {
-  background: #fafafa;
-}
-
 .booking-item:last-child {
   border-bottom: none;
 }

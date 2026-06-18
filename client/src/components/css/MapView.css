@@ -340,13 +340,7 @@
     border: 2px solid var(--gray-200);
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.pro-card:hover {
-    border-color: var(--primary);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+    transition: border-color var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .pro-card.selected {
