@@ -153,6 +153,34 @@ uploadRouter.post('/salon-photos', upload.array('salonPhotos', 10), async (req, 
   }
 });
 
+// ─── Définir la photo de couverture (pros) ────────────────────────────────────
+uploadRouter.put('/cover-photo', async (req, res) => {
+  try {
+    const db = await connectDB();
+    const userId = req.userId;
+    const { photoUrl } = req.body;
+
+    if (!photoUrl) return res.status(400).json({ error: 'Photo URL is required' });
+
+    const user = await db.collection('users').findOne({ _id: new ObjectId(userId) });
+    if (!user || user.isClient) {
+      return res.status(403).json({ error: 'Only professionals can set a cover photo' });
+    }
+    if (!Array.isArray(user.salonPhotos) || !user.salonPhotos.includes(photoUrl)) {
+      return res.status(400).json({ error: 'Cover photo must be one of your gallery photos' });
+    }
+
+    await db.collection('users').updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { coverPhoto: photoUrl, updatedAt: new Date() } }
+    );
+
+    res.status(200).json({ message: 'Cover photo updated successfully', coverPhoto: photoUrl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ─── Supprimer une photo du salon ─────────────────────────────────────────────
 uploadRouter.delete('/salon-photo', async (req, res) => {
   try {
@@ -166,13 +194,21 @@ uploadRouter.delete('/salon-photo', async (req, res) => {
     const fileId = photoUrl.split('/').pop();
     await deleteFromGridFS(db, fileId);
 
-    await db.collection('users').updateOne(
+    const updateOps = {
+      $pull: { salonPhotos: photoUrl, salonPhotoIds: fileId },
+      $set: { updatedAt: new Date() }
+    };
+
+    // Si la photo supprimée était la couverture, on retire le champ coverPhoto
+    const user = await db.collection('users').findOne(
       { _id: new ObjectId(userId) },
-      {
-        $pull: { salonPhotos: photoUrl, salonPhotoIds: fileId },
-        $set: { updatedAt: new Date() }
-      }
+      { projection: { coverPhoto: 1 } }
     );
+    if (user?.coverPhoto === photoUrl) {
+      updateOps.$unset = { coverPhoto: '' };
+    }
+
+    await db.collection('users').updateOne({ _id: new ObjectId(userId) }, updateOps);
 
     res.status(200).json({ message: 'Photo deleted successfully' });
   } catch (error) {
@@ -186,14 +222,15 @@ uploadRouter.get('/user-photos/:userId', async (req, res) => {
     const db = await connectDB();
     const user = await db.collection('users').findOne(
       { _id: new ObjectId(req.params.userId) },
-      { projection: { profilePhoto: 1, salonPhotos: 1 } }
+      { projection: { profilePhoto: 1, salonPhotos: 1, coverPhoto: 1 } }
     );
 
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     res.status(200).json({
       profilePhoto: user.profilePhoto || null,
-      salonPhotos: user.salonPhotos || []
+      salonPhotos: user.salonPhotos || [],
+      coverPhoto: user.coverPhoto || null
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

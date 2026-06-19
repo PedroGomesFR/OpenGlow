@@ -203,6 +203,7 @@ function ProfessionalDetailPage() {
         : `/professional/${professional?._id || id}/galerie`;
     const galleryPreviewPhotos = (professional.salonPhotos || []).slice(0, 6);
     const remainingGalleryPhotos = Math.max((professional.salonPhotos || []).length - galleryPreviewPhotos.length, 0);
+    const coverPhoto = professional.coverPhoto || professional.salonPhotos?.[0];
     const filteredServices = services.filter((service) => {
         if (!serviceSearch.trim()) return true;
         const q = serviceSearch.toLowerCase();
@@ -216,8 +217,8 @@ function ProfessionalDetailPage() {
             {/* Banner */}
             <div style={{
                 height: '300px',
-                background: professional.salonPhotos?.[0]
-                    ? `url(${window.BASE_URL}${professional.salonPhotos[0]}) center/cover`
+                background: coverPhoto
+                    ? `url(${window.BASE_URL}${coverPhoto}) center/cover`
                     : 'linear-gradient(135deg, #1d1d1f 0%, #434344 100%)',
                 position: 'relative'
             }}>

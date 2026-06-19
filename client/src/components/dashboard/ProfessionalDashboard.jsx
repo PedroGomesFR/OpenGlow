@@ -16,7 +16,8 @@ import {
     IoCamera,
     IoMegaphone,
     IoEye,
-    IoEyeOff
+    IoEyeOff,
+    IoStarOutline
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import '../css/ProfessionalDashboard.css';
@@ -219,6 +220,26 @@ function ProfessionalDashboard({ user, setUser }) {
         }
     };
 
+    const handleSetCover = async (photoUrl) => {
+        const token = localStorage.getItem('token');
+        try {
+            const response = await fetch(window.API_URL + '/uploads/cover-photo', {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ photoUrl }),
+            });
+            if (response.ok) {
+                const updatedUser = { ...user, coverPhoto: photoUrl };
+                setUser(updatedUser);
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                toast(t('pro_cover_updated'), 'success');
+            }
+        } catch (error) { console.error(error); }
+    };
+
     const handleChangePassword = async (e) => {
         e.preventDefault();
 
@@ -366,21 +387,51 @@ function ProfessionalDashboard({ user, setUser }) {
                                             gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
                                             gap: '16px'
                                         }}>
-                                            {user.salonPhotos.map((photo, index) => (
+                                            {user.salonPhotos.map((photo, index) => {
+                                                const effectiveCover = user.coverPhoto || user.salonPhotos[0];
+                                                const isCover = photo === effectiveCover;
+                                                return (
                                                 <div key={index} style={{
                                                     aspectRatio: '1',
                                                     borderRadius: '12px',
                                                     overflow: 'hidden',
                                                     boxShadow: 'var(--shadow-sm)',
-                                                    position: 'relative'
+                                                    position: 'relative',
+                                                    border: isCover ? '2px solid var(--primary)' : '2px solid transparent'
                                                 }}>
-                                                    <img 
-                                                        src={`${window.BASE_URL}${photo}`} 
-                                                        alt={`Salon gallery ${index + 1}`} 
+                                                    <img
+                                                        src={`${window.BASE_URL}${photo}`}
+                                                        alt={`Salon gallery ${index + 1}`}
                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                     />
+                                                    {isCover ? (
+                                                        <span style={{
+                                                            position: 'absolute', top: '8px', left: '8px',
+                                                            background: 'var(--primary)', color: '#fff',
+                                                            fontSize: '11px', fontWeight: 600, padding: '4px 8px',
+                                                            borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '4px'
+                                                        }}>
+                                                            <IoStar size={11} /> {t('pro_cover_badge')}
+                                                        </span>
+                                                    ) : (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSetCover(photo)}
+                                                            title={t('pro_set_cover')}
+                                                            style={{
+                                                                position: 'absolute', bottom: '8px', left: '8px', right: '8px',
+                                                                background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none',
+                                                                borderRadius: '8px', padding: '6px 8px', fontSize: '12px',
+                                                                fontWeight: 500, cursor: 'pointer', display: 'flex',
+                                                                alignItems: 'center', justifyContent: 'center', gap: '4px'
+                                                            }}
+                                                        >
+                                                            <IoStarOutline size={13} /> {t('pro_set_cover')}
+                                                        </button>
+                                                    )}
                                                 </div>
-                                            ))}
+                                                );
+                                            })}
                                         </div>
                                     ) : (
                                         <div className="pro-gallery-empty" style={{

@@ -24,7 +24,9 @@
 
 .map-view-page {
     display: flex;
-    min-height: calc(100dvh - var(--app-header-height));
+    height: calc(100dvh - var(--app-header-height));
+    min-height: 0;
+    overflow: hidden;
     background: var(--bg-secondary);
     width: calc(100% + (2 * var(--container-inline)));
     margin-left: calc(-1 * var(--container-inline));
@@ -39,7 +41,7 @@
     border-right: 1px solid var(--gray-200);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 .sidebar-header {
@@ -322,8 +324,6 @@
 
 /* Professionals List */
 .professionals-list {
-    flex: 1;
-    overflow-y: auto;
     padding: var(--space-lg);
     display: flex;
     flex-direction: column;

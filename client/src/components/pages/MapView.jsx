@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import { SiGooglemaps, SiWaze } from 'react-icons/si';
+import { SiGooglemaps, SiWaze, SiApple } from 'react-icons/si';
 import { IoLocation, IoStar, IoBusiness, IoLocationOutline, IoLayers, IoChevronDown } from 'react-icons/io5';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -70,7 +70,13 @@ const createUserIcon = () => {
 };
 
 const userIcon = createUserIcon();
-const defaultProIcon = createProIcon('#1C1C1E', 36); // Apple Dark Gray 
+const defaultProIcon = createProIcon('#1C1C1E', 36); // Apple Dark Gray
+
+// Détecte un appareil Apple (iPhone/iPad/iPod) pour proposer Plans (Apple Maps)
+const isAppleDevice = typeof navigator !== 'undefined' && (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+);
 const selectedProIcon = createProIcon('#000000', 48, true); // Pure Black & Larger for selection
 
 const DEFAULT_CENTER = { lat: 48.8566, lng: 2.3522 };
@@ -712,6 +718,19 @@ function MapView() {
                                         >
                                             <SiWaze color="#33CCFF" size={16} />
                                         </a>
+                                        {isAppleDevice && (
+                                            <a
+                                                href={`https://maps.apple.com/?daddr=${pro.latitude},${pro.longitude}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                style={{
+                                                    background: '#eee', color: '#333', textDecoration: 'none', padding: '5px 8px', borderRadius: '5px', fontSize: '12px', display: 'flex', alignItems: 'center'
+                                                }}
+                                                title={t('map_apple_maps')}
+                                            >
+                                                <SiApple color="#000" size={16} />
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </Popup>
@@ -768,6 +787,17 @@ function MapView() {
                                 >
                                     <SiWaze color="#33CCFF" size={16} /> Waze
                                 </a>
+                                {isAppleDevice && (
+                                    <a
+                                        href={`https://maps.apple.com/?daddr=${selectedPro.latitude},${selectedPro.longitude}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="btn btn-outline btn-sm"
+                                        style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                    >
+                                        <SiApple color="#000" size={16} /> Plans
+                                    </a>
+                                )}
                                 <button className="btn btn-outline btn-sm" onClick={() => setSelectedPro(null)}>{t('action_close')}</button>
                             </div>
                         </div>
