@@ -754,6 +754,26 @@ function ProfessionalDashboard({ user, setUser }) {
 
                 <div className="logout-btn" style={{ borderTop: '1px solid #E5E5E5', paddingTop: '20px' }}>
                     <button
+                        onClick={() => window.open(user?.slug ? `/pro/${user.slug}` : `/professional/${user._id || user.id}`, '_blank', 'noopener')}
+                        title={t('pro_client_view_desc') || 'Voir votre page comme un client'}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                            padding: '12px 16px',
+                            border: 'none',
+                            background: 'transparent',
+                            color: '#1d1d1f',
+                            cursor: 'pointer',
+                            fontSize: '14px',
+                            fontWeight: '500',
+                            gap: '10px'
+                        }}
+                    >
+                        <IoEye />
+                        {t('pro_client_view') || 'Aperçu client'}
+                    </button>
+                    <button
                         onClick={() => navigate('/settings')}
                         style={{
                             display: 'flex',

@@ -21,13 +21,58 @@ const buildBookingServices = (services) =>
     category: service.category || '',
   }));
 
+const round2 = (value) => Math.round((Number(value) || 0) * 100) / 100;
+
+// Récupère les promotions actives d'un professionnel (annonces de type 'promotion')
+const fetchActivePromos = async (db, professionalId) => {
+  const now = new Date();
+  return db.collection('announcements').find({
+    professionalId: new ObjectId(professionalId),
+    type: 'promotion',
+    isActive: true,
+    discountPercent: { $gt: 0 },
+    $and: [
+      { $or: [{ startDate: null }, { startDate: { $lte: now } }] },
+      { $or: [{ endDate: null }, { endDate: { $gte: now } }] },
+    ],
+  }).toArray();
+};
+
+// Sélectionne la meilleure promo applicable à une prestation
+// (promo ciblée sur ce service, sinon promo globale serviceId=null)
+const bestPromoForService = (promos, serviceId) => {
+  const applicable = promos.filter((p) => !p.serviceId || String(p.serviceId) === String(serviceId));
+  if (applicable.length === 0) return null;
+  return applicable.reduce((best, p) => (p.discountPercent > (best?.discountPercent || 0) ? p : best), null);
+};
+
+// Applique la remise à chaque prestation et conserve le prix d'origine
+const applyPromosToBookingServices = (bookingServices, promos) =>
+  bookingServices.map((service) => {
+    const originalPrice = Number(service.price) || 0;
+    const promo = bestPromoForService(promos, service.id);
+    if (!promo) return { ...service, originalPrice };
+    const discountPercent = Number(promo.discountPercent) || 0;
+    return {
+      ...service,
+      originalPrice,
+      price: round2(originalPrice * (1 - discountPercent / 100)),
+      discountPercent,
+      promoId: String(promo._id),
+      promoTitle: promo.title || null,
+    };
+  });
+
 const summarizeBookingServices = (bookingServices) => {
-  const totalPrice = bookingServices.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+  const totalPrice = round2(bookingServices.reduce((sum, item) => sum + (Number(item.price) || 0), 0));
+  const totalOriginal = round2(bookingServices.reduce((sum, item) => sum + (Number(item.originalPrice ?? item.price) || 0), 0));
   const totalDuration = bookingServices.reduce((sum, item) => sum + (Number(item.duration) || 0), 0);
   return {
     serviceId: bookingServices[0]?.id || null,
     serviceName: bookingServices.map((item) => item.name).join(' + '),
     servicePrice: totalPrice,
+    originalServicePrice: totalOriginal,
+    totalDiscount: round2(totalOriginal - totalPrice),
     serviceDuration: totalDuration,
   };
 };
@@ -87,7 +132,9 @@ bookingRouter.post('/create', async (req, res) => {
     const servicesById = new Map(services.map((service) => [String(service._id), service]));
     const orderedServices = selectedServiceIds.map((id) => servicesById.get(id)).filter(Boolean);
     const bookingServices = buildBookingServices(orderedServices);
-    const serviceSummary = summarizeBookingServices(bookingServices);
+    const promos = await fetchActivePromos(db, professionalId);
+    const pricedServices = applyPromosToBookingServices(bookingServices, promos);
+    const serviceSummary = summarizeBookingServices(pricedServices);
 
     // Get professional details
     const professional = await db.collection('users').findOne({ _id: new ObjectId(professionalId) });
@@ -105,10 +152,12 @@ bookingRouter.post('/create', async (req, res) => {
       clientPhone: client.phone || null,
       professionalId,
       professionalName: professional.companyName || `${professional.prenom} ${professional.nom}`,
-      services: bookingServices,
+      services: pricedServices,
       serviceId: serviceSummary.serviceId,
       serviceName: serviceSummary.serviceName,
       servicePrice: serviceSummary.servicePrice,
+      originalServicePrice: serviceSummary.originalServicePrice,
+      totalDiscount: serviceSummary.totalDiscount,
       serviceDuration: serviceSummary.serviceDuration,
       date,
       time,
@@ -195,7 +244,9 @@ bookingRouter.post('/professional/create', async (req, res) => {
     const servicesById = new Map(services.map((service) => [String(service._id), service]));
     const orderedServices = selectedServiceIds.map((id) => servicesById.get(id)).filter(Boolean);
     const bookingServices = buildBookingServices(orderedServices);
-    const serviceSummary = summarizeBookingServices(bookingServices);
+    const promos = await fetchActivePromos(db, professionalId);
+    const pricedServices = applyPromosToBookingServices(bookingServices, promos);
+    const serviceSummary = summarizeBookingServices(pricedServices);
 
     const newBooking = {
       clientId: null, // No client ID for walk-ins
@@ -204,10 +255,12 @@ bookingRouter.post('/professional/create', async (req, res) => {
       clientPhone: clientPhone || '',
       professionalId,
       professionalName: professional.companyName || `${professional.prenom} ${professional.nom}`,
-      services: bookingServices,
+      services: pricedServices,
       serviceId: serviceSummary.serviceId,
       serviceName: serviceSummary.serviceName,
       servicePrice: serviceSummary.servicePrice,
+      originalServicePrice: serviceSummary.originalServicePrice,
+      totalDiscount: serviceSummary.totalDiscount,
       serviceDuration: serviceSummary.serviceDuration,
       date,
       time,
@@ -291,6 +344,10 @@ bookingRouter.put('/:id/add-services', async (req, res) => {
           price: Number(item.price) || 0,
           duration: Number(item.duration) || 0,
           category: item.category || '',
+          originalPrice: Number(item.originalPrice ?? item.price) || 0,
+          ...(item.discountPercent ? { discountPercent: item.discountPercent } : {}),
+          ...(item.promoId ? { promoId: item.promoId } : {}),
+          ...(item.promoTitle ? { promoTitle: item.promoTitle } : {}),
         }))
       : [{
           id: String(booking.serviceId),
@@ -298,10 +355,15 @@ bookingRouter.put('/:id/add-services', async (req, res) => {
           price: Number(booking.servicePrice) || 0,
           duration: Number(booking.serviceDuration) || 0,
           category: '',
+          originalPrice: Number(booking.originalServicePrice ?? booking.servicePrice) || 0,
         }].filter((item) => item.id && ObjectId.isValid(item.id));
 
     const existingIds = new Set(existingServices.map((service) => String(service.id)));
-    const newServices = buildBookingServices(services).filter((service) => !existingIds.has(String(service.id)));
+    const promos = await fetchActivePromos(db, professionalId);
+    const newServices = applyPromosToBookingServices(
+      buildBookingServices(services).filter((service) => !existingIds.has(String(service.id))),
+      promos
+    );
 
     if (newServices.length === 0) {
       return res.status(400).json({ error: 'Selected services are already attached to this booking' });
@@ -318,6 +380,8 @@ bookingRouter.put('/:id/add-services', async (req, res) => {
           serviceId: serviceSummary.serviceId,
           serviceName: serviceSummary.serviceName,
           servicePrice: serviceSummary.servicePrice,
+          originalServicePrice: serviceSummary.originalServicePrice,
+          totalDiscount: serviceSummary.totalDiscount,
           serviceDuration: serviceSummary.serviceDuration,
           updatedAt: new Date(),
         },

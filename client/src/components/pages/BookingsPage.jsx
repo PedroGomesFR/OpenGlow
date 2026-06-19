@@ -295,7 +295,18 @@ function BookingsPage() {
                                     <div><strong>{t('label_date')}:</strong> {new Date(booking.date).toLocaleDateString(t('locale') === 'en' ? 'en-US' : 'fr-FR')}</div>
                                     <div><strong>{t('label_time')}:</strong> {booking.time}</div>
                                     <div><strong>{t('label_duration')}:</strong> {booking.serviceDuration} min</div>
-                                    <div><strong>{t('label_price')}:</strong> {booking.servicePrice}€</div>
+                                    <div>
+                                        <strong>{t('label_price')}:</strong>{' '}
+                                        {booking.totalDiscount > 0 && booking.originalServicePrice ? (
+                                            <>
+                                                <span style={{ textDecoration: 'line-through', color: '#86868b', marginRight: '6px' }}>{booking.originalServicePrice}€</span>
+                                                <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{booking.servicePrice}€</span>
+                                                <span className="badge badge-primary" style={{ marginLeft: '6px', fontSize: '11px' }}>{t('promo_applied')}</span>
+                                            </>
+                                        ) : (
+                                            <>{booking.servicePrice}€</>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {booking.notes && (

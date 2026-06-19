@@ -198,6 +198,24 @@ function ProfessionalDetailPage() {
 
     const selectedServices = services.filter((service) => bookingData.serviceIds.includes(service._id));
     const selectedServicesTotal = selectedServices.reduce((sum, service) => sum + (Number(service.price) || 0), 0);
+    // Promos actives (annonces de type promotion avec remise) appliquées en aperçu — le backend reste l'autorité au moment de la réservation
+    const promoNow = new Date();
+    const activePromos = announcements.filter(
+        (a) => (a.type === 'promotion' || a.discountPercent) && Number(a.discountPercent) > 0 && a.isActive !== false
+            && (!a.startDate || new Date(a.startDate) <= promoNow)
+            && (!a.endDate || new Date(a.endDate) >= promoNow)
+    );
+    const bestPromoFor = (service) => {
+        const applicable = activePromos.filter((p) => !p.serviceId || String(p.serviceId) === String(service._id));
+        if (!applicable.length) return null;
+        return applicable.reduce((best, p) => (Number(p.discountPercent) > (best ? Number(best.discountPercent) : 0) ? p : best), null);
+    };
+    const selectedServicesDiscounted = Math.round(selectedServices.reduce((sum, service) => {
+        const promo = bestPromoFor(service);
+        const price = Number(service.price) || 0;
+        return sum + (promo ? price * (1 - Number(promo.discountPercent) / 100) : price);
+    }, 0) * 100) / 100;
+    const hasActivePromo = selectedServicesDiscounted < selectedServicesTotal - 0.001;
     const galleryPath = professional?.slug
         ? `/pro/${professional.slug}/galerie`
         : `/professional/${professional?._id || id}/galerie`;
@@ -255,9 +273,15 @@ function ProfessionalDetailPage() {
                                 </span>
                             </div>
                             {professional.address && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#86868b', fontSize: '13px', marginBottom: '8px' }}>
-                                    <IoLocation size={14} /> {professional.address}
-                                </div>
+                                <a
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(professional.address)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title={t('open_in_maps') || 'Ouvrir dans Maps'}
+                                    style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: '#86868b', fontSize: '13px', marginBottom: '8px', textDecoration: 'none' }}
+                                >
+                                    <IoLocation size={14} /> <span style={{ textDecoration: 'underline' }}>{professional.address}</span>
+                                </a>
                             )}
                             {professional.description && (
                                 <p style={{ margin: 0, color: '#555', fontSize: '14px', lineHeight: '1.6', maxWidth: '540px' }}>
@@ -578,7 +602,18 @@ function ProfessionalDetailPage() {
                                 <div style={{ padding: '15px', background: '#F5F5F7', borderRadius: '12px', marginBottom: '20px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                                         <span>{t('total_label')}</span>
-                                        <strong>{formatDisplayedPrice(selectedServicesTotal)}</strong>
+                                        <strong>
+                                            {hasActivePromo ? (
+                                                <>
+                                                    <span style={{ textDecoration: 'line-through', color: '#86868b', marginRight: '6px', fontWeight: 400 }}>
+                                                        {formatDisplayedPrice(selectedServicesTotal)}
+                                                    </span>
+                                                    <span style={{ color: 'var(--primary)' }}>{formatDisplayedPrice(selectedServicesDiscounted)}</span>
+                                                </>
+                                            ) : (
+                                                formatDisplayedPrice(selectedServicesTotal)
+                                            )}
+                                        </strong>
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#666', marginBottom: '5px' }}>
                                         {selectedServices.map((service) => service.name).join(', ')}
