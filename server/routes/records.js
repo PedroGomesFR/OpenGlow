@@ -34,6 +34,14 @@ const resetPasswordLimiter = rateLimit({
   message: { error: 'Trop de tentatives. Veuillez réessayer dans 15 minutes.' }
 });
 
+const registerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de tentatives d\'inscription. Veuillez réessayer dans 15 minutes.' }
+});
+
 const PROFESSIONAL_SLUG_INDEX_CREATED_FLAG = '__professionalSlugIndexCreated';
 
 const slugifyValue = (value) => {
@@ -136,7 +144,10 @@ const verifyCaptcha = async (token, req) => {
   if (host.startsWith('localhost') || host.startsWith('127.0.0.1')) return true;
 
   const secret = process.env.RECAPTCHA_SECRET_KEY;
-  if (!secret) return true; // No key configured → bypass
+  if (!secret) {
+    console.error('[reCAPTCHA] RECAPTCHA_SECRET_KEY is not set — rejecting request.');
+    return false;
+  }
 
   // No token sent from client
   if (!token) return false;
@@ -153,8 +164,8 @@ const verifyCaptcha = async (token, req) => {
       const configErrors = ['invalid-input-secret', 'missing-input-secret'];
       const hasConfigError = (data['error-codes'] || []).some(e => configErrors.includes(e));
       if (hasConfigError) {
-        console.warn('[reCAPTCHA] Config error (check secret key on Render):', data['error-codes']);
-        return true; // Fail-open on misconfiguration — don't block users
+        console.error('[reCAPTCHA] Config error — check RECAPTCHA_SECRET_KEY on the server:', data['error-codes']);
+        return false;
       }
       console.warn('[reCAPTCHA] Verification failed:', data['error-codes']);
       return false; // Real invalid token (bot)
@@ -192,7 +203,7 @@ const isPasswordStrong = (password) => {
 const hashResetCode = (code) => createHash('sha256').update(String(code)).digest('hex');
 
 // Register route
-router.post('/register', async (req, res) => {
+router.post('/register', registerLimiter, async (req, res) => {
   try {
     const { prenom, nom, dateDeNaissance, email, password, profession, companyName, siret, type, address, latitude, longitude, captchaToken } = req.body;
 

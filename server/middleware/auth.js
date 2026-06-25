@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 import connectDB from '../db/connection.js';
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || "mycontacts_jwt_secret";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, JWT_SECRET, { expiresIn: "24h" });

@@ -2,11 +2,20 @@ import express from 'express';
 import { MongoClient, ObjectId } from 'mongodb';
 import connectDB from '../db/connection.js';
 import { verifyToken } from '../middleware/auth.js';
+import rateLimit from 'express-rate-limit';
 
 const router = express.Router();
 
+const addReviewLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop d\'avis soumis. Veuillez réessayer dans une heure.' }
+});
+
 // Ajouter un avis
-router.post('/add', verifyToken, async (req, res) => {
+router.post('/add', addReviewLimiter, verifyToken, async (req, res) => {
     try {
         const { professionalId, rating, comment, serviceId, bookingId } = req.body;
 

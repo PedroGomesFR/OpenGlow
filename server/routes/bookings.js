@@ -3,8 +3,17 @@ import connectDB from '../db/connection.js';
 import { ObjectId } from 'mongodb';
 import { verifyToken } from '../middleware/auth.js';
 import { sendEmail } from '../utils/sendEmail.js';
+import rateLimit from 'express-rate-limit';
 
 const bookingRouter = express.Router();
+
+const createBookingLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Trop de réservations créées. Veuillez réessayer dans une heure.' }
+});
 
 const normalizeServiceIdsInput = (serviceId, serviceIds) => {
   const fromArray = Array.isArray(serviceIds) ? serviceIds : [];
@@ -105,7 +114,7 @@ bookingRouter.get('/my-bookings', async (req, res) => {
 });
 
 // Create a new booking
-bookingRouter.post('/create', async (req, res) => {
+bookingRouter.post('/create', createBookingLimiter, async (req, res) => {
   try {
     const clientId = req.userId;
     const { professionalId, serviceId, serviceIds, date, time, notes } = req.body;

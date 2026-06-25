@@ -26,8 +26,8 @@
 ## 🛠️ Technologies Utilisées
 
 ### Frontend
-- **React 18** : Bibliothèque JavaScript pour l'interface utilisateur.
-- **Vite** : Outil de build rapide et serveur de développement.
+- **React 19** : Bibliothèque JavaScript pour l'interface utilisateur.
+- **Parcel 2** : Outil de build zero-config et serveur de développement.
 - **CSS natif** : Styles purs sans frameworks lourds pour une performance optimale.
 
 ### Backend
@@ -84,7 +84,7 @@ npm install
 npm run dev
 ```
 
-Le serveur de développement démarrera généralement sur `http://localhost:5173`.
+Le serveur de développement démarrera généralement sur `http://localhost:1234`.
 
 ## 📧 Support
 

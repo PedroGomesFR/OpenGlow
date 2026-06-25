@@ -20,6 +20,11 @@ import feedbackRouter from "./routes/feedback.js";
 import connectDB from "./db/connection.js";
 dotenv.config({ path: ".env" });
 
+if (!process.env.JWT_SECRET) {
+  console.error('[FATAL] JWT_SECRET environment variable is not set. Refusing to start.');
+  process.exit(1);
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -77,7 +82,7 @@ io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
   if (!token) return next(new Error('Authentication required'));
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mycontacts_jwt_secret');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     socket.userId = String(decoded.id);
     socket.isAdmin = !!decoded.isAdmin;
     next();
@@ -123,8 +128,8 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.use("/api/records", router);
 app.use("/api/events", eventRouter);
