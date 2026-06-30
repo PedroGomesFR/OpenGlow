@@ -748,12 +748,19 @@ p {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  transition: transform 0.3s ease;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-content {
   flex: 1;
   overflow-x: hidden;
+  min-width: 0;
+}
+
+/* These elements only exist on mobile */
+.dashboard-mobile-topbar,
+.dashboard-drawer-header {
+  display: none;
 }
 
 @media (max-width: 768px) {
@@ -785,37 +792,102 @@ p {
     display: none !important;
   }
 
-  .dashboard-layout {
-    flex-direction: column;
-  }
-
+  /* Sidebar becomes a fixed drawer on mobile */
   .dashboard-sidebar {
-    width: 100%;
-    border-right: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: 280px;
+    z-index: 1200;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow-y: auto;
+    box-shadow: none;
+  }
+
+  .dashboard-sidebar.is-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 32px rgba(0, 0, 0, 0.18);
+  }
+
+  /* Overlay backdrop */
+  .dashboard-mobile-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
+    animation: dashOverlayIn 0.22s ease;
+  }
+
+  @keyframes dashOverlayIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* Mobile top bar */
+  .dashboard-mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 52px;
+    background: #fff;
     border-bottom: 1px solid #E5E5E5;
-    padding: 16px;
-    height: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
   }
 
-  .dashboard-sidebar nav {
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 10px;
-    padding-bottom: 10px;
+  .dashboard-mobile-topbar__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1d1d1f;
   }
 
-  .dashboard-sidebar nav button {
-    white-space: nowrap;
-    padding: 8px 12px;
-    font-size: 12px;
-    flex-direction: column;
-    gap: 4px;
-    text-align: center;
+  .dashboard-mobile-topbar__burger {
+    display: flex;
+    align-items: center;
     justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 10px;
+    background: #F5F5F7;
+    color: #1d1d1f;
+    cursor: pointer;
+    transition: background 0.15s;
   }
 
-  .dashboard-sidebar .logout-btn {
-    display: none;
+  .dashboard-mobile-topbar__burger:hover {
+    background: #E5E5EA;
+  }
+
+  /* Drawer header (close button row) */
+  .dashboard-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #E5E5E5;
+  }
+
+  .dashboard-drawer-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 10px;
+    background: #F5F5F7;
+    color: #1d1d1f;
+    cursor: pointer;
   }
 
   .modal-content {

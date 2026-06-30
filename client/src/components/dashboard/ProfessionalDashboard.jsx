@@ -17,7 +17,9 @@ import {
     IoMegaphone,
     IoEye,
     IoEyeOff,
-    IoStarOutline
+    IoStarOutline,
+    IoMenu,
+    IoClose
 } from 'react-icons/io5';
 import '../css/AppleDesign.css';
 import '../css/ProfessionalDashboard.css';
@@ -70,6 +72,7 @@ function ProfessionalDashboard({ user, setUser }) {
     const toast = useToast();
     const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('planning');
+    const [menuOpen, setMenuOpen] = useState(false);
     const [profileData, setProfileData] = useState({
         description: user?.description || '',
         address: user?.address || '',
@@ -694,10 +697,22 @@ function ProfessionalDashboard({ user, setUser }) {
         }
     };
 
+    const currentMenuItem = menuItems.find(item => item.id === activeTab);
+
     return (
         <div className="dashboard-layout">
-            {/* Sidebar */}
-            <div className="dashboard-sidebar">
+
+            {/* ── Mobile overlay backdrop ── */}
+            {menuOpen && (
+                <div
+                    className="dashboard-mobile-overlay"
+                    onClick={() => setMenuOpen(false)}
+                />
+            )}
+
+            {/* ── Sidebar / Drawer ── */}
+            <div className={`dashboard-sidebar${menuOpen ? ' is-open' : ''}`}>
+                {/* Desktop brand block */}
                 <div style={{ marginBottom: '40px' }} className="desktop-only">
                     <div style={{
                         display: 'inline-flex',
@@ -717,16 +732,22 @@ function ProfessionalDashboard({ user, setUser }) {
                     <div style={{ fontSize: '13px', color: '#86868b', marginTop: '6px' }}>{user.companyName || t('pro_my_salon')}</div>
                 </div>
 
-                {/* Mobile Header (simplified) */}
-                <div className="mobile-only" style={{ marginBottom: '10px', textAlign: 'center' }}>
-                    <strong>{t('pro_mobile_header')}</strong>
+                {/* Mobile drawer header */}
+                <div className="dashboard-drawer-header mobile-only">
+                    <div>
+                        <div style={{ fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', color: '#86868b', marginBottom: '2px' }}>{t('pro_space')}</div>
+                        <strong style={{ fontSize: '16px' }}>{user.companyName || t('pro_my_salon')}</strong>
+                    </div>
+                    <button className="dashboard-drawer-close" onClick={() => setMenuOpen(false)}>
+                        <IoClose size={20} />
+                    </button>
                 </div>
 
                 <nav className="pro-dashboard-nav" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {menuItems.map(item => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => { setActiveTab(item.id); setMenuOpen(false); }}
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -742,11 +763,10 @@ function ProfessionalDashboard({ user, setUser }) {
                                 transition: 'all 0.2s',
                                 textAlign: 'left',
                                 gap: '12px',
-                                justifyContent: 'flex-start' // Reset for mobile override in CSS if needed
+                                justifyContent: 'flex-start',
                             }}
                         >
                             {item.icon}
-                            {/* Label logic handled by CSS or kept simple */}
                             <span className="nav-label">{item.label}</span>
                         </button>
                     ))}
@@ -754,59 +774,22 @@ function ProfessionalDashboard({ user, setUser }) {
 
                 <div className="logout-btn" style={{ borderTop: '1px solid #E5E5E5', paddingTop: '20px' }}>
                     <button
-                        onClick={() => window.open(user?.slug ? `/pro/${user.slug}` : `/professional/${user._id || user.id}`, '_blank', 'noopener')}
-                        title={t('pro_client_view_desc') || 'Voir votre page comme un client'}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            width: '100%',
-                            padding: '12px 16px',
-                            border: 'none',
-                            background: 'transparent',
-                            color: '#1d1d1f',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            gap: '10px'
-                        }}
+                        onClick={() => { window.open(user?.slug ? `/pro/${user.slug}` : `/professional/${user._id || user.id}`, '_blank', 'noopener'); setMenuOpen(false); }}
+                        style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', color: '#1d1d1f', cursor: 'pointer', fontSize: '14px', fontWeight: '500', gap: '10px' }}
                     >
                         <IoEye />
                         {t('pro_client_view') || 'Aperçu client'}
                     </button>
                     <button
-                        onClick={() => navigate('/settings')}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            width: '100%',
-                            padding: '12px 16px',
-                            border: 'none',
-                            background: 'transparent',
-                            color: '#1d1d1f',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            gap: '10px'
-                        }}
+                        onClick={() => { navigate('/settings'); setMenuOpen(false); }}
+                        style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', color: '#1d1d1f', cursor: 'pointer', fontSize: '14px', fontWeight: '500', gap: '10px' }}
                     >
                         <IoSettingsOutline />
                         {t('settings_title', { defaultValue: 'Paramètres' })}
                     </button>
                     <button
                         onClick={deconnection}
-                        style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            width: '100%',
-                            padding: '12px 16px',
-                            border: 'none',
-                            background: 'transparent',
-                            color: '#1d1d1f',
-                            cursor: 'pointer',
-                            fontSize: '14px',
-                            fontWeight: '500',
-                            gap: '10px'
-                        }}
+                        style={{ display: 'flex', alignItems: 'center', width: '100%', padding: '12px 16px', border: 'none', background: 'transparent', color: '#1d1d1f', cursor: 'pointer', fontSize: '14px', fontWeight: '500', gap: '10px' }}
                     >
                         <IoLogOut />
                         {t('logout')}
@@ -814,8 +797,19 @@ function ProfessionalDashboard({ user, setUser }) {
                 </div>
             </div>
 
-            {/* Main Content */}
+            {/* ── Main Content ── */}
             <div className="dashboard-content">
+                {/* Mobile top bar */}
+                <div className="dashboard-mobile-topbar mobile-only">
+                    <span className="dashboard-mobile-topbar__title">
+                        {currentMenuItem?.icon}
+                        {currentMenuItem?.label}
+                    </span>
+                    <button className="dashboard-mobile-topbar__burger" onClick={() => setMenuOpen(true)}>
+                        <IoMenu size={22} />
+                    </button>
+                </div>
+
                 <div className="pro-dashboard-content-inner" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     {renderContent()}
                 </div>

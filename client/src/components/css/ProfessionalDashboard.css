@@ -100,18 +100,6 @@
     padding: 16px 12px;
   }
 
-  .pro-dashboard-nav {
-    flex-direction: row !important;
-    overflow-x: auto;
-    padding-bottom: 4px;
-    margin: 0 -2px;
-  }
-
-  .pro-dashboard-nav button {
-    flex: 0 0 auto;
-    white-space: nowrap;
-  }
-
   .pro-section-header,
   .pro-section-body,
   .pro-settings-form,
