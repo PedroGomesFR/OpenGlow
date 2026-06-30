@@ -17,7 +17,8 @@ const PolitiqueConfidentialite = () => {
                         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '10px' }}>1. Responsable du traitement</h2>
                         <p className="text-secondary">
                             Le site <strong>OpenGlow Beauty</strong> est édité par Pedro Gomes.<br />
-                            Contact : <a href="mailto:Pedrogomescamara.pro@gmail.com">Pedrogomescamara.pro@gmail.com</a>
+                            Contact 1 : <a href="mailto:Pedrogomescamara.pro@gmail.com">Pedrogomescamara.pro@gmail.com</a><br />
+                            Contact 2 : <a href="mailto:openglow.fr@gmail.com">openglow.fr@gmail.com</a>
                         </p>
                     </section>
 
