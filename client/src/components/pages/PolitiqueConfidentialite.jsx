@@ -87,7 +87,7 @@ const PolitiqueConfidentialite = () => {
                             <li><strong>Droit d'opposition</strong> (art. 21) — vous opposer à un traitement de vos données</li>
                         </ul>
                         <p className="text-secondary" style={{ marginTop: '10px' }}>
-                            Pour exercer ces droits, contactez-nous à : <a href="mailto:Pedrogomescamara.pro@gmail.com">Pedrogomescamara.pro@gmail.com</a>.<br />
+                            Pour exercer ces droits, contactez-nous à : <a href="mailto:openglow.fr@gmail.com">openglow.fr@gmail.com</a>.<br />
                             Vous pouvez également introduire une réclamation auprès de la <a href="https://www.cnil.fr" target="_blank" rel="noopener noreferrer">CNIL</a>.
                         </p>
                     </section>
