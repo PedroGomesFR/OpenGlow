@@ -114,7 +114,7 @@ function MainPage() {
                 width: '100%',
                 minWidth: 0,
                 padding: '15px 22px',
-                borderRadius: '30px 0 0 30px',
+                borderRadius: '30px',
                 border: 'none',
                 fontSize: '16px',
                 outline: 'none',
@@ -126,7 +126,7 @@ function MainPage() {
             <button
               type="submit"
               className="btn btn-primary main-hero-search-btn"
-              style={{ padding: '15px 28px', borderRadius: '0 30px 30px 0', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}
+              style={{ padding: '15px 28px', borderRadius: '30px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '16px' }}
             >
               <IoSearch size={20} />
               {t('search_btn') || 'Rechercher'}
@@ -137,9 +137,9 @@ function MainPage() {
 
       <div className="container">
         {/* Features Grid */}
-        <div className="grid grid-3 main-feature-grid" style={{ marginBottom: '100px', gap: '30px' }}>
+        <div className="grid grid-3 main-feature-grid" style={{ marginBottom: 'clamp(48px, 8vw, 100px)', gap: 'clamp(16px, 3vw, 30px)' }}>
           <div className="card text-center" style={{
-            padding: '40px 24px',
+            padding: 'clamp(20px, 4vw, 40px) clamp(16px, 3vw, 24px)',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.5)',
@@ -159,7 +159,7 @@ function MainPage() {
           </div>
 
           <div className="card text-center" style={{
-            padding: '40px 24px',
+            padding: 'clamp(20px, 4vw, 40px) clamp(16px, 3vw, 24px)',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.5)',
@@ -179,7 +179,7 @@ function MainPage() {
           </div>
 
           <div className="card text-center" style={{
-            padding: '40px 24px',
+            padding: 'clamp(20px, 4vw, 40px) clamp(16px, 3vw, 24px)',
             background: 'rgba(255, 255, 255, 0.8)',
             backdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.5)',

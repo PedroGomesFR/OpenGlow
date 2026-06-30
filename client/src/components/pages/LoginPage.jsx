@@ -160,8 +160,8 @@ function LoginPage({ setUser }) {
   };
 
   return (
-    <div style={{ background: '#F5F5F7', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="card" style={{ width: '100%', maxWidth: '400px', padding: '40px' }}>
+    <div style={{ background: '#F5F5F7', minHeight: '100vh', minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '400px', padding: 'clamp(20px, 5vw, 40px)' }}>
         <h2 className="text-center" style={{ marginBottom: '30px' }}>{renderTitle()}</h2>
 
         {authMode === 'login' && (
@@ -210,13 +210,15 @@ function LoginPage({ setUser }) {
               </button>
             </div>
 
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
-                onChange={(token) => setCaptchaToken(token)}
-                onExpired={() => setCaptchaToken(null)}
-              />
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+              <div style={{ transform: 'scale(min(1, calc((100vw - 80px) / 304)))', transformOrigin: 'left center' }}>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
             </div>
 
             <button
@@ -247,13 +249,15 @@ function LoginPage({ setUser }) {
               />
             </div>
 
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
-                onChange={(token) => setCaptchaToken(token)}
-                onExpired={() => setCaptchaToken(null)}
-              />
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+              <div style={{ transform: 'scale(min(1, calc((100vw - 80px) / 304)))', transformOrigin: 'left center' }}>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '12px' }} disabled={isSubmitting}>
@@ -325,13 +329,15 @@ function LoginPage({ setUser }) {
               </div>
             </div>
 
-            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
-                onChange={(token) => setCaptchaToken(token)}
-                onExpired={() => setCaptchaToken(null)}
-              />
+            <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+              <div style={{ transform: 'scale(min(1, calc((100vw - 80px) / 304)))', transformOrigin: 'left center' }}>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                />
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary btn-lg" style={{ width: '100%', marginBottom: '12px' }} disabled={isSubmitting}>

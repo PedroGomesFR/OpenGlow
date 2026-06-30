@@ -186,7 +186,7 @@ function DashboardOverview({ user, setActiveTab }) {
             )}
 
             <div className="dashboard-bottom-grid" style={{ marginTop: '30px', display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
-                <div className="card" style={{ flex: '2 1 400px' }}>
+                <div className="card" style={{ flex: '2 1 280px', minWidth: 0 }}>
                     <h3>{t('pro_quick_actions')}</h3>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '15px', marginTop: '15px' }}>
                         <button className="btn btn-secondary" onClick={() => setActiveTab && setActiveTab('bookings')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>

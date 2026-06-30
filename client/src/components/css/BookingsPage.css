@@ -131,7 +131,8 @@
 
 .booking-client-info {
   display: flex;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 8px 16px;
   margin-top: 4px;
   font-size: 14px;
   color: #666;

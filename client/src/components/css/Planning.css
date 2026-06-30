@@ -85,7 +85,7 @@
 
 @media (max-width: 480px) {
   .planning-calendar-grid {
-    min-width: 760px;
+    min-width: 640px;
   }
 
   .planning-week-controls .btn {

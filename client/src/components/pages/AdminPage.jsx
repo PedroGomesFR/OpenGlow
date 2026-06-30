@@ -796,7 +796,7 @@ function AdminPage() {
                             </div>
                         </div>
 
-                        <div className="admin-console-stats" style={{ gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', marginBottom: '14px' }}>
+                        <div className="admin-console-stats" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: '14px' }}>
                             <article className="admin-stat-card card" style={{ padding: '16px' }}>
                                 <div className="admin-stat-card__label">{tx('admin_traffic_bookings_7d', 'RÉSERVATIONS 7J')}</div>
                                 <div className="admin-stat-card__value" style={{ fontSize: '28px' }}>{dashboard.summary.bookingsCreatedLast7Days}</div>

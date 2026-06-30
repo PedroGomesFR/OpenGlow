@@ -234,7 +234,7 @@ function ProfessionalDetailPage() {
         <div className="professional-page" style={{ background: '#F5F5F7', minHeight: '100vh', paddingBottom: '40px' }}>
             {/* Banner */}
             <div style={{
-                height: '300px',
+                height: 'clamp(160px, 30vw, 300px)',
                 background: coverPhoto
                     ? `url(${window.BASE_URL}${coverPhoto}) center/cover`
                     : 'linear-gradient(135deg, #1d1d1f 0%, #434344 100%)',
@@ -255,7 +255,7 @@ function ProfessionalDetailPage() {
                 <div className="card" style={{ marginBottom: '30px', padding: 0 }}>
 
                     {/* ── Identity row ── */}
-                    <div style={{ padding: '0 28px 24px 28px', display: 'flex', alignItems: 'flex-start', gap: '24px', flexWrap: 'wrap' }}>
+                    <div style={{ padding: '0 clamp(14px, 4vw, 28px) 24px', display: 'flex', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
                         <div style={{ marginTop: '-50px', flexShrink: 0 }}>
                             <div style={{
                                 width: '100px', height: '100px', borderRadius: '50%',
@@ -263,7 +263,7 @@ function ProfessionalDetailPage() {
                                 border: '4px solid white', boxShadow: '0 4px 20px rgba(0,0,0,0.15)'
                             }} />
                         </div>
-                        <div style={{ flex: 1, minWidth: '200px', paddingTop: '12px' }}>
+                        <div style={{ flex: 1, minWidth: '140px', paddingTop: '12px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
                                 <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '700', lineHeight: 1.2 }}>
                                     {professional.companyName || `${professional.prenom} ${professional.nom}`}
@@ -338,14 +338,14 @@ function ProfessionalDetailPage() {
                                             { key: 'dim', short: 'Dim' },
                                         ];
                                         return (
-                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                                                 {DAYS.map(({ key, short }) => {
                                                     const d = data[key];
                                                     const isOpen = d?.open;
                                                     return (
                                                         <div key={key} style={{
                                                             display: 'flex', flexDirection: 'column', alignItems: 'center',
-                                                            padding: '10px 12px', borderRadius: '12px', minWidth: '64px',
+                                                            padding: '8px', borderRadius: '12px', minWidth: '44px', flex: '1 1 44px',
                                                             background: isOpen ? '#F0FFF4' : '#F8F8F8',
                                                             border: `1px solid ${isOpen ? '#C6F6D5' : '#EBEBEB'}`,
                                                             gap: '4px'

@@ -559,7 +559,7 @@ function ProfessionalDashboard({ user, setUser }) {
                                                     </div>
                                                     {/* Ligne pause midi */}
                                                     {day.open && day.break && (
-                                                        <div className="pro-hours-break-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 10px 134px', borderTop: '1px dashed #C6F6D5', background: '#E6FFED' }}>
+                                                        <div className="pro-hours-break-row" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '8px 14px 10px 14px', borderTop: '1px dashed #C6F6D5', background: '#E6FFED', flexWrap: 'wrap' }}>
                                                             <span style={{ fontSize: '13px', color: '#2D6A4F', fontWeight: '500', whiteSpace: 'nowrap' }}>Pause :</span>
                                                             <select
                                                                 className="form-input"
@@ -629,7 +629,7 @@ function ProfessionalDashboard({ user, setUser }) {
                             </div>
                             {showPasswordForm && (
                                 <form className="pro-password-form" onSubmit={handleChangePassword} style={{ padding: '0 24px 24px 24px' }}>
-                                    <div className="grid grid-3" style={{ gap: '16px' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
                                         <div className="form-group" style={{ marginBottom: 0 }}>
                                             <label className="form-label">{t('current_password_label')}</label>
                                             <div style={{ position: 'relative' }}>
@@ -816,7 +816,7 @@ function ProfessionalDashboard({ user, setUser }) {
 
             {/* Main Content */}
             <div className="dashboard-content">
-                <div className="pro-dashboard-content-inner" style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+                <div className="pro-dashboard-content-inner" style={{ maxWidth: '1200px', margin: '0 auto' }}>
                     {renderContent()}
                 </div>
             </div>

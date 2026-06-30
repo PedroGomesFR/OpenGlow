@@ -257,8 +257,8 @@ function RegisterPage({ setUser }) {
   };
 
   return (
-    <div style={{ background: '#F5F5F7', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div className="card" style={{ width: '100%', maxWidth: '500px', padding: '40px' }}>
+    <div style={{ background: '#F5F5F7', minHeight: '100vh', minHeight: '100dvh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+      <div className="card" style={{ width: '100%', maxWidth: '500px', padding: 'clamp(20px, 5vw, 40px)' }}>
         {verificationMode ? (
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ marginBottom: '20px' }}>{t('verify_email_title')}</h2>
@@ -464,13 +464,15 @@ function RegisterPage({ setUser }) {
               </div>
 
               {/* reCAPTCHA */}
-              <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
-                  onChange={(token) => setCaptchaToken(token)}
-                  onExpired={() => setCaptchaToken(null)}
-                />
+              <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', overflow: 'hidden' }}>
+                <div style={{ transform: 'scale(min(1, calc((100vw - 80px) / 304)))', transformOrigin: 'left center' }}>
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={window.RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'}
+                    onChange={(token) => setCaptchaToken(token)}
+                    onExpired={() => setCaptchaToken(null)}
+                  />
+                </div>
               </div>
 
               <button

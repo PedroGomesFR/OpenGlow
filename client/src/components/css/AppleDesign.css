@@ -741,40 +741,14 @@ p {
     padding: var(--space-md);
   }
 
-  /* Header Responsive */
   .headerNav {
     display: none !important;
-    /* Simple solution: hide nav links on mobile */
   }
 
-  /* Dashboard Responsive */
   .dashboard-layout {
     flex-direction: column;
   }
 
-  .dashboard-sidebar {
-    width: 100%;
-    padding: 12px;
-    border-right: none;
-    border-bottom: 1px solid #E5E5E5;
-  }
-
-  .modal-content {
-    padding: var(--space-lg);
-  }
-
-
-@media (max-width: 640px) {
-  :root {
-    --app-header-height: 46px;
-  }
-}
-
-@media (max-width: 480px) {
-  :root {
-    --container-inline: 12px;
-  }
-}
   .dashboard-sidebar {
     width: 100%;
     border-right: none;
@@ -802,6 +776,31 @@ p {
 
   .dashboard-sidebar .logout-btn {
     display: none;
-    /* Hide logout in mobile nav bar to save space, maybe add to top */
+  }
+
+  .modal-content {
+    padding: var(--space-lg);
+  }
+
+  .grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --app-header-height: 46px;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --container-inline: 12px;
   }
 }
