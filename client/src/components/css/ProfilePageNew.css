@@ -658,6 +658,7 @@
     flex-direction: column;
     text-align: center;
     padding: 24px;
+    gap: 16px;
   }
 
   .tab-content {
@@ -688,5 +689,52 @@
 
   .tab-button {
     white-space: nowrap;
+  }
+
+  .services-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .add-service-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ProfilePage {
+    padding: 12px;
+  }
+
+  .profile-header {
+    padding: 16px;
+  }
+
+  .profile-info h1 {
+    font-size: 20px;
+  }
+
+  .tab-button {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .tab-content {
+    padding: 14px;
+  }
+
+  .salon-gallery {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .service-info h3 {
+    font-size: 15px;
+  }
+
+  .service-price-tag {
+    font-size: 18px;
   }
 }

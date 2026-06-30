@@ -558,8 +558,80 @@
   .pro-content {
     grid-template-columns: 1fr;
   }
-  
+
   .pro-contact-info {
     grid-template-columns: 1fr;
+  }
+
+  .pro-banner {
+    height: 200px;
+  }
+
+  .pro-info {
+    padding: 20px;
+    margin-top: -60px;
+  }
+
+  .pro-title {
+    font-size: 24px;
+  }
+
+  .services-section,
+  .gallery-section,
+  .booking-section {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ProfessionalDetailPage {
+    padding: 12px;
+  }
+
+  .pro-banner {
+    height: 160px;
+  }
+
+  .pro-banner-placeholder {
+    font-size: 72px;
+  }
+
+  .pro-info {
+    padding: 14px;
+    margin-top: -50px;
+  }
+
+  .pro-profile-photo,
+  .pro-profile-placeholder {
+    width: 100px;
+    height: 100px;
+  }
+
+  .pro-title {
+    font-size: 20px;
+  }
+
+  .section-title {
+    font-size: 18px;
+  }
+
+  .services-section,
+  .gallery-section,
+  .booking-section {
+    padding: 14px;
+  }
+
+  .service-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .professional-gallery-preview-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-total {
+    font-size: 16px;
   }
 }

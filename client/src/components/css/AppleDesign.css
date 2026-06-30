@@ -532,6 +532,46 @@ p {
   .grid-4 {
     grid-template-columns: 1fr;
   }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+  }
+
+  .modal-content {
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --container-inline: 12px;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+  }
+
+  h2 {
+    font-size: 1.35rem;
+  }
+
+  h3 {
+    font-size: 1.15rem;
+  }
+
+  .modal-overlay {
+    padding: var(--space-sm);
+  }
+
+  .modal-content {
+    padding: var(--space-md);
+    max-height: 95dvh;
+  }
 }
 
 .flex {

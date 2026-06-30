@@ -604,6 +604,47 @@
   }
 }
 
+@media (max-width: 480px) {
+  .admin-console-page {
+    padding: 16px 12px 40px;
+  }
+
+  .admin-console-hero {
+    padding: 18px;
+  }
+
+  .admin-console-panel {
+    padding: 16px;
+  }
+
+  .admin-console-panel__header h2 {
+    font-size: 1.1rem;
+  }
+
+  .admin-console-tabs {
+    gap: 6px;
+  }
+
+  .admin-console-tab {
+    flex: 1 1 100%;
+    font-size: 13px;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+
+  .admin-health-item strong {
+    font-size: 22px;
+  }
+
+  .admin-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Segment builder */
 .admin-segment-builder {
   display: flex;

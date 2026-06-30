@@ -120,7 +120,7 @@
 
   .headerActions select {
     font-size: 12px !important;
-    max-width: 62px;
+    max-width: 80px;
   }
 
   .headerActions .btn {

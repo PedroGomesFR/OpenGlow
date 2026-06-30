@@ -299,3 +299,36 @@
         width: 100%;
     }
 }
+
+@media (max-width: 480px) {
+    .reviews-page {
+        padding: var(--space-lg) 0;
+    }
+
+    .professional-header {
+        padding: var(--space-lg);
+        gap: var(--space-lg);
+    }
+
+    .professional-info h1 {
+        font-size: 1.5rem;
+    }
+
+    .distribution-row {
+        grid-template-columns: 72px 1fr 40px;
+        gap: var(--space-xs);
+    }
+
+    .stats-section {
+        padding: var(--space-lg);
+    }
+
+    .review-card {
+        padding: var(--space-lg);
+    }
+
+    .review-header {
+        flex-direction: column;
+        gap: var(--space-sm);
+    }
+}
