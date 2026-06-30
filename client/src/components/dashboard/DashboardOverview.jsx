@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     IoCalendar,
@@ -8,7 +8,10 @@ import {
     IoCalendarNumber,
     IoAddCircle,
     IoStatsChart,
+    IoPrint,
+    IoQrCode,
 } from 'react-icons/io5';
+import { QRCodeSVG } from 'qrcode.react';
 import '../css/AppleDesign.css';
 import { useTranslation } from 'react-i18next';
 
@@ -17,6 +20,36 @@ function DashboardOverview({ user, setActiveTab }) {
     const { t } = useTranslation();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const qrRef = useRef(null);
+
+    const proUrl = user?.slug
+        ? `${window.location.origin}/pro/${user.slug}`
+        : `${window.location.origin}/professional/${user?._id || user?.id}`;
+
+    const handlePrintQR = () => {
+        const svgEl = qrRef.current?.querySelector('svg');
+        if (!svgEl) return;
+        const svgData = new XMLSerializer().serializeToString(svgEl);
+        const win = window.open('', '_blank');
+        win.document.write(`<!DOCTYPE html><html><head><title>QR Code - ${user?.companyName || user?.prenom || 'Réservation'}</title><style>
+            body { margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; font-family: -apple-system, sans-serif; background: #fff; }
+            .qr-card { text-align: center; padding: 40px; border: 1px solid #e5e5e5; border-radius: 16px; max-width: 340px; }
+            h2 { margin: 0 0 6px; font-size: 20px; color: #1d1d1f; }
+            p { margin: 0 0 24px; font-size: 14px; color: #6e6e73; }
+            svg { display: block; margin: 0 auto; }
+            .url { margin-top: 20px; font-size: 12px; color: #6e6e73; word-break: break-all; }
+            @media print { body { margin: 0; } }
+        </style></head><body>
+            <div class="qr-card">
+                <h2>${user?.companyName || user?.prenom || 'Réservation'}</h2>
+                <p>Scannez pour réserver en ligne</p>
+                ${svgData}
+                <div class="url">${proUrl}</div>
+            </div>
+            <script>window.onload = () => { window.print(); }<\/script>
+        </body></html>`);
+        win.document.close();
+    };
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -175,6 +208,29 @@ function DashboardOverview({ user, setActiveTab }) {
                     <p style={{ opacity: 0.9, fontSize: '14px', margin: '15px 0', color: 'white' }}>{t('pro_help_text')}</p>
                     <button onClick={() => navigate('/help')} className="btn" style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: 'none', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                         {t('pro_view_guide')} <IoArrowForward />
+                    </button>
+                </div>
+            </div>
+
+            <div className="card" style={{ marginTop: '20px', display: 'flex', flexWrap: 'wrap', gap: '24px', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px', width: '100%' }}>
+                    <IoQrCode size={20} />
+                    <h3 style={{ margin: 0 }}>QR Code de réservation</h3>
+                </div>
+                <div ref={qrRef} style={{ background: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid #e5e5e5', display: 'inline-block' }}>
+                    <QRCodeSVG value={proUrl} size={160} level="M" />
+                </div>
+                <div style={{ flex: 1, minWidth: '200px' }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '14px', color: 'var(--text-secondary)' }}>
+                        Imprimez ce QR code et affichez-le dans votre salon. Vos clients pourront le scanner pour accéder directement à votre page de réservation.
+                    </p>
+                    <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#86868b', wordBreak: 'break-all' }}>{proUrl}</p>
+                    <button
+                        className="btn"
+                        onClick={handlePrintQR}
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                    >
+                        <IoPrint size={16} /> Imprimer le QR Code
                     </button>
                 </div>
             </div>
