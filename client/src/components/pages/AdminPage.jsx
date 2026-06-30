@@ -1,4 +1,4 @@
-import { useCallback, useDeferredValue, useEffect, useState } from 'react';
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from 'react';
 import {
     IoArrowBack,
     IoBug,
@@ -139,6 +139,8 @@ function AdminPage() {
     const [internalNotifications, setInternalNotifications] = useState([]);
     const [feedbackItems, setFeedbackItems] = useState([]);
     const [feedbackLoading, setFeedbackLoading] = useState(false);
+    const [selectedChatId, setSelectedChatId] = useState(null);
+    const [chatSubTab, setChatSubTab] = useState('conversations');
     const [chatReplyDrafts, setChatReplyDrafts] = useState({});
     const [sendingChatReplyId, setSendingChatReplyId] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -174,6 +176,7 @@ function AdminPage() {
         segment: { role: 'all', cities: '', serviceCategories: '', minSeniority: '' },
     });
     const [activeAdminTab, setActiveAdminTab] = useState('chat');
+    const chatMessagesRef = useRef(null);
 
     const adminTabs = [
         { key: 'chat', label: tx('admin_tab_chat', 'Chat & feedback'), icon: <IoChatbubbleEllipses /> },
@@ -298,6 +301,24 @@ function AdminPage() {
         }
     }, [chatReplyDrafts, loadFeedbackItems, toast]);
 
+    const handleChatStatusChange = useCallback(async (chatId, newStatus) => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${window.API_URL}/feedback/${chatId}/status`, {
+                method: 'PATCH',
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (res.ok) {
+                setFeedbackItems((prev) => prev.map((f) => String(f._id) === String(chatId) ? { ...f, status: newStatus } : f));
+            } else {
+                toast('Erreur mise à jour statut.', 'error');
+            }
+        } catch {
+            toast('Erreur réseau.', 'error');
+        }
+    }, [toast]);
+
     const validateAccessAndLoad = useCallback(async () => {
         const userStr = localStorage.getItem('user');
         if (!userStr) {
@@ -346,6 +367,12 @@ function AdminPage() {
 
         return () => socket.disconnect();
     }, [loadFeedbackItems]);
+
+    useEffect(() => {
+        if (chatMessagesRef.current) {
+            chatMessagesRef.current.scrollTop = chatMessagesRef.current.scrollHeight;
+        }
+    }, [selectedChatId, feedbackItems]);
 
     const filteredUsers = users.filter((user) => {
         const searchValue = normalizeText(deferredUserSearch);
@@ -715,6 +742,10 @@ function AdminPage() {
     const userTrendLabel = dashboard.summary.usersTrend7dPct > 0
         ? `+${dashboard.summary.usersTrend7dPct}%`
         : `${dashboard.summary.usersTrend7dPct}%`;
+
+    const chatConversations = feedbackItems.filter((f) => f.type === 'chat');
+    const ticketFeedback = feedbackItems.filter((f) => f.type !== 'chat');
+    const selectedChat = chatConversations.find((f) => String(f._id) === selectedChatId) || null;
 
     return (
         <div className="admin-console-page">
@@ -1564,18 +1595,251 @@ function AdminPage() {
 
                 {activeAdminTab === 'chat' && (
                 <section className="admin-console-section">
+                    <div className="card admin-chat-subtabs">
+                        <button
+                            type="button"
+                            className={`admin-chat-subtab${chatSubTab === 'conversations' ? ' active' : ''}`}
+                            onClick={() => setChatSubTab('conversations')}
+                        >
+                            <IoChatbubbleEllipses />
+                            Conversations
+                            {chatConversations.filter((f) => f.status === 'open' || f.status === 'in_progress').length > 0 && (
+                                <span className="admin-chat-unread">
+                                    {chatConversations.filter((f) => f.status === 'open' || f.status === 'in_progress').length}
+                                </span>
+                            )}
+                        </button>
+                        <button
+                            type="button"
+                            className={`admin-chat-subtab${chatSubTab === 'tickets' ? ' active' : ''}`}
+                            onClick={() => setChatSubTab('tickets')}
+                        >
+                            <IoBug />
+                            Tickets &amp; Feedback
+                            {ticketFeedback.filter((f) => f.status === 'open').length > 0 && (
+                                <span className="admin-chat-unread">
+                                    {ticketFeedback.filter((f) => f.status === 'open').length}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {chatSubTab === 'conversations' && (
+                    <article className="card admin-console-panel admin-chat-layout">
+                        <div className="admin-chat-list">
+                            <div className="admin-chat-list-header">
+                                <span>Conversations ({chatConversations.length})</span>
+                                {chatConversations.filter((f) => f.status === 'open' || f.status === 'in_progress').length > 0 && (
+                                    <span className="admin-badge admin-badge--pending">
+                                        {chatConversations.filter((f) => f.status === 'open' || f.status === 'in_progress').length} actives
+                                    </span>
+                                )}
+                            </div>
+                            {feedbackLoading ? (
+                                <div className="admin-empty-state">Chargement…</div>
+                            ) : chatConversations.length === 0 ? (
+                                <div className="admin-empty-state">Aucune conversation pour le moment.</div>
+                            ) : chatConversations.map((item) => {
+                                const lastMsg = (item.messages || []).slice(-1)[0];
+                                const isActive = String(item._id) === selectedChatId;
+                                const statusBadgeMap = { open: '', in_progress: 'pending', resolved: 'completed', dismissed: 'cancelled' };
+                                const statusTextMap = { open: 'Ouvert', in_progress: 'En cours', resolved: 'Résolu', dismissed: 'Ignoré' };
+                                return (
+                                    <button
+                                        key={String(item._id)}
+                                        type="button"
+                                        className={`admin-chat-list-item${isActive ? ' active' : ''}${item.status === 'resolved' || item.status === 'dismissed' ? ' muted' : ''}`}
+                                        onClick={() => setSelectedChatId(String(item._id))}
+                                    >
+                                        <div className="admin-chat-avatar">{(item.email || 'U')[0].toUpperCase()}</div>
+                                        <div className="admin-chat-list-body">
+                                            <div className="admin-chat-list-top">
+                                                <strong>{item.email || 'Utilisateur anonyme'}</strong>
+                                                <time className="admin-chat-list-time">
+                                                    {formatDate(item.lastMessageAt || item.updatedAt || item.createdAt)}
+                                                </time>
+                                            </div>
+                                            <p className="admin-chat-list-preview">
+                                                {lastMsg
+                                                    ? `${lastMsg.senderRole === 'admin' ? '↩ ' : ''}${lastMsg.message}`
+                                                    : item.message}
+                                            </p>
+                                            <span className={`admin-badge admin-badge--${statusBadgeMap[item.status] || ''}`}>
+                                                {statusTextMap[item.status] || item.status}
+                                            </span>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <div className="admin-chat-panel">
+                            {selectedChat ? (
+                                <>
+                                    <div className="admin-chat-panel-header">
+                                        <div className="admin-chat-panel-user">
+                                            <div className="admin-chat-avatar admin-chat-avatar--lg">
+                                                {(selectedChat.email || 'U')[0].toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <strong>{selectedChat.email || 'Utilisateur anonyme'}</strong>
+                                                <span>
+                                                    {(selectedChat.messages || []).length} message(s) •{' '}
+                                                    {formatDate(selectedChat.createdAt, { withTime: true })}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="admin-chat-panel-controls">
+                                            <select
+                                                className="admin-select"
+                                                value={selectedChat.status}
+                                                onChange={(e) => handleChatStatusChange(String(selectedChat._id), e.target.value)}
+                                            >
+                                                <option value="open">Ouvert</option>
+                                                <option value="in_progress">En cours</option>
+                                                <option value="resolved">Résolu</option>
+                                                <option value="dismissed">Ignoré</option>
+                                            </select>
+                                            {selectedChat.status !== 'resolved' && selectedChat.status !== 'dismissed' && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary btn-sm"
+                                                    onClick={() => handleChatStatusChange(String(selectedChat._id), 'resolved')}
+                                                >
+                                                    <IoCheckmarkCircle /> Clôturer
+                                                </button>
+                                            )}
+                                            <button
+                                                type="button"
+                                                className="admin-icon-button"
+                                                title="Supprimer cette conversation"
+                                                onClick={async () => {
+                                                    const ok = await confirm({
+                                                        title: 'Supprimer cette conversation ?',
+                                                        confirmLabel: 'Supprimer',
+                                                        danger: true,
+                                                    });
+                                                    if (!ok) return;
+                                                    try {
+                                                        const token = localStorage.getItem('token');
+                                                        const res = await fetch(`${window.API_URL}/feedback/${selectedChat._id}`, {
+                                                            method: 'DELETE',
+                                                            headers: { Authorization: `Bearer ${token}` },
+                                                        });
+                                                        if (res.ok) {
+                                                            setFeedbackItems((prev) => prev.filter((f) => String(f._id) !== String(selectedChat._id)));
+                                                            setSelectedChatId(null);
+                                                            toast('Conversation supprimée.', 'success');
+                                                        } else {
+                                                            toast('Erreur suppression.', 'error');
+                                                        }
+                                                    } catch {
+                                                        toast('Erreur réseau.', 'error');
+                                                    }
+                                                }}
+                                            >
+                                                <IoTrash />
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="admin-chat-messages" ref={chatMessagesRef}>
+                                        {(selectedChat.messages || []).length === 0 ? (
+                                            <div className="admin-chat-no-messages">Aucun message dans cette conversation.</div>
+                                        ) : (selectedChat.messages || []).map((msg) => (
+                                            <div
+                                                key={String(msg._id)}
+                                                className={`admin-chat-message admin-chat-message--${msg.senderRole}`}
+                                            >
+                                                <div className="admin-chat-message-meta">
+                                                    <span>{msg.senderName || (msg.senderRole === 'admin' ? 'Admin' : 'Client')}</span>
+                                                    <time>{formatDate(msg.createdAt, { withTime: true })}</time>
+                                                </div>
+                                                <div className="admin-chat-bubble">{msg.message}</div>
+                                                {msg.imageIds?.length > 0 && (
+                                                    <div className="admin-chat-images">
+                                                        {msg.imageIds.map((id) => (
+                                                            <a key={String(id)} href={`${window.API_URL}/uploads/image/${id}`} target="_blank" rel="noreferrer">
+                                                                <img src={`${window.API_URL}/uploads/image/${id}`} alt="Pièce jointe" />
+                                                            </a>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {(selectedChat.status === 'open' || selectedChat.status === 'in_progress') ? (
+                                        <div className="admin-chat-input-area">
+                                            <textarea
+                                                value={chatReplyDrafts[String(selectedChat._id)] || ''}
+                                                onChange={(e) =>
+                                                    setChatReplyDrafts((prev) => ({
+                                                        ...prev,
+                                                        [String(selectedChat._id)]: e.target.value,
+                                                    }))
+                                                }
+                                                placeholder="Écrire une réponse… (Ctrl+Entrée pour envoyer)"
+                                                rows={3}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+                                                        sendAdminChatReply(String(selectedChat._id));
+                                                    }
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                className="btn btn-primary"
+                                                disabled={
+                                                    sendingChatReplyId === String(selectedChat._id) ||
+                                                    !(chatReplyDrafts[String(selectedChat._id)] || '').trim()
+                                                }
+                                                onClick={() => sendAdminChatReply(String(selectedChat._id))}
+                                            >
+                                                {sendingChatReplyId === String(selectedChat._id) ? 'Envoi…' : 'Envoyer'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="admin-chat-closed-notice">
+                                            <IoCheckmarkCircle />
+                                            <span>
+                                                Conversation { { resolved: 'résolue', dismissed: 'ignorée' }[selectedChat.status] || selectedChat.status }.
+                                            </span>
+                                            <button
+                                                type="button"
+                                                className="btn btn-outline btn-sm"
+                                                onClick={() => handleChatStatusChange(String(selectedChat._id), 'in_progress')}
+                                            >
+                                                Rouvrir
+                                            </button>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="admin-chat-panel-empty">
+                                    <IoChatbubbleEllipses />
+                                    <p>Sélectionnez une conversation pour lire et répondre.</p>
+                                </div>
+                            )}
+                        </div>
+                    </article>
+                    )}
+
+                    {chatSubTab === 'tickets' && (
                     <article className="card admin-console-panel">
                         <div className="admin-console-panel__header">
                             <div>
-                                <h2><IoChatbubbleEllipses /> Feedback &amp; Signalements</h2>
-                                <p>Messages envoyés par les utilisateurs via le widget de feedback.</p>
+                                <h2><IoBug /> Tickets &amp; Signalements</h2>
+                                <p>Bugs signalés, demandes de fonctionnalités et feedbacks généraux.</p>
                             </div>
-                            <span className="admin-badge admin-badge--pending">{feedbackItems.filter((f) => f.status === 'open').length} ouverts</span>
+                            <span className="admin-badge admin-badge--pending">
+                                {ticketFeedback.filter((f) => f.status === 'open').length} ouverts
+                            </span>
                         </div>
                         {feedbackLoading ? (
                             <div className="admin-empty-state">Chargement…</div>
-                        ) : feedbackItems.length === 0 ? (
-                            <div className="admin-empty-state">Aucun feedback reçu pour le moment.</div>
+                        ) : ticketFeedback.length === 0 ? (
+                            <div className="admin-empty-state">Aucun ticket reçu pour le moment.</div>
                         ) : (
                             <div className="admin-table-wrapper">
                                 <table className="admin-table">
@@ -1591,9 +1855,9 @@ function AdminPage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {feedbackItems.map((item) => {
+                                        {ticketFeedback.map((item) => {
                                             const typeIcon = item.type === 'bug' ? <IoBug /> : item.type === 'feature' ? <IoSparkles /> : <IoChatbubbleEllipses />;
-                                            const typeLabel = item.type === 'bug' ? 'Bug' : item.type === 'feature' ? 'Idee' : item.type === 'chat' ? 'Chat' : 'Feedback';
+                                            const typeLabel = item.type === 'bug' ? 'Bug' : item.type === 'feature' ? 'Idée' : 'Feedback';
                                             const statusLabels = { open: 'Ouvert', in_progress: 'En cours', resolved: 'Résolu', dismissed: 'Ignoré' };
                                             return (
                                                 <tr key={item._id}>
@@ -1631,10 +1895,10 @@ function AdminPage() {
                                                                     if (res.ok) {
                                                                         setFeedbackItems((prev) => prev.map((f) => f._id === item._id ? { ...f, status: newStatus } : f));
                                                                     } else {
-                                                                        toast('Erreur mise a jour statut.', 'error');
+                                                                        toast('Erreur mise à jour statut.', 'error');
                                                                     }
                                                                 } catch {
-                                                                    toast('Erreur reseau.', 'error');
+                                                                    toast('Erreur réseau.', 'error');
                                                                 }
                                                             }}
                                                         >
@@ -1643,31 +1907,16 @@ function AdminPage() {
                                                     </td>
                                                     <td>{formatDate(item.createdAt)}</td>
                                                     <td>
-                                                        {item.type === 'chat' && (
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8, minWidth: 210 }}>
-                                                                <input
-                                                                    type="text"
-                                                                    value={chatReplyDrafts[item._id] || ''}
-                                                                    onChange={(e) => setChatReplyDrafts((prev) => ({ ...prev, [item._id]: e.target.value }))}
-                                                                    placeholder="Répondre au client..."
-                                                                    style={{ border: '1px solid #d2d2d7', borderRadius: 8, padding: '6px 8px', fontSize: 12 }}
-                                                                />
-                                                                <button
-                                                                    type="button"
-                                                                    className="btn btn-primary btn-sm"
-                                                                    disabled={sendingChatReplyId === item._id || !(chatReplyDrafts[item._id] || '').trim()}
-                                                                    onClick={() => sendAdminChatReply(item._id)}
-                                                                >
-                                                                    {sendingChatReplyId === item._id ? 'Envoi...' : 'Envoyer'}
-                                                                </button>
-                                                            </div>
-                                                        )}
                                                         <button
                                                             type="button"
                                                             className="btn btn-outline btn-sm btn-danger"
                                                             title="Supprimer"
                                                             onClick={async () => {
-                                                                const ok = await confirm('Supprimer ce feedback ?', { confirmLabel: 'Supprimer', variant: 'danger' });
+                                                                const ok = await confirm({
+                                                                    title: 'Supprimer ce ticket ?',
+                                                                    confirmLabel: 'Supprimer',
+                                                                    danger: true,
+                                                                });
                                                                 if (!ok) return;
                                                                 try {
                                                                     const token = localStorage.getItem('token');
@@ -1677,12 +1926,12 @@ function AdminPage() {
                                                                     });
                                                                     if (res.ok) {
                                                                         setFeedbackItems((prev) => prev.filter((f) => f._id !== item._id));
-                                                                        toast('Feedback supprime.', 'success');
+                                                                        toast('Ticket supprimé.', 'success');
                                                                     } else {
                                                                         toast('Erreur suppression.', 'error');
                                                                     }
                                                                 } catch {
-                                                                    toast('Erreur reseau.', 'error');
+                                                                    toast('Erreur réseau.', 'error');
                                                                 }
                                                             }}
                                                         >
@@ -1697,6 +1946,7 @@ function AdminPage() {
                             </div>
                         )}
                     </article>
+                    )}
                 </section>
                 )}
 
