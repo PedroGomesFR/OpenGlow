@@ -52,6 +52,7 @@ function Header({ user, notificationCount = 0, newBookingCount = 0 }) {
             <>
               <Link to="/recherche" style={navStyle}>{t('find_pro')}</Link>
               <Link to="/map" style={navStyle}>{t('explore_map')}</Link>
+              <Link to="/blog" style={navStyle}>Blog</Link>
             </>
           )}
           {user && (
@@ -125,14 +126,16 @@ function Header({ user, notificationCount = 0, newBookingCount = 0 }) {
             </button>
           )}
 
-          <button
-            type="button"
-            className="headerMobileToggle"
-            aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
-            onClick={() => setMobileMenuOpen((c) => !c)}
-          >
-            {mobileMenuOpen ? <IoClose size={22} /> : <IoMenu size={22} />}
-          </button>
+          {user?.isClient !== false && (
+            <button
+              type="button"
+              className="headerMobileToggle"
+              aria-label={mobileMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+              onClick={() => setMobileMenuOpen((c) => !c)}
+            >
+              {mobileMenuOpen ? <IoClose size={22} /> : <IoMenu size={22} />}
+            </button>
+          )}
         </div>
 
       </div>
@@ -144,6 +147,7 @@ function Header({ user, notificationCount = 0, newBookingCount = 0 }) {
             <>
               <Link to="/recherche" onClick={() => setMobileMenuOpen(false)}>{t('find_pro')}</Link>
               <Link to="/map" onClick={() => setMobileMenuOpen(false)}>{t('explore_map')}</Link>
+              <Link to="/blog" onClick={() => setMobileMenuOpen(false)}>Blog</Link>
             </>
           )}
           {user && <Link to="/bookings" onClick={() => setMobileMenuOpen(false)}>{t('my_bookings') || 'Mes RDV'}</Link>}

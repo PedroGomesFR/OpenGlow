@@ -41,6 +41,8 @@ import Footer from './components/common/Footer.jsx';
 import MentionsLegales from './components/pages/MentionsLegales.jsx';
 import CGU from './components/pages/CGU.jsx';
 import QuiSommesNous from './components/pages/QuiSommesNous.jsx';
+import BlogListPage from './components/pages/BlogListPage.jsx';
+import BlogArticlePage from './components/pages/BlogArticlePage.jsx';
 import CookieBanner from './components/common/CookieBanner.jsx';
 import FeedbackWidget from './components/common/FeedbackWidget.jsx';
 import { ToastProvider } from './components/common/ToastContext.jsx';
@@ -412,6 +414,9 @@ function AppShell() {
             <Route path="/cgu" element={<CGU />} />
             <Route path="/help" element={<HelpPage />} />
             <Route path="/politique-confidentialite" element={<PolitiqueConfidentialite />} />
+
+            <Route path="/blog" element={<BlogListPage />} />
+            <Route path="/blog/:slug" element={<BlogArticlePage />} />
 
             <Route path="*" element={<NotFoundPage />} />
 
