@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="client/assets/logo.png" alt="OpenGlow logo" width="320" />
+</p>
+
 # OpenGlow
 
 **OpenGlow** est une plateforme de prise de rendez-vous en ligne moderne, conçue pour connecter les clients avec des professionnels de la beauté et du bien-être. Entièrement gratuite et open-source, elle offre une alternative puissante et flexible aux solutions propriétaires.
