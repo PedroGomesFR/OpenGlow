@@ -4,6 +4,8 @@
 
 # OpenGlow
 
+Site officiel : [openglow.fr](https://openglow.fr)
+
 **OpenGlow** est une plateforme de prise de rendez-vous en ligne moderne, conçue pour connecter les clients avec des professionnels de la beauté et du bien-être. Entièrement gratuite et open-source, elle offre une alternative puissante et flexible aux solutions propriétaires.
 
 ## Caractéristiques Principales
