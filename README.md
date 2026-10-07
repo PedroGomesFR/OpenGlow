@@ -2,7 +2,7 @@
 
 **OpenGlow** est une plateforme de prise de rendez-vous en ligne moderne, conçue pour connecter les clients avec des professionnels de la beauté et du bien-être. Entièrement gratuite et open-source, elle offre une alternative puissante et flexible aux solutions propriétaires.
 
-## 🚀 Caractéristiques Principales
+## Caractéristiques Principales
 
 ### Pour les Clients
 - **Recherche Intelligente** : Trouvez des professionnels par service, localisation ou nom.
@@ -36,7 +36,7 @@
 - **MongoDB** : Base de données NoSQL pour le stockage des données.
 - **JWT (JSON Web Tokens)** : Authentification sécurisée des utilisateurs.
 
-## 📂 Structure du Projet
+## Structure du Projet
 
 ```
 OpenGlow
@@ -45,7 +45,7 @@ OpenGlow
 └── README.md        # Documentation du projet
 ```
 
-## 🚀 Installation et Démarrage
+## Installation et Démarrage
 
 ### Prérequis
 - Node.js (v16 ou supérieur)
@@ -86,6 +86,6 @@ npm run dev
 
 Le serveur de développement démarrera généralement sur `http://localhost:1234`.
 
-## 📧 Support
+## Support
 
 Pour toute question ou problème, veuillez ouvrir une issue sur le dépôt GitHub.
